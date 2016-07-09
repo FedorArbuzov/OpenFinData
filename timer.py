@@ -5,7 +5,7 @@ def job(t):
     print("Добрый вечер! Встречайте нашу опиздохуительную рассылочку: ", t)
     return
  
-schedule.every().hour.at("00:05").do(job, "р а с с ы л о ч к а")
+schedule.every().hour.at("00:00").do(job, "р а с с ы л о ч к а")
  
 while True:
     schedule.run_pending()
