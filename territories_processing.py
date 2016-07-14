@@ -1,8 +1,9 @@
 """
 Версия 1.0
 """
+
 # List of the territories
-territories = ["Российская Федерация", "Россия",
+territories = ["Российская Федерация", "Россия", "РФ",
                "Северо-Кавказский федеральный округ",
                "Ставропольский край",
                "Республика Ингушетия",
@@ -31,10 +32,8 @@ territories = ["Российская Федерация", "Россия",
                "Республика Марий Эл",
                "Республика Мордовия",
                "Республика Татарстан",
-               "Татарстан",
-               "Удмуртская республика",
-               "Чувашская Республика",
-               "Чувашия",
+               "Удмуртская республика", "Удмуртия"
+               "Чувашская Республика", "Чувашия",
                "Северо-Западный федеральный округ",
                "Архангельская область",
                "Ненецкий автономный округ",
@@ -121,19 +120,20 @@ def distance(a, b):
 
     return current_row[n]
 
-# 
+# Основная функция
 def check_the_territories(str_user):
     minimum_value = 123
     index_of_the_most_likely_variant = 0
     i = 0
     for _ in territories:
-        if distance(str_user, territories[i]) < minimum_value:
-            minimum_value = distance(str_user, territories[i])
+        distance_between_input_and_table_data = distance(str_user.lower(), territories[i].lower())
+        if distance_between_input_and_table_data < minimum_value:
+            minimum_value = distance_between_input_and_table_data
             index_of_the_most_likely_variant = i
         i += 1
-    if minimum_value == 0:
-        print('В бд запишем '+str_user)
-    else:
-        print('Наверное, вы имели в виду ' + territories[index_of_the_most_likely_variant] + '?')
 
-check_the_territories(input())
+    if minimum_value <= 2:
+            print('В бд запишем '+ territories[index_of_the_most_likely_variant])
+    else: print('Наверное, вы имели в виду ' + territories[index_of_the_most_likely_variant] + '?')
+
+check_the_territories(input('Введите название субъекта: '))
