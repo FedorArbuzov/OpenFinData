@@ -114,9 +114,18 @@ useless_pile_of_crap = [
     'республикою',	'республиками',
 	'республике',	'республиках',
     'область', 'области', 'областью', 'областей', 'областям', 'областями', 'областях']
+list_of_int = []
+useless_word_in_sen = []
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+"""
 for i in range(len(useless_pile_of_crap)):
-    useless_pile_of_crap[i] = useless_pile_of_crap[i].upper()
-
+    useless_pile_of_crap[i] = useless_pile_of_crap[i].lower()
+"""
 # the Levenstein distance algorithm
 def distance(a: object, b: object) -> object:
     """Calculates the Levenshtein distance between a and b."""
@@ -144,7 +153,7 @@ def check_the_territories(str_user):
     index_of_the_most_likely_variant = 0
     i = 0
     for _ in territories:
-        distance_between_input_and_table_data = distance(delete_words_oblast_and_republic(str_user), delete_words_oblast_and_republic(territories[i]))
+        distance_between_input_and_table_data = distance(str_user, territories[i])
         if distance_between_input_and_table_data < minimum_value:
             minimum_value = distance_between_input_and_table_data
             index_of_the_most_likely_variant = i
@@ -152,24 +161,35 @@ def check_the_territories(str_user):
 
     return index_of_the_most_likely_variant
 
-def delete_words_oblast_and_republic(str_user):
-    str_user = str_user.lower().replace('республика', '').replace('республике', '').replace('республики', '')
-    str_user = str_user.replace('область', '').replace('области', '')
-    return str_user
-
 s = input()
 s = re.sub(r'[^\w\s]', '', s)
 list1 = s.split()
+for i in range(len(list1)):
+    if RepresentsInt(list1[i]):
+        print(list1[i])
+        list_of_int.append(list1[i])
+        #list1.remove(list1[i])
+
 print(list1)
+print(list_of_int)
+
 
 for s in useless_pile_of_crap:
     if s in list1:
         list1.remove(s)
+
+for s in list_of_int:
+    if s in list1:
+        list1.remove(s)
+
+print(list1)
+
 list2 = []
 
 i = 0
 for _ in list1:
     result = check_the_territories(list1[i])
-    #print(territories[result])
+    print(territories[result])
     list2 = territories[result]
     i += 1
+
