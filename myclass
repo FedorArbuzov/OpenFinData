@@ -1,6 +1,10 @@
-class MyClass:
+class quest:
     """A simple example class"""
-    i = 12345
+    subject = ""
+    place = ""
+    year = 0
+    sector = ""
+    planned_or_actual = ""
 
     def f(self):
         return 'hello world'
