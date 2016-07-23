@@ -11,7 +11,7 @@ bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
 connection_first = sqlite3.connect('delivery.db')
-cursor_first = connection_first.cursor_first()
+cursor_first = connection_first.cursor()
 k = cursor_first.fetchall()  # считывание строки
 for i in range(len(k)):
     print(k[i][1])
