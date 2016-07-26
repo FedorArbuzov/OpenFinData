@@ -1,5 +1,13 @@
-from urllib import request, parse
+import requests
 
+#Sample request
+data = {'dataMartCode': 'BLYR01', 'mdxQuery': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, '
+                                              'NON EMPTY {[Territories].[08-17698], '
+                                              '[Territories].[08-91128]} ON ROWS '
+                                              'FROM [BLYR01.DB] '
+                                              'WHERE ([BGLevels].[09-3])'}
+r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
+print(r.text)
 
 # Module, which is responsible for getting required from user data
 class M2Retrieving:
@@ -44,7 +52,7 @@ class M2Retrieving:
     def _send_mdx_request(mdx_query):
         return
 
-places = {  2:	'Российская  Федерация',
+    _places = {  2:	'Российская  Федерация',
             91128: 'Крымский федеральный округ',
             91129:	'Республика Крым',
             91139:	'г. Севастополь',
