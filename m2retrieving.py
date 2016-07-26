@@ -1,16 +1,8 @@
 import requests
 
-#Sample request
-data = {'dataMartCode': 'BLYR01', 'mdxQuery': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, '
-                                              'NON EMPTY {[Territories].[08-17698], '
-                                              '[Territories].[08-91128]} ON ROWS '
-                                              'FROM [BLYR01.DB] '
-                                              'WHERE ([BGLevels].[09-3])'}
-r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
-print(r.text)
-
 # Module, which is responsible for getting required from user data
 class M2Retrieving:
+    
     @staticmethod
     def get_data(input_string):
         """Getting JSON data based on input parameters"""
@@ -148,6 +140,17 @@ class M2Retrieving:
             18184:	'Чукотский автономный округ',
             17699:	'Республика Саха (Якутия)',
             18317:	'Еврейская автономная область'}
+
+    mdxQuery = 'SELECT {[Measures].[VALUE]}  ON COLUMNS, ' \
+               'NON EMPTY {[Territories].[08-17698], ' \
+               '[Territories].[08-91128]} ON ROWS ' \
+               'FROM [BLYR01.DB] ' \
+               'WHERE ([BGLevels].[09-3])'
+
+    # Sample request
+    data = {'dataMartCode': 'BLYR01', 'mdxQuery': mdxQuery}
+    r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
+    print(r.text)
 
 
 
