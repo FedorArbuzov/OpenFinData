@@ -1,8 +1,6 @@
-import requests
 
 # Module, which is responsible for getting required from user data
 class M2Retrieving:
-    
     @staticmethod
     def get_data(input_string):
         """Getting JSON data based on input parameters"""
