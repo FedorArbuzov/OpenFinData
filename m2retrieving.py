@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 # Module, which is responsible for getting required from user data
 class M2Retrieving:
     @staticmethod
@@ -6,18 +9,22 @@ class M2Retrieving:
 
         # 1. Преобразовать входную строку в лист                                -> get_data
         params = input_string.split(',')
-
+        response = Result(request=input_string)
         # 2. Создать мэп списка                                                 -> _list_to_map
-        mapper = M2Retrieving._list_to_map(params)
+        response = M2Retrieving._list_to_mapper(params, response)
+        print(response.status)
+        print(response.message)
+        print(response.mapper)
+        print(response.request)
 
         # 3. Проверить какому из существующих мэпов соответствует данный мэп
         # 4. Получить MDX запрос для мэпа                                       -> _get_mdx_skeleton_for_map
 
-        mdx_skeleton = M2Retrieving._get_mdx_skeleton_for_mapper(mapper)
+        mdx_skeleton = M2Retrieving._get_mdx_skeleton_for_mapper(response)
         if len(mdx_skeleton) == 0:
             return False
         else:
-            # 5. Подставить в MDX запрос вместо "*1, *2, *3 и тд" параметры
+            # 5. Подставить в MDX запрос вместо '*1, *2, *3 и тд' параметры
             # 6. Отправить MDX запрос                                           -> _refactor_mdx_skeleton
             mdx_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
             result = M2Retrieving._send_mdx_request(mdx_query)
@@ -26,8 +33,58 @@ class M2Retrieving:
             return result
 
     @staticmethod
-    def _list_to_map(parameters):
-        return
+    def _list_to_mapper(parameters, response):
+        mapper = ''
+
+        if parameters[0] in M2Retrieving._codes[0]:
+            mapper += str(M2Retrieving._codes[0].get(parameters[0])) + '.'
+        else:
+            response.status = False
+            response.message = 'Неверно выбрана предметная область.'
+            return response
+
+        if parameters[1] == 'null':
+            mapper += '0.'
+        elif parameters[1] in M2Retrieving._codes[1]:
+            mapper += str(M2Retrieving._codes[1].get(parameters[1])) + '.'
+        else:
+            response.status = False
+            response.message = 'Неверно выбрана 1я характеристика предметной области'
+            return response
+
+        if parameters[2] == 'null':
+            mapper += '0.'
+        elif parameters[2] in M2Retrieving._codes[2]:
+            mapper += str(M2Retrieving._codes[2].get(parameters[2])) + '.'
+        else:
+            response.status = False
+            message = 'Параметр "' + parameters[2] + '" не верен. ' \
+                                                     'Допустимы: отсутствие этого параметра, ' \
+                                                     'значение "налоговый" или "неналоговый"'
+            response.message = message
+            return response
+
+        if parameters[3] == 'null':
+            mapper += '0.'
+        elif int(parameters[3]) > 2006 and int(parameters[3]) <= datetime.today().year:  # TODO: the earliest year
+            mapper += '1.'
+        else:
+            response.status = False
+            response.message = 'Введите год от 2007 до ' + str(datetime.today().year) + '.'
+            return response
+
+        if parameters[4] == 'null':
+            mapper += '0.'
+        else:
+            mapper += '1.'
+
+        if parameters[5] == 'null':
+            mapper += '0'
+        else:
+            mapper += '1'
+
+        response.mapper = mapper
+        return response
 
     @staticmethod
     def _get_mdx_skeleton_for_mapper(mapper):
@@ -42,52 +99,66 @@ class M2Retrieving:
         return
 
     _mappers = {
-        # Расходы
-        '1.3.0.1.0.0': None,
-        '1.2.0.1.1.0': None,
-        '1.3.0.1.1.0': None,
-        '1.5.0.1.1.0': None,
-        '1.4.0.0.1.0': None,
+        # Expenditures' mappers
+        '2.3.0.1.0.0': None,
+        '2.2.0.1.1.0': None,
+        '2.3.0.1.1.0': None,
+        '2.5.0.1.1.0': None,
+        '2.4.0.0.1.0': None,
+        '2.3.0.1.0.1': None,
+        '2.2.0.1.1.1': None,
+        '2.3.0.1.1.1': None,
+        '2.5.0.0.1.1': None,
+        '2.4.0.0.1.1': None,
 
-        '1.3.0.1.0.1': None,
-        '1.2.0.1.1.1': None,
-        '1.3.0.1.1.1': None,
-        '1.5.0.0.1.1': None,
-        '1.4.0.0.1.1': None,
-
-        # Доходы
-
-        # Дефицит/Профицит
+        # Profits' mappers
+        '3.0.0.1.0.0': None,
+        '3.2.0.1.0.0': None,
+        '3.0.1.1.0.0': None,  # гд
+        '3.2.1.1.0.0': None,  # гд
         '3.2.0.0.0.0': None,
+        '3.2.1.0.0.0': None,  # гд-показатели исполнения бюджета
         '3.4.0.0.0.0': None,
-        '3.1.0.1.0.0': None,
-        '3.1.0.1.0.1': None,
+        '3.4.1.0.0.0': None,  # гд-показатели исполнения бюджета
+        '3.0.0.1.0.1': None,
         '3.2.0.1.0.1': None,
+        '3.2.0.0.0.1': None,
+        '3.2.1.0.0.1': None,  # гд
         '3.4.0.0.0.1': None,
+        '3.4.1.0.0.1': None,  # гд
+
+        # Deficit/surplus's mappers
+        '4.2.0.0.0.0': None,
+        '4.4.0.0.0.0': None,
+        '4.0.0.1.0.0': None,
+        '4.0.0.1.0.1': None,
+        '4.2.0.1.0.1': None,
+        '4.4.0.0.0.1': None
     }
 
-    # Внутренние кодовые обозначения для мэпперов
-    _theme = {
-        'Расходы': 1,
-        'Доходы': 2,
-        'Дефицит': 3,
-        'Профицит': 3
-    }
-    # Внутренние кодовые обозначения для мэпперов
-    _type1 = {
-        '': 1,
-        'Плановый': 2,
-        'Фактический': 3,
-        'Текущий': 4,
-        'Запланированный': 5
-    }
+    # Inner codes for refactoring list in mapper
+    _codes = (
+        {
+            'Расходы': 2,
+            'Доходы': 3,
+            'Дефицит': 4,
+            'Профицит': 4
+        },
 
-    _type2 = {
-        '': 221,
-        'Налоговый': 222,
-        'Неналоговый': 223
-    }
+        {
+            'Плановый': 2,
+            'Фактический': 3,
+            'Текущий': 4,
+            'Запланированный': 5
+        },
 
+        {
+            'Налоговый': 222,
+            'Неналоговый': 333
+        }
+    )
+
+    # Outer codes for substitution in MDX-query
     _places = {
         'Российская  Федерация': 2,
         'Крымский федеральный округ': 91128,
@@ -167,22 +238,34 @@ class M2Retrieving:
         'Костромская область': 20774,
         'Курская область': 19479,
         'Липецкая область': 20018,
-        'г. Москва': 23783, ц
-            'Московская область': 19100,
-                                  'Орловская область': 24262,
-                                                       'Рязанская область': 22433,
-                                                                            'Смоленская область': 21792,
-                                                                                                  'Тамбовская область': 23909,
-                                                                                                                        'Тульская область': 21078,
-                                                                                                                                            'Ярославская область': 20670,
-                                                                                                                                                                   'Дальневосточный федеральный округ': 17698,
-                                                                                                                                                                                                        'Приморский край': 18354,
-                                                                                                                                                                                                                           'Хабаровский край': 18540,
-                                                                                                                                                                                                                                               'Амурская область': 18776,
-                                                                                                                                                                                                                                                                   'Камчатский край': 24543,
-                                                                                                                                                                                                                                                                                      'Магаданская область': 18239,
-                                                                                                                                                                                                                                                                                                             'Сахалинская область': 18294,
-                                                                                                                                                                                                                                                                                                                                    'Чукотский автономный округ': 18184,
-                                                                                                                                                                                                                                                                                                                                                                  'Республика Саха (Якутия)': 17699,
-                                                                                                                                                                                                                                                                                                                                                                                              'Еврейская автономная область': 18317
+        'г. Москва': 23783,
+        'Московская область': 19100,
+        'Орловская область': 24262,
+        'Рязанская область': 22433,
+        'Смоленская область': 21792,
+        'Тамбовская область': 23909,
+        'Тульская область': 21078,
+        'Ярославская область': 20670,
+        'Дальневосточный федеральный округ': 17698,
+        'Приморский край': 18354,
+        'Хабаровский край': 18540,
+        'Амурская область': 18776,
+        'Камчатский край': 24543,
+        'Магаданская область': 18239,
+        'Сахалинская область': 18294,
+        'Чукотский автономный округ': 18184,
+        'Республика Саха (Якутия)': 17699,
+        'Еврейская автономная область': 18317
     }
+
+
+class Result:
+    def __init__(self, request='', status=False, message='', mapper='', response=''):
+        self.request = request
+        self.status = status
+        self.message = message
+        self.mapper = mapper
+        self.response = response
+
+
+M2Retrieving.get_data('Доходы,null,null,2010,null,null')
