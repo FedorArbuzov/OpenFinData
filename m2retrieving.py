@@ -12,6 +12,9 @@ class M2Retrieving:
         response = Result(request=input_string)
         # 2. Создать мэп списка                                                 -> _list_to_map
         response = M2Retrieving._list_to_mapper(params, response)
+        if response.message != "":
+            return response
+
         print(response.status)
         print(response.message)
         print(response.mapper)
@@ -20,17 +23,18 @@ class M2Retrieving:
         # 3. Проверить какому из существующих мэпов соответствует данный мэп
         # 4. Получить MDX запрос для мэпа                                       -> _get_mdx_skeleton_for_map
 
-        mdx_skeleton = M2Retrieving._get_mdx_skeleton_for_mapper(response)
-        if len(mdx_skeleton) == 0:
-            return False
-        else:
-            # 5. Подставить в MDX запрос вместо '*1, *2, *3 и тд' параметры
-            # 6. Отправить MDX запрос                                           -> _refactor_mdx_skeleton
-            mdx_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
-            result = M2Retrieving._send_mdx_request(mdx_query)
-            if len(result == 0):
-                return False
-            return result
+        print(mdx_skeleton)
+
+        # if len(mdx_skeleton) == 0:
+        #     return False
+        # else:
+        #     # 5. Подставить в MDX запрос вместо '*1, *2, *3 и тд' параметры
+        #     # 6. Отправить MDX запрос                                           -> _refactor_mdx_skeleton
+        #     mdx_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
+        #     result = M2Retrieving._send_mdx_request(mdx_query)
+        #     if len(result == 0):
+        #         return False
+        #     return result
 
     @staticmethod
     def _list_to_mapper(parameters, response):
@@ -87,8 +91,16 @@ class M2Retrieving:
         return response
 
     @staticmethod
-    def _get_mdx_skeleton_for_mapper(mapper):
-        return
+    def _get_mdx_skeleton_for_mapper(response):
+        mdx_skeleton = M2Retrieving._mappers.get(response.mapper, 0)
+        if mdx_skeleton == 0:
+            close_mappers = []
+            for i in list(M2Retrieving._mappers.keys()):
+                if M2Retrieving._distance(i, response.mapper) == 1:
+                    close_mappers.append(i)
+
+                    # TODO: Обработка результатов алгоритма поиска похожего мэпа
+        return mdx_skeleton
 
     @staticmethod
     def _refactor_mdx_skeleton(mdx_skeleton, params):
@@ -97,6 +109,26 @@ class M2Retrieving:
     @staticmethod
     def _send_mdx_request(mdx_query):
         return
+
+    @staticmethod
+    def _distance(a, b):
+        """Calculates the Levenshtein distance between a and b."""
+        n, m = len(a), len(b)
+        if n > m:
+            # Make sure n <= m, to use O(min(n,m)) space
+            a, b = b, a
+            n, m = m, n
+
+        current_row = range(n + 1)  # Keep current and previous row, not entire matrix
+        for i in range(1, m + 1):
+            previous_row, current_row = current_row, [i] + [0] * n
+            for j in range(1, n + 1):
+                add, delete, change = previous_row[j] + 1, current_row[j - 1] + 1, previous_row[j - 1]
+                if a[j - 1] != b[i - 1]:
+                    change += 1
+                current_row[j] = min(add, delete, change)
+
+        return current_row[n]
 
     _mappers = {
         # Expenditures' mappers
@@ -268,4 +300,4 @@ class Result:
         self.response = response
 
 
-M2Retrieving.get_data('Доходы,null,null,2010,null,null')
+M2Retrieving.get_data('Доходы,null,null,2010,jjj,jjj')
