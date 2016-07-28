@@ -1,6 +1,6 @@
 import requests
 
-
+#Test
 # Module, which is responsible for getting required from user data
 class M2Retrieving:
     @staticmethod
