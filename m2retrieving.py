@@ -24,17 +24,17 @@ class M2Retrieving:
         # 4. Получить MDX запрос для мэпа
         mdx_skeleton = M2Retrieving._get_mdx_skeleton_for_mapper(response)
 
-        if mdx_skeleton == 0 or mdx_skeleton is None:
+        if mdx_skeleton == 0:
             print(response.message)
             return response
 
         # 5. Подставить в MDX запрос вместо '*1, *2, *3 и тд' параметры
-        mdx_cube_and_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
-        print(list(mdx_cube_and_query))
-
         # 6. Отправить MDX запрос
-        result = M2Retrieving._send_mdx_request(mdx_cube_and_query)
-        return response
+        mdx_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
+        result = M2Retrieving._send_mdx_request(mdx_query)
+        if len(result == 0):
+            return False
+        return result
 
     @staticmethod
     def _list_to_mapper(parameters, response):
@@ -55,8 +55,6 @@ class M2Retrieving:
                 'Текущий': 4,
                 'Запланированный': 5
             }
-
-            # TODO: сделать словарь для доходов группы и показателей исполнения бюджета
         )
 
         mapper = ''
@@ -112,48 +110,6 @@ class M2Retrieving:
         return response
 
     @staticmethod
-    def _get_mdx_skeleton_for_mapper(response):
-        mdx_skeleton = M2Retrieving._mappers.get(response.mapper, 0)
-
-        # Processing requests for which MDX is not ready yet
-        if mdx_skeleton is None:
-            response.message = 'Данный запрос еще в стадии разработки'
-
-        if mdx_skeleton == 0:
-            index = 1
-            message2 = "Возможные варианты:\r\n"
-            message1 = "Введенные параметры:\r\n" + M2Retrieving._mapper_to_words(response.mapper)
-            for i in list(M2Retrieving._mappers.keys()):
-                if M2Retrieving._distance(i, response.mapper) == 1:
-                    message2 += str(index) + '.' + M2Retrieving._mapper_to_words(i) + '\r\n'
-                    index += 1
-
-            response.message = message1 + '\r\nДанный запрос некорректен:(\r\n' + message2[:-3]
-        return mdx_skeleton
-
-    @staticmethod
-    def _refactor_mdx_skeleton(mdx_skeleton, params):
-        mdx_cube_and_query = []
-        if '*' in mdx_skeleton:
-            temp = mdx_skeleton
-            while temp.find('*') != -1:
-                i = temp.find('*')
-                star = temp[i:i + 2]  # *number
-                data = params[int(star[1:])]
-                mdx_skeleton = mdx_skeleton.replace(star, str(data))
-                temp = temp[i + 1:]
-        query_by_elements = mdx_skeleton.split(' ')
-        from_element = query_by_elements[query_by_elements.index('FROM') + 1]
-        cube = from_element[1:len(from_element) - 1]
-        mdx_cube_and_query.append(cube)
-        mdx_cube_and_query.append(mdx_skeleton)
-        return mdx_cube_and_query
-
-    @staticmethod
-    def _send_mdx_request(mdx_query):
-        return
-
-    @staticmethod
     def _mapper_to_words(mapper):
         """Refactoring mapper in word constructions"""
         # Inner codes for refactoring mapper in list
@@ -184,7 +140,7 @@ class M2Retrieving:
             },
             {
                 1: 'Территория',
-                0: 'Территория(пустой параметр)'
+                0: 'Территория (пустой параметр)'
             }
         )
 
@@ -246,12 +202,12 @@ class M2Retrieving:
         '3.4.1.0.0.1': None,  # гд
 
         # Deficit/surplus's mappers
-        '4.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB]',
-        '4.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB]',
-        '4.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3])',
-        '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5])',
-        '4.2.0.0.0.1': 'SELECT {[Measures].[PLAN_ONYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE [TERRITORIES].[*5]',
-        '4.4.0.0.0.1': 'SELECT {[Measures].[FACT_BGYEAR]}  ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Territories].[*5])'
+        '4.2.0.0.0.0': None,
+        '4.4.0.0.0.0': None,
+        '4.0.0.1.0.0': None,
+        '4.0.0.1.0.1': None,
+        '4.2.0.1.0.1': None,
+        '4.4.0.0.0.1': None
     }
 
     # Outer codes for substitution in MDX-query
@@ -364,4 +320,4 @@ class Result:
         self.response = response
 
 
-M2Retrieving.get_data('Дефицит,null,null,2010,null,null')
+M2Retrieving.get_data('Доходы,null,null,2010,jjj,jjj')
