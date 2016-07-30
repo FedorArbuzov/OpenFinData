@@ -7,41 +7,60 @@ class M2Retrieving:
     def get_data(input_string):
         """Getting JSON data based on input parameters"""
 
-        # 1. Преобразовать входную строку в лист                                -> get_data
+        # 1. Преобразовать входную строку в лист
         params = input_string.split(',')
         response = Result(request=input_string)
-        # 2. Создать мэп списка                                                 -> _list_to_map
+
+        # 2. Создать мэп списка
         response = M2Retrieving._list_to_mapper(params, response)
         if response.message != "":
+            print(response.message)
+            print(response.status)
+            print(response.mapper)
+            print(response.request)
             return response
 
-        print(response.status)
-        print(response.message)
-        print(response.mapper)
-        print(response.request)
-
         # 3. Проверить какому из существующих мэпов соответствует данный мэп
-        # 4. Получить MDX запрос для мэпа                                       -> _get_mdx_skeleton_for_map
+        # 4. Получить MDX запрос для мэпа
+        mdx_skeleton = M2Retrieving._get_mdx_skeleton_for_mapper(response)
 
-        print(mdx_skeleton)
+        if mdx_skeleton == 0:
+            print(response.message)
+            return response
 
-        # if len(mdx_skeleton) == 0:
-        #     return False
-        # else:
-        #     # 5. Подставить в MDX запрос вместо '*1, *2, *3 и тд' параметры
-        #     # 6. Отправить MDX запрос                                           -> _refactor_mdx_skeleton
-        #     mdx_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
-        #     result = M2Retrieving._send_mdx_request(mdx_query)
-        #     if len(result == 0):
-        #         return False
-        #     return result
+        # 5. Подставить в MDX запрос вместо '*1, *2, *3 и тд' параметры
+        # 6. Отправить MDX запрос
+        mdx_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
+        result = M2Retrieving._send_mdx_request(mdx_query)
+        if len(result == 0):
+            return False
+        return result
 
     @staticmethod
     def _list_to_mapper(parameters, response):
+        """Refactoring input parameters in mapper"""
+
+        # Inner codes for refactoring list in mapper
+        _codes = (
+            {
+                'Расходы': 2,
+                'Доходы': 3,
+                'Дефицит': 4,
+                'Профицит': 4
+            },
+
+            {
+                'Плановый': 2,
+                'Фактический': 3,
+                'Текущий': 4,
+                'Запланированный': 5
+            }
+        )
+
         mapper = ''
 
-        if parameters[0] in M2Retrieving._codes[0]:
-            mapper += str(M2Retrieving._codes[0].get(parameters[0])) + '.'
+        if parameters[0] in _codes[0]:
+            mapper += str(_codes[0].get(parameters[0])) + '.'
         else:
             response.status = False
             response.message = 'Неверно выбрана предметная область.'
@@ -49,8 +68,8 @@ class M2Retrieving:
 
         if parameters[1] == 'null':
             mapper += '0.'
-        elif parameters[1] in M2Retrieving._codes[1]:
-            mapper += str(M2Retrieving._codes[1].get(parameters[1])) + '.'
+        elif parameters[1] in _codes[1]:
+            mapper += str(_codes[1].get(parameters[1])) + '.'
         else:
             response.status = False
             response.message = 'Неверно выбрана 1я характеристика предметной области'
@@ -58,8 +77,8 @@ class M2Retrieving:
 
         if parameters[2] == 'null':
             mapper += '0.'
-        elif parameters[2] in M2Retrieving._codes[2]:
-            mapper += str(M2Retrieving._codes[2].get(parameters[2])) + '.'
+        elif parameters[2] in _codes[2]:
+            mapper += str(_codes[2].get(parameters[2])) + '.'
         else:
             response.status = False
             message = 'Параметр "' + parameters[2] + '" не верен. ' \
@@ -70,7 +89,7 @@ class M2Retrieving:
 
         if parameters[3] == 'null':
             mapper += '0.'
-        elif int(parameters[3]) > 2006 and int(parameters[3]) <= datetime.today().year:  # TODO: the earliest year
+        elif int(parameters[3]) > 2006 and int(parameters[3]) <= datetime.today().year:
             mapper += '1.'
         else:
             response.status = False
@@ -91,15 +110,61 @@ class M2Retrieving:
         return response
 
     @staticmethod
+    def _mapper_to_words(mapper):
+        """Refactoring mapper in word constructions"""
+        # Inner codes for refactoring mapper in list
+        _codes = (
+            {
+                2: 'Расходы',
+                3: 'Доходы',
+                4: 'Дефицит/Профицит'
+            },
+            {
+                0: 'Тип(пустой параметр)',
+                2: 'Плановый',
+                3: 'Фактический',
+                4: 'Текущий',
+                5: 'Запланированный'
+            },
+            {
+                1: 'Налоговый/Неналоговый',
+                0: 'Группа расходов(пустой параметр)'
+            },
+            {
+                1: 'Год',
+                0: 'Год(пустой параметр)'
+            },
+            {
+                1: 'Сфера',
+                0: 'Сфера(пустой параметр)'
+            },
+            {
+                1: 'Территория',
+                0: 'Территория (пустой параметр)'
+            }
+        )
+
+        words = '/'
+        items = mapper.split('.')
+        index = 0
+        for i in items:
+            words += _codes[index].get(int(i)) + '/'
+            index += 1
+        return words
+
+    @staticmethod
     def _get_mdx_skeleton_for_mapper(response):
         mdx_skeleton = M2Retrieving._mappers.get(response.mapper, 0)
         if mdx_skeleton == 0:
             close_mappers = []
+            message2 = "Возможные варианты: "
             for i in list(M2Retrieving._mappers.keys()):
                 if M2Retrieving._distance(i, response.mapper) == 1:
                     close_mappers.append(i)
+                    message2 += M2Retrieving._mapper_to_words(i) + '\r\n'
 
-                    # TODO: Обработка результатов алгоритма поиска похожего мэпа
+            message1 = "Введенные параметры: " + M2Retrieving._mapper_to_words(response.mapper)
+            response.message = message1 + '\r\nДанный запрос некорректен:(\r\n' + message2[:-3]
         return mdx_skeleton
 
     @staticmethod
@@ -112,7 +177,7 @@ class M2Retrieving:
 
     @staticmethod
     def _distance(a, b):
-        """Calculates the Levenshtein distance between a and b."""
+        """Levenshtein algorithm for finding the nearest mapper for requested one"""
         n, m = len(a), len(b)
         if n > m:
             # Make sure n <= m, to use O(min(n,m)) space
@@ -167,28 +232,6 @@ class M2Retrieving:
         '4.2.0.1.0.1': None,
         '4.4.0.0.0.1': None
     }
-
-    # Inner codes for refactoring list in mapper
-    _codes = (
-        {
-            'Расходы': 2,
-            'Доходы': 3,
-            'Дефицит': 4,
-            'Профицит': 4
-        },
-
-        {
-            'Плановый': 2,
-            'Фактический': 3,
-            'Текущий': 4,
-            'Запланированный': 5
-        },
-
-        {
-            'Налоговый': 222,
-            'Неналоговый': 333
-        }
-    )
 
     # Outer codes for substitution in MDX-query
     _places = {
