@@ -1,4 +1,5 @@
 from datetime import datetime
+import requests
 
 
 # Module, which is responsible for getting required from user data
@@ -174,6 +175,14 @@ class M2Retrieving:
     @staticmethod
     def _send_mdx_request(mdx_query):
         return
+
+    @staticmethod
+    def send_basic_mdx(dataMartCode, mdxQuery):
+        #Example:
+        #data = {'dataMartCode':'CLDO01', 'mdxQuery': 'SELECT {[Measures].[FACTBGYEAR]}  ON COLUMNS FROM [CLDO01.DB]'}
+        data = {'dataMartCode': dataMartCode, 'mdxQuery': mdxQuery}
+        r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
+        print(r.text)
 
     @staticmethod
     def _distance(a, b):
