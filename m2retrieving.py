@@ -10,7 +10,7 @@ class M2Retrieving:
 
         # 1. Преобразовать входную строку в лист
         params = input_string.split(',')
-        response = Result(request=input_string)
+        response = Result()
 
         # 2. Создать мэп списка
         response = M2Retrieving._list_to_mapper(params, response)
@@ -18,7 +18,6 @@ class M2Retrieving:
             print(response.message)
             print(response.status)
             print(response.mapper)
-            print(response.request)
             return response
 
         # 3. Проверить какому из существующих мэпов соответствует данный мэп
@@ -31,10 +30,13 @@ class M2Retrieving:
 
         # 5. Подставить в MDX запрос вместо '*1, *2, *3 и тд' параметры
         mdx_cube_and_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params)
-        print(list(mdx_cube_and_query))
 
         # 6. Отправить MDX запрос
-        result = M2Retrieving._send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1])
+        M2Retrieving._send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
+        print('Mapper: ' + response.mapper)
+        print('Status: ' + str(response.status))
+        print('Message: ' + str(response.message))
+        print('Response: ' + response.response)
         return response
 
     @staticmethod
@@ -163,10 +165,12 @@ class M2Retrieving:
         return mdx_cube_and_query
 
     @staticmethod
-    def _send_mdx_request(dataMartCode, mdxQuery):
-        data = {'dataMartCode': dataMartCode, 'mdxQuery': mdxQuery}
+    def _send_mdx_request(data_mart_code, mdx_query, response):
+        data = {'dataMartCode': data_mart_code, 'mdxQuery': mdx_query}
         r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
-        print(r.text)
+        response.message = r.status_code
+        response.status = True
+        response.response = r.text
 
     @staticmethod
     def _mapper_to_words(mapper):
@@ -371,12 +375,13 @@ class M2Retrieving:
 
 
 class Result:
-    def __init__(self, request='', status=False, message='', mapper='', response=''):
-        self.request = request
+    def __init__(self, status=False, message='', mapper='', response=''):
         self.status = status
         self.message = message
         self.mapper = mapper
         self.response = response
 
 
-M2Retrieving.get_data('Дефицит,null,null,2010,null,Ростовская область')
+M2Retrieving.get_data('Дефицит,null,null,2012,null,Ростовская область')
+print('\r\n')
+M2Retrieving.get_data('Дефицит,Текущий,null,null,null,null')
