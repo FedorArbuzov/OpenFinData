@@ -158,7 +158,7 @@ class M2Retrieving:
 
         query_by_elements = mdx_skeleton.split(' ')
         from_element = query_by_elements[query_by_elements.index('FROM') + 1]
-        cube = from_element[1:len(from_element) - 1]
+        cube = from_element[1:len(from_element) - 4]
 
         mdx_cube_and_query.append(cube)
         mdx_cube_and_query.append(mdx_skeleton)
