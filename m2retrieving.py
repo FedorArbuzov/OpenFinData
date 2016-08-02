@@ -1,4 +1,3 @@
-from datetime import datetime
 import requests
 
 
@@ -18,6 +17,10 @@ class M2Retrieving:
         response = M2Retrieving._list_to_mapper(params, response)
 
         if response.message != "":
+            # print('Mapper: ' + response.mapper)
+            # print('Status: ' + str(response.status))
+            # print('Message: ' + str(response.message))
+            # print('Response: ' + response.response)
             return response
 
         # Find MDX-sampler for formed mapper
@@ -25,6 +28,10 @@ class M2Retrieving:
 
         # Escaping this method if no mdx skeleton for current mapper is found
         if mdx_skeleton == 0 or mdx_skeleton is None:
+            # print('Mapper: ' + response.mapper)
+            # print('Status: ' + str(response.status))
+            # print('Message: ' + str(response.message))
+            # print('Response: ' + response.response)
             return response
 
         # Forming POST-data (cube and query) for request
@@ -34,10 +41,11 @@ class M2Retrieving:
         M2Retrieving._send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
 
         # Displaying data for testing
-        print('Mapper: ' + response.mapper)
-        print('Status: ' + str(response.status))
-        print('Message: ' + str(response.message))
-        print('Response: ' + response.response)
+        # print('Mapper: ' + response.mapper)
+        # print('Status: ' + str(response.status))
+        # print('Message: ' + str(response.message))
+        # if response.status is False:
+        #     print('Response: ' + response.response)
         return response
 
     @staticmethod
@@ -104,7 +112,7 @@ class M2Retrieving:
                 mapper += '1.'
             i += 1
 
-        response.mapper = mapper
+        response.mapper = mapper[:len(mapper) - 1]
 
         return response
 
@@ -112,7 +120,7 @@ class M2Retrieving:
     def _get_mdx_skeleton_for_mapper(response):
         """Finding MDX sampler for mapper"""
 
-        mdx_skeleton = _mappers.get(response.mapper, 0)
+        mdx_skeleton = M2Retrieving._mappers.get(response.mapper, 0)
 
         # Processing error message for which MDX-query is not ready yet
         if mdx_skeleton is None:
@@ -122,11 +130,11 @@ class M2Retrieving:
         if mdx_skeleton == 0:
             index = 1
             message2 = "Возможные варианты:\r\n"
-            message1 = "Введенные параметры:\r\n" + _mapper_to_words(response.mapper)
+            message1 = "Введенные параметры:\r\n" + M2Retrieving._mapper_to_words(response.mapper)
 
-            for i in list(_mappers.keys()):
-                if _distance(i, response.mapper) == 1:
-                    message2 += str(index) + '.' + _mapper_to_words(i) + '\r\n'
+            for i in list(M2Retrieving._mappers.keys()):
+                if M2Retrieving._distance(i, response.mapper) == 1:
+                    message2 += str(index) + '.' + M2Retrieving._mapper_to_words(i) + '\r\n'
                     index += 1
 
             response.message = message1 + '\r\nДанный запрос некорректен:(\r\n' + message2[:-3]
@@ -140,6 +148,11 @@ class M2Retrieving:
         # Codes for substitution in final MDX-query
         _codes = (
             {
+                'null': '[RZPR].[14-848223],[RZPR].[14-413284],[RZPR].[14-850484],[RZPR].[14-848398],'
+                        '[RZPR].[14-848260],[RZPR].[14-1203414],[RZPR].[14-848266],[RZPR].[14-848294],'
+                        '[RZPR].[14-848302],[RZPR].[14-848345],[RZPR].[14-1203401],[RZPR].[14-413259],'
+                        '[RZPR].[14-413264],[RZPR].[14-413267],[RZPR].[14-1203208],[RZPR].[14-1203195]',
+
                 'общегосударственные вопросы': '[RZPR].[14-848223],[RZPR].[14-413272],[RZPR].[14-342647],'
                                                '[RZPR].[14-413273],[RZPR].[14-413274],[RZPR].[14-413275],'
                                                '[RZPR].[14-413276],[RZPR].[14-413277],[RZPR].[14-413278],'
@@ -190,7 +203,7 @@ class M2Retrieving:
                                                '[RZPR].[14-413259],[RZPR].[14-413260],[RZPR].[14-851607],'
                                                '[RZPR].[14-413262],[RZPR].[14-413263],[RZPR].[14-413264],'
                                                '[RZPR].[14-413265],[RZPR].[14-413266],[RZPR].[14-413267],'
-                                               '[RZPR].[14-413268],[RZPR].[14-413269],[RZPR].[14-413270],'
+                                               '[RZPR].[14-413268],[RZPR].[14-413269],[RZPR].[14-413270]'
             },
 
             {
@@ -210,14 +223,15 @@ class M2Retrieving:
                 param_id = int(star[1])
 
                 # Forming output param instead of *2, *3, *4, *5
-                if param_id == 2:
-                    data = _codes[0].get(params[param_id])
-                if param_id == 3:
-                    data = str(params[param_id])
-                if param_id == 4:  # TODO: Доделать показатели бюджета для CLDO01.DB
+                # TODO: Доделать показатели бюджета для CLDO01.DB
+                if param_id == 2:  # Replacing property2
                     data = _codes[1].get(params[param_id])
-                if param_id == 5:
-                    data = '08-' + _places[params[param_id]]
+                if param_id == 3:  # Replacing year
+                    data = str(params[param_id])
+                if param_id == 4:
+                    data = _codes[0].get(params[param_id])
+                if param_id == 5:  # Replacing territory
+                    data = '08-' + M2Retrieving._places[params[param_id]]
 
                 # Replacing mark by parameter
                 mdx_skeleton = mdx_skeleton.replace(star, data)
@@ -254,211 +268,210 @@ class M2Retrieving:
         response.message = 'OK'
         response.response = r.text
 
+    @staticmethod
+    def _mapper_to_words(mapper):
+        """Refactoring mapper in word constructions"""
 
-@staticmethod
-def _mapper_to_words(mapper):
-    """Refactoring mapper in word constructions"""
+        # Inner codes for refactoring mapper in list
+        _codes = (
+            {
+                2: 'Расходы',
+                3: 'Доходы',
+                4: 'Дефицит/Профицит'
+            },
+            {
+                0: 'Тип(пустой параметр)',
+                2: 'Плановый',
+                3: 'Фактический',
+                4: 'Текущий',
+                5: 'Запланированный'
+            },
+            {
+                1: 'Налоговый/Неналоговый',
+                0: 'Группа расходов(пустой параметр)'
+            },
+            {
+                1: 'Год',
+                0: 'Год(пустой параметр)'
+            },
+            {
+                1: 'Сфера',
+                0: 'Сфера(пустой параметр)'
+            },
+            {
+                1: 'Территория',
+                0: 'Территория(пустой параметр)'
+            }
+        )
 
-    # Inner codes for refactoring mapper in list
-    _codes = (
-        {
-            2: 'Расходы',
-            3: 'Доходы',
-            4: 'Дефицит/Профицит'
-        },
-        {
-            0: 'Тип(пустой параметр)',
-            2: 'Плановый',
-            3: 'Фактический',
-            4: 'Текущий',
-            5: 'Запланированный'
-        },
-        {
-            1: 'Налоговый/Неналоговый',
-            0: 'Группа расходов(пустой параметр)'
-        },
-        {
-            1: 'Год',
-            0: 'Год(пустой параметр)'
-        },
-        {
-            1: 'Сфера',
-            0: 'Сфера(пустой параметр)'
-        },
-        {
-            1: 'Территория',
-            0: 'Территория(пустой параметр)'
-        }
-    )
+        # Output word construction
+        words = ''
 
-    # Output word construction
-    words = '/'
+        items = mapper.split('.')
+        index = 0
+        for i in items:
+            words += _codes[index].get(int(i)) + '*'
+            index += 1
+        return words[:len(words) - 1]
 
-    items = mapper.split('.')
-    index = 0
-    for i in items:
-        words += _codes[index].get(int(i)) + '/'
-        index += 1
-    return words
+    @staticmethod
+    def _distance(a, b):
+        """Levenshtein algorithm"""
 
+        n, m = len(a), len(b)
+        if n > m:
+            a, b = b, a
+            n, m = m, n
+        current_row = range(n + 1)
+        for i in range(1, m + 1):
+            previous_row, current_row = current_row, [i] + [0] * n
+            for j in range(1, n + 1):
+                add, delete, change = previous_row[j] + 1, current_row[j - 1] + 1, previous_row[j - 1]
+                if a[j - 1] != b[i - 1]:
+                    change += 1
+                current_row[j] = min(add, delete, change)
 
-@staticmethod
-def _distance(a, b):
-    """Levenshtein algorithm"""
+        return current_row[n]
 
-    n, m = len(a), len(b)
-    if n > m:
-        a, b = b, a
-        n, m = m, n
-    current_row = range(n + 1)
-    for i in range(1, m + 1):
-        previous_row, current_row = current_row, [i] + [0] * n
-        for j in range(1, n + 1):
-            add, delete, change = previous_row[j] + 1, current_row[j - 1] + 1, previous_row[j - 1]
-            if a[j - 1] != b[i - 1]:
-                change += 1
-            current_row[j] = min(add, delete, change)
+    # Mappers for requests
+    _mappers = {
+        # Expenditures' mappers
+        '2.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-4])',
+        '2.2.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-3])',
+        '2.3.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[MARKS].[03-4])',
+        '2.5.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-3])',
+        '2.4.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-4])',
 
-    return current_row[n]
+        '2.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-4])',
+        '2.2.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-3])',
+        '2.3.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-4])',
+        '2.5.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-3])',
+        '2.4.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-4])',
 
-# Mappers for requests
-_mappers = {
-    # Expenditures' mappers
-    '2.3.0.1.0.0': None,
-    '2.2.0.1.1.0': None,
-    '2.3.0.1.1.0': None,
-    '2.5.0.1.1.0': None,
-    '2.4.0.0.1.0': None,
-    '2.3.0.1.0.1': None,
-    '2.2.0.1.1.1': None,
-    '2.3.0.1.1.1': None,
-    '2.5.0.0.1.1': None,
-    '2.4.0.0.1.1': None,
+        # Profits' mappers
+        '3.0.0.1.0.0': None,
+        '3.2.0.1.0.0': None,
+        '3.0.1.1.0.0': None,  # гд
+        '3.2.1.1.0.0': None,  # гд
+        '3.2.0.0.0.0': None,
+        '3.2.1.0.0.0': None,  # гд-показатели исполнения бюджета
+        '3.4.0.0.0.0': None,
+        '3.4.1.0.0.0': None,  # гд-показатели исполнения бюджета
+        '3.0.0.1.0.1': None,
+        '3.2.0.1.0.1': None,
+        '3.2.0.0.0.1': None,
+        '3.2.1.0.0.1': None,  # гд
+        '3.4.0.0.0.1': None,
+        '3.4.1.0.0.1': None,  # гд
 
-    # Profits' mappers
-    '3.0.0.1.0.0': None,
-    '3.2.0.1.0.0': None,
-    '3.0.1.1.0.0': None,  # гд
-    '3.2.1.1.0.0': None,  # гд
-    '3.2.0.0.0.0': None,
-    '3.2.1.0.0.0': None,  # гд-показатели исполнения бюджета
-    '3.4.0.0.0.0': None,
-    '3.4.1.0.0.0': None,  # гд-показатели исполнения бюджета
-    '3.0.0.1.0.1': None,
-    '3.2.0.1.0.1': None,
-    '3.2.0.0.0.1': None,
-    '3.2.1.0.0.1': None,  # гд
-    '3.4.0.0.0.1': None,
-    '3.4.1.0.0.1': None,  # гд
+        # Deficit/surplus's mappers
+        '4.4.0.0.0.0': None,
+        '4.2.0.0.0.0': None,
+        '4.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1], [Marks].[03-6],[Years].[*3])',
+        '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
+        '4.2.0.0.0.1': None,
+        '4.4.0.0.0.1': None
+    }
 
-    # Deficit/surplus's mappers
-    '4.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB]',
-    '4.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB]',
-    '4.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3])',
-    '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5])',
-    '4.2.0.0.0.1': 'SELECT {[Measures].[PLAN_ONYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE [TERRITORIES].[*5]',
-    '4.4.0.0.0.1': 'SELECT {[Measures].[FACT_BGYEAR]}  ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Territories].[*5])'
-}
-
-# Outer codes for substitution in MDX-query
-_places = {
-    'г. байконур': '93015',
-    'приволжский федеральный округ': '3417',
-    'северо-западный федеральный округ': '10249',
-    'сибирский федеральный округ': '12097',
-    'уральский федеральный округ': '16333',
-    'центральный федеральный округ': '19099',
-    'амурская область': '67708',
-    'еврейская автономная область': '67705',
-    'камчатский край': '67728',
-    'магаданская область': '67703',
-    'приморский край': '67706',
-    'республика саха (якутия)': '67642',
-    'сахалинская область': '67704',
-    'хабаровский край': '67707',
-    'чукотский автономный округ': '67640',
-    'дальневосточный федеральный округ': '17698',
-    'г. севастополь': '93011',
-    'республика крым': '93010',
-    'крымский федеральный округ': '91128',
-    'кировская область': '67663',
-    'нижегородская область': '67656',
-    'оренбургская область': '67659',
-    'пензенская область': '67667',
-    'пермский край': '67727',
-    'республика башкортостан': '67655',
-    'республика марий эл': '67666',
-    'республика мордовия': '67662',
-    'республика татарстан (татарстан)': '67661',
-    'самарская область': '67658',
-    'саратовская область': '67665',
-    'удмуртская республика': '67668',
-    'ульяновская область': '67660',
-    'чувашская республика - чувашия': '67664',
-    'архангельская область': '67678',
-    'вологодская область': '67674',
-    'г. санкт-петербург': '67639',
-    'калининградская область': '67670',
-    'ленинградская область': '67676',
-    'мурманская область': '67669',
-    'ненецкий автономный округ': '67672',
-    'новгородская область': '67675',
-    'псковская область': '67671',
-    'республика карелия': '67677',
-    'республика коми': '67673',
-    'кабардино-балкарская республика': '67651',
-    'карачаево-черкесская республика': '67638',
-    'республика дагестан': '67643',
-    'республика ингушетия': '67649',
-    'республика северная осетия - алания': '67652',
-    'ставропольский край': '67654',
-    'чеченская республика': '67650',
-    'северо-кавказский федеральный округ': '24604',
-    'алтайский край': '67688',
-    'забайкальский край': '67729',
-    'иркутская область': '67682',
-    'кемеровская область': '67689',
-    'красноярский край': '67694',
-    'новосибирская область': '67690',
-    'омская область': '67687',
-    'республика алтай': '67684',
-    'республика бурятия': '67691',
-    'республика тыва': '67683',
-    'республика хакасия': '67681',
-    'томская область': '67692',
-    'курганская область': '67699',
-    'свердловская область': '67698',
-    'тюменская область': '67697',
-    'ханты-мансийский автономный округ - югра': '67695',
-    'челябинская область': '67700',
-    'ямало-ненецкий автономный округ': '67696',
-    'белгородская область': '67721',
-    'брянская область': '67719',
-    'владимирская область': '67716',
-    'воронежская область': '67723',
-    'г. москва': '67724',
-    'ивановская область': '67722',
-    'калужская область': '67712',
-    'костромская область': '67714',
-    'курская область': '67710',
-    'липецкая область': '67711',
-    'московская область': '67709',
-    'орловская область': '67726',
-    'рязанская область': '67720',
-    'смоленская область': '67718',
-    'тамбовская область': '67725',
-    'тверская область': '67717',
-    'тульская область': '67715',
-    'ярославская область': '67713',
-    'астраханская область': '67645',
-    'волгоградская область': '67647',
-    'краснодарский край': '67644',
-    'республика адыгея (адыгея)': '67646',
-    'республика калмыкия': '67648',
-    'ростовская область': '67653',
-    'южный федеральный округ': '3',
-    'российская федерация': '2'
-}
+    # Outer codes for substitution in MDX-query
+    _places = {
+        'г. байконур': '93015',
+        'приволжский федеральный округ': '3417',
+        'северо-западный федеральный округ': '10249',
+        'сибирский федеральный округ': '12097',
+        'уральский федеральный округ': '16333',
+        'центральный федеральный округ': '19099',
+        'амурская область': '67708',
+        'еврейская автономная область': '67705',
+        'камчатский край': '67728',
+        'магаданская область': '67703',
+        'приморский край': '67706',
+        'республика саха (якутия)': '67642',
+        'сахалинская область': '67704',
+        'хабаровский край': '67707',
+        'чукотский автономный округ': '67640',
+        'дальневосточный федеральный округ': '17698',
+        'г. севастополь': '93011',
+        'республика крым': '93010',
+        'крымский федеральный округ': '91128',
+        'кировская область': '67663',
+        'нижегородская область': '67656',
+        'оренбургская область': '67659',
+        'пензенская область': '67667',
+        'пермский край': '67727',
+        'республика башкортостан': '67655',
+        'республика марий эл': '67666',
+        'республика мордовия': '67662',
+        'республика татарстан (татарстан)': '67661',
+        'самарская область': '67658',
+        'саратовская область': '67665',
+        'удмуртская республика': '67668',
+        'ульяновская область': '67660',
+        'чувашская республика - чувашия': '67664',
+        'архангельская область': '67678',
+        'вологодская область': '67674',
+        'г. санкт-петербург': '67639',
+        'калининградская область': '67670',
+        'ленинградская область': '67676',
+        'мурманская область': '67669',
+        'ненецкий автономный округ': '67672',
+        'новгородская область': '67675',
+        'псковская область': '67671',
+        'республика карелия': '67677',
+        'республика коми': '67673',
+        'кабардино-балкарская республика': '67651',
+        'карачаево-черкесская республика': '67638',
+        'республика дагестан': '67643',
+        'республика ингушетия': '67649',
+        'республика северная осетия - алания': '67652',
+        'ставропольский край': '67654',
+        'чеченская республика': '67650',
+        'северо-кавказский федеральный округ': '24604',
+        'алтайский край': '67688',
+        'забайкальский край': '67729',
+        'иркутская область': '67682',
+        'кемеровская область': '67689',
+        'красноярский край': '67694',
+        'новосибирская область': '67690',
+        'омская область': '67687',
+        'республика алтай': '67684',
+        'республика бурятия': '67691',
+        'республика тыва': '67683',
+        'республика хакасия': '67681',
+        'томская область': '67692',
+        'курганская область': '67699',
+        'свердловская область': '67698',
+        'тюменская область': '67697',
+        'ханты-мансийский автономный округ - югра': '67695',
+        'челябинская область': '67700',
+        'ямало-ненецкий автономный округ': '67696',
+        'белгородская область': '67721',
+        'брянская область': '67719',
+        'владимирская область': '67716',
+        'воронежская область': '67723',
+        'г. москва': '67724',
+        'ивановская область': '67722',
+        'калужская область': '67712',
+        'костромская область': '67714',
+        'курская область': '67710',
+        'липецкая область': '67711',
+        'московская область': '67709',
+        'орловская область': '67726',
+        'рязанская область': '67720',
+        'смоленская область': '67718',
+        'тамбовская область': '67725',
+        'тверская область': '67717',
+        'тульская область': '67715',
+        'ярославская область': '67713',
+        'астраханская область': '67645',
+        'волгоградская область': '67647',
+        'краснодарский край': '67644',
+        'республика адыгея (адыгея)': '67646',
+        'республика калмыкия': '67648',
+        'ростовская область': '67653',
+        'южный федеральный округ': '3',
+        'российская федерация': '2'
+    }
 
 
 class Result:
@@ -469,4 +482,24 @@ class Result:
         self.response = response
 
 
-M2Retrieving.get_data('дефицит,null,null,2012,null,Ростовская область')
+# Testing expenditures
+# print(1)
+# M2Retrieving.get_data('расходы,фактический,null,2011,null,null')
+# print(2)
+# M2Retrieving.get_data('расходы,плановый,null,2012,образование,null')
+# print(3)
+# M2Retrieving.get_data('расходы,фактический,null,2013,национальная оборона,null')
+# print(4)
+# M2Retrieving.get_data('расходы,запланированный,null,2014,физическая культура и спорт,null')
+# print(5)
+# M2Retrieving.get_data('расходы,текущий,null,null,общегосударственные вопросы,null')
+# print(6)
+# M2Retrieving.get_data('расходы,фактический,null,2010,null,республика крым')
+# print(7)
+# M2Retrieving.get_data('расходы,плановый,null,2009,образование,г. севастополь')
+# print(8)
+# M2Retrieving.get_data('расходы,фактический,null,2010,null,пермский край')
+# print(9)
+# M2Retrieving.get_data('расходы,запланированный,null,null,здравоохранение,г. санкт-петербург')
+# print(10)
+# M2Retrieving.get_data('расходы,текущий,null,null,охрана окружающей среды,республика коми')
