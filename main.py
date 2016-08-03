@@ -1,58 +1,181 @@
-# This is a main  decorator mechanism.
-
 import telebot
-import schedule
-import time
 import datetime
-import dateutil.tz
 import sqlite3
-import geocoder
-import json
 from telebot import types
-import re
-
-# from telebot import types
+from req import main_func
+from req import main_place
+from req import main_sector
+from m2retrieving import M2Retrieving
 
 API_TOKEN = '231161869:AAFpafehgQl9V-5f6-1KvwjPkzhbgdqDflU'
-# print(time.time())
-
-
 bot = telebot.TeleBot(API_TOKEN)
 
-con = sqlite3.connect('delivery.db')
-cur = con.cursor()
-k = cur.fetchall()
+# первое подключение к бд
+connection_first = sqlite3.connect('delivery.db')
+cursor_first = connection_first.cursor()
+k = cursor_first.fetchall()  # считывание строки
 for i in range(len(k)):
     print(k[i][1])
-con.commit()
-con.close()
+connection_first.commit()
+connection_first.close()
 
+
+# проверяет, является ли строка, введенная пользователем, числом
+def represents_int(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
+# остановка ввода запроса
+@bot.message_handler(commands=['stopfin'])
+def repeat_all_messages(message):
+    connection = sqlite3.connect('users.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
+    data = cursor.fetchall()
+    if len(data) != 0:
+        cursor.execute(
+            "DELETE FROM users WHERE userid = " + str(message.chat.id))  # удаление ранее введенной юзером информации
+        connection.commit()
+        connection.close()
+        bot.send_message(message.chat.id,
+                         "Мы забыли про ваш предыдущий вопрос. Можете начать снова с командой /findata")
+
+
+# строковый ввод вопроса
+@bot.message_handler(commands=['custom'])
+def send_welcome(message):
+    # подключение к бд
+    connection = sqlite3.connect('users.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
+    data = cursor.fetchall()
+
+    # защита от предварительного ввода пользователем запроса во время обработки предыдущего
+    if len(data) != 0:
+        bot.send_message(message.chat.id,
+                         "Вы уже задали нам вопрос. Сейчас мы ответим на него и вы сможете задать следующий")
+    else:
+        s = message.text[8:]
+        s1 = main_func(s)
+        # заполнение строки запроса к бд
+        s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, {0}, \"{1}\", \"{2}\", \"{3}\", \"{4}\", \"{5}\")".format(
+            str(message.chat.id), str(s1[0]), str(s1[1]), str(s1[2]), str(s1[3]), str(s1[4]))
+        cursor.execute(s_main)
+        connection.commit()
+        connection.close()
+        bot.send_message(message.chat.id, "Мы получили ваш запрос и скоро на него ответим")
+
+
+# команда выбора региона (choose region)
 @bot.message_handler(commands=['cr'])
 def send_welcome(message):
-    s = str(message.text)
-    ss = s[3:]
-    print(ss)
+    connection = sqlite3.connect('users.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
+    data = cursor.fetchall()
+    if len(data) != 0:
+        s = str(message.text)[4:]
+        if s == "":
+            cursor.execute("UPDATE users SET subject=\"" + str('российская федерация') + "\" WHERE userid=" + str(message.chat.id) + ";")
+            connection.commit()
+            connection.close()
+        else:
+            print(s)
+            s = main_place(s)
+            if (s != None):
+
+                cursor.execute("UPDATE users SET place=\"" + s + "\" WHERE userid=" + str(message.chat.id) + ";")
+                connection.commit()
+                connection.close()
+                bot.send_message(message.chat.id, 'Спасибо! Сейчас мы сформируем ответ и отправим его вам.')
+            else:
+                bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли 😰")
+    else:
+        bot.send_message(message.chat.id, "Эта команда имеет смысл только внутри потока команд /findata. "
+                                          "Начните с команды /findata, если хотите получить финансовые данные")
+
     con = sqlite3.connect('users.db')
-    cur = con.cursor()
-    cur.execute("UPDATE users SET reg=\"" + ss + "\" WHERE userid=" + str(message.chat.id) + ";")
-    con.commit()
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
+    data = cursor.fetchall()
     con.close()
-    bot.send_message(message.chat.id, 'Спасибо! Сейчас мы сформируем ответ и отправим его вам.')
+    k = 0
+    for i in data:
+        for i1 in i:
+            #print(i1)
+            if i1 == '0':
+                k += 1
+    if(k > 1):
+        bot.send_message(message.chat.id, "Похоже, вы передали нам не всю информацию. Мы не сможем дать вам корректную информацию.")
 
-@bot.message_handler(commands=['help', 'start'])
+
+# Ввод сферы
+@bot.message_handler(commands=['sub'])
 def send_welcome(message):
-    msg = bot.send_message(message.chat.id, 'Привет! Я bot!')
+    connection = sqlite3.connect('users.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
+    data = cursor.fetchall()
+    print(data)
+    if len(data) != 0:
+        s = str(message.text)
+        ss = s[5:]
+        if ss == "":
+            cursor.execute("UPDATE users SET subject=\"" + str('российская федерация') + "\" WHERE userid=" + str(message.chat.id) + ";")
+            connection.commit()
+            connection.close()
+        else:
+            print(ss)
+            ss = main_sector(ss)
+            print(ss)
+            if (ss == None):
+                bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли ?.Попробуйте еще раз")
+            else:
 
+                cursor.execute("UPDATE users SET subject=\"" + ss + "\" WHERE userid=" + str(message.chat.id) + ";")
+                connection.commit()
+                connection.close()
+                bot.send_message(message.chat.id,
+                                 "Если вы хотите узнать информацию о Российской Федерации в целом, "
+                                 "введите /cr. Если вас интересует конкретный регион, введите /cr *название региона* "
+                                 "(например, /cr Московская область):")
+    else:
+        bot.send_message(message.chat.id, "Ой. Эта команда имеет смысл только внутри потока комманд /findata. "
+                                          "Если вы хотите получить финансовые данные, то начните с команнды /findata.")
+
+
+# команда старта
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.send_message(message.chat.id, 'Я — экспертная система OpenFinData. Я могу представить вам '
+                                      'финансовый отчет о любой области за определенный год.\n'
+                                      'Чтобы получить список команд, нажмите /help\n'
+                                      'Чтобы сразу приступить к формированию отчета, введите /findata')
+
+
+# команды старта и помощи
+@bot.message_handler(commands=['help'])
+def send_welcome(message):
+    bot.send_message(message.chat.id, 'Список команд:\n'
+                                      '/start — начать работу с ботом\n'
+                                      '/findata — получить финансовый отчет\n'
+                                      '\t\t\t\t/cr — выбрать регион\n'
+                                      '\t\t\t\t/sub — выбрать раздел\n'
+                                      '/stopfin — прервать поток команд /findata')
 
 
 @bot.message_handler(commands=['delivery'])
 def send_welcome(message):
     # print(message.chat.id)
     p = message.chat.id
-    con = sqlite3.connect('delivery.db')
-    cur = con.cursor()
-    cur.execute('SELECT * FROM users')
-    k = cur.fetchall()
+    connection = sqlite3.connect('delivery.db')
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM users')
+    k = cursor.fetchall()
     t = True
     for i in range(len(k)):
         print(k[i][1])
@@ -63,171 +186,186 @@ def send_welcome(message):
     if (t):
         bot.send_message(message.chat.id, 'Вы подписались на нашу рассылку!')
         s = 'INSERT INTO users (id, userid) VALUES(NULL, ' + str(p) + ')'
-        cur.execute(s)
+        cursor.execute(s)
     else:
         bot.send_message(p, "Добрейший вечерочек, а вы уже подписались на нашу рассылку. Зачем это делать еше раз ?  ")
-    con.commit()
-    con.close()
+    connection.commit()
+    connection.close()
 
 
 @bot.message_handler(commands=['delivery_off'])
 def repeat_all_messages(message):
-    bot.send_message(message.chat.id, "Вы отписались от нашей рассылки. Пусть это останется на вашей совести.Но если захотите вернуться, то вы всегда сможете это сделать с помощью команды /delivery")
-    con = sqlite3.connect('delivery.db')
-    cur = con.cursor()
-    query = "DELETE FROM users WHERE userid = "+ str(message.chat.id) +";"
-    cur.execute(query)
-    con.commit()
-    con.close()
+    bot.send_message(message.chat.id,
+                     "Вы отписались от нашей рассылки. Пусть это останется на вашей совести.Но если захотите вернуться, то вы всегда сможете это сделать с помощью команды /delivery")
+    connection = sqlite3.connect('delivery.db')
+    cursor = connection.cursor()
+    query = "DELETE FROM users WHERE userid = " + str(message.chat.id) + ";"
+    cursor.execute(query)
+    connection.commit()
+    connection.close()
+
 
 @bot.message_handler(commands=['findata'])
 def repeat_all_messages(message):
-    """
-    #bot.send_message(message.chat.id, "hiiii 😅😅😅😅" )
-    con = sqlite3.connect('users.db')
-    cur = con.cursor()
-    cur.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
-    data = cur.fetchall()
-    if len(data) == 0:
-    """
-    bot.send_message(message.chat.id, "Привет! Наша система может составить финансовый  отчет по любому региону России. Для начала выберете предметную область:")
-    markup = types.ReplyKeyboardMarkup()
-    markup.row('доход')
-    markup.row('расход')
-    markup.row('дефицит')
-    markup.row('долг')
-    bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
-    con = sqlite3.connect('users.db')
-    cur = con.cursor()
-    s = "INSERT INTO users (id, userid, params, ti, reg) VALUES(NULL," + str(message.chat.id) + ", 1, 0, 0)"
-    cur.execute(s)
-    con.commit()
-    con.close()
+    connection = sqlite3.connect('users.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
+    data = cursor.fetchall()
 
-""""
-@bot.message_handler(content_types=["location"])
-def repeat_all_messages1(message):  #
-    k = ""
-    k1 = ""
-    s = str(message.location)
-    t = True
-    n = 0
-    for i in s:
-        n +=1
-        if((i == "." or i.isdigit()) and t):
-          k += i
-        if(i == ","):
-            t = False
-        if (not t) and (i == "." or i.isdigit()):
-            k1 +=i
-    print(k)
+    if len(data) != 0:
+        cursor.execute("DELETE FROM users WHERE userid = " + str(message.chat.id))  # удаление ранее введенной юзером информации
+        connection.commit()
+        connection.close()
 
-    print(k1)
-    bot.send_message(message.chat.id, "hiiii 😅😅😅😅" + str(message.location))
-    g = str(message.location)
-    print(g)
-    loc = []
-    loc.append(float(k1))
-    loc.append(float(k))
+    s = message.text[9:]
+    if (s == ""):
+        markup = types.ReplyKeyboardMarkup()
+        markup.row('доход')
+        markup.row('расход')
+        markup.row('дефицит/профицит')
+        bot.send_message(message.chat.id,
+                         "Выберите предметную область:", reply_markup=markup)
+        connection = sqlite3.connect('users.db')
+        cursor = connection.cursor()
+        s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, " + \
+                 str(message.chat.id) + ", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(
+            0) + "\", \"" + str(0) + "\")"
+        cursor.execute(s_main)
+        connection.commit()
+        connection.close()
 
-    g = geocoder.google(loc, method = 'reverse')
-    bot.send_message(message.chat.id, "hiiii 😅😅😅😅" + str(g.state))
-    con = sqlite3.connect('users.db')
-    cur = con.cursor()
-    cur.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
-    data = cur.fetchall()
-    if(len(data) != 0):
-        cur.execute("UPDATE users SET reg=\"" + str(g.state) + "\" WHERE userid=" + str(message.chat.id) + ";")
-    con.close()
+    else:
+        s1 = main_func(s)
+        s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, " + \
+                     str(message.chat.id) + ", \"" + str(s1[0]) + "\", \"" + str(s1[1]) + "\", \"" + str(
+        s1[2]) + "\", \"" + str(s1[3]) + "\", \"" + str(s1[4]) + "\")"
+        connection = sqlite3.connect("users.db")
+        cursor = connection.cursor()
+        cursor.execute(s_main)
+        connection.commit()
+        connection.close()
+        s_mod2 = ""
+        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        print(s_mod2)
+        result = M2Retrieving.get_data(s_mod2)
+        if result.status is False:
+            bot.send_message(message.chat.id, result.message)
+        else:
+            bot.send_message(message.chat.id, "Все хорошо")
+            print(result.response)
+            bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
+
 
 """
+
+
+"""
+
+
+
+
+
+
 @bot.message_handler(content_types=["text"])
 def repeat_all_messages(message):
     print(message.text)
 
-
     markup = types.ReplyKeyboardHide()
 
-
-    con = sqlite3.connect('users.db')
-    cur = con.cursor()
-    cur.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
-    data = cur.fetchall()
-
-
-    if(re.match("[12][0-9][0-9][0-9][.][01][0-9][ ][12][0-9][0-9][0-9][.][01][0-9]", message.text) != None):
-        print(message.text)
-        s = ""
-        for i in message.text:
-            s += i
-        #print(re.match("[12][0-9][0-9][0-9][.][01][0-9][-][12][0-9][0-9][0-9][.][01][0-9]", message.text))
-        bot.send_message(message.chat.id, "Молодец")
-        cur.execute("UPDATE users SET ti=\"" + s + "\" WHERE userid=" + str(message.chat.id) + ";")
-        con.commit()
-        con.close()
-        bot.send_message(message.chat.id,
-                         "Осталось совсем чуть-чуть. Необходимо выбрать субъект для которого вы хотите увидеть статистику. Напишите  " +
-                         "команду /cr (choose region) и после него напишите название региона ")
-
-
+    connection = sqlite3.connect('users.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
+    data = cursor.fetchall()
+    print(data)
+    k = 0
+    for i in data:
+        for i1 in i:
+            #print(i1)
+            if i1 == '0':
+                k += 1
+    print(k)
     now_date = datetime.date.today()
 
+    if represents_int(message.text) and len(data) != 0:
+        i = int(message.text)
+        if 2007 < i < 2016:
+            cursor.execute("UPDATE users SET year=" + str(i) + " WHERE userid=" + str(message.chat.id) + ";")
+            connection.commit()
+            connection.close()
+            bot.send_message(message.chat.id,
+                             "Если вы хотите узнать информацию о бюджете в целом, введите /sub. Если вас интересует "
+                             "конкретная область, введите /sub *название сферы* (например, /sub образование):")
+        else:
+            bot.send_message(message.chat.id,
+                             "Данные за этот год отсутствуют. Повторите ввод:")
 
-
-    if(message.text == "доход" or message.text == "расход" or message.text == "дефицит" or message.text == "долг") and(len(data) != 0):
-        k = 0
-        if(message.text == "доход"):
-            k = 11
-        elif(message.text == "расход"):
-            k = 21
-        elif(message.text == "дефицит"):
-            k = 31
-        elif(message.text == "долг"):
-            k = 41
-        cur.execute("UPDATE users SET params=" + str(k) + " WHERE userid="+ str(message.chat.id) +";")
-        con.commit()
-        con.close()
+    if (
+                            message.text == "доход" or message.text == "расход" or message.text == "дефицит/профицит") and (
+                len(data) != 0):
+        k = message.text
+        cursor.execute("UPDATE users SET subject=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
+        connection.commit()
+        connection.close()
         bot.send_message(message.chat.id, "Вы выбрали " + message.text, reply_markup=markup)
-        bot.send_message(message.chat.id, "Ок, мы опредедились с первым пунктом. Теперь давай выберем временной промежуток:")
+        bot.send_message(message.chat.id,"Введите тип:")
         markup = types.ReplyKeyboardMarkup()
-        markup.row('Текущий год')
-        markup.row('Текущий месяц')
-        markup.row('Ввести временной промежуток самому')
+        markup.row('фактические')
+        markup.row('плановые')
+        markup.row('текущие')
+        markup.row('запланированные')
         bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
 
-
-
-    if (message.text == "Текущий год" or message.text == "Текущий месяц" or message.text == "Ввести временной промежуток самому") and (len(data) != 0):
+    if (
+                            message.text == "фактические" or message.text == "плановые" or message.text == "текущие" or message.text == "запланированные") and (
+                len(data) != 0):
         k = 0
-        if(message.text == "Текущий год"):
-            bot.send_message(message.chat.id, "Вы выбрали " + str(now_date.year), reply_markup=markup)
-            k = now_date.year
-            cur.execute("UPDATE users SET ti=" + str(k) + " WHERE userid=" + str(message.chat.id) + ";")
-            con.commit()
-            con.close()
+        if (message.text == "фактические"):
+            k = message.text
             bot.send_message(message.chat.id,
-                         "Осталось совсем чуть-чуть. Необходимо выбрать субъект для которого вы хотите увидеть статистику. Напишите  " +
-                         "команду /cr (choose region) и после него напишите название региона ")
-        if(message.text == "Текущий месяц"):
-            bot.send_message(message.chat.id, "Вы выбрали " + str((now_date.year * 100) + now_date.month), reply_markup=markup)
-            k = (now_date.year * 100) + "." + now_date.month
-            cur.execute("UPDATE users SET ti=" + str(k) + " WHERE userid=" + str(message.chat.id) + ";")
-            con.commit()
-            con.close()
-            bot.send_message(message.chat.id,
-                             "Осталось совсем чуть-чуть. Необходимо выбрать субъект для которого вы хотите увидеть статистику. Напишите  " +
-                             "команду /cr (choose region) и после него напишите название региона ")
-
-        if (message.text == "Ввести временной промежуток самому"):
-            bot.send_message(message.chat.id, "Если вы хотите сами ввести времменной промежуток, то тогда вам придется следовать " +
-            "следущему шаблону(иначе мы просто не сможем вас понять). гггг.мм гггг.мм где первая часть -  это момент с которого " +
-                             "вам нужно получить данные, а вторая часть - это момент по который вам нужно получить данные. Так если вам " +
-                             "нужно получить данные с января 2004 по январь 2016, то вы должны просто написать 2004.01 2016.01 через пробел")
+                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):")
+            cursor.execute(
+                "UPDATE users SET sector=\"" + str(k) +  "\" WHERE userid=" + str(message.chat.id) + ";")
+            connection.commit()
+            connection.close()
 
             markup = types.ReplyKeyboardHide()
-            bot.send_message(message.chat.id, "Теперь введите свой временной промежуток: ", reply_markup=markup)
 
+        if (message.text == "плановые"):
+            k = message.text
+            bot.send_message(message.chat.id,
+                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):")
+            cursor.execute(
+                "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
 
+            connection.commit()
+            connection.close()
+
+            markup = types.ReplyKeyboardHide()
+
+        if (message.text == "текущие"):
+            k = message.text
+            bot.send_message(message.chat.id, "Вы выбрали " + str(now_date.year), reply_markup=markup)
+            cursor.execute(
+                "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
+
+            connection.commit()
+            connection.close()
+            bot.send_message(message.chat.id,
+                             "Если вы хотите узнать информацию о бюджете в целом, введите /sub. Если вас интересует "
+                             "конкретная область, введите /sub *название сферы* (например, /sub образование):")
+
+        if (message.text == "запланированные"):
+            k = message.text
+            bot.send_message(message.chat.id, "Вы выбрали " + str(now_date.year), reply_markup=markup)
+            cursor.execute(
+                "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
+            cursor.execute(
+                "UPDATE users SET year=" + str(now_date.year) + " WHERE userid=" + str(message.chat.id) + ";")
+            connection.commit()
+            connection.close()
+            bot.send_message(message.chat.id,
+                             "Если вы хотите узнать информацию о бюджете в целом, введите /sub. Если вас интересует "
+                             "конкретная область, введите /sub *название сферы* (например, /sub образование):")
 
 
 if __name__ == '__main__':
