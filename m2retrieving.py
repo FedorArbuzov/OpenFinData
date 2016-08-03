@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 
 
 # Module, which is responsible for getting required from user data
@@ -17,10 +18,10 @@ class M2Retrieving:
         response = M2Retrieving.__list_to_mapper(params, response)
 
         if response.message != "":
-            print('Mapper: ' + response.mapper)
-            print('Status: ' + str(response.status))
-            print('Message: ' + str(response.message))
-            print('Response: ' + response.response)
+            # print('Mapper: ' + response.mapper)
+            # print('Status: ' + str(response.status))
+            # print('Message: ' + str(response.message))
+            # print('Response: ' + response.response)
             return response
 
         # Find MDX-sampler for formed mapper
@@ -28,10 +29,10 @@ class M2Retrieving:
 
         # Escaping this method if no mdx skeleton for current mapper is found
         if mdx_skeleton == 0 or mdx_skeleton is None:
-            print('Mapper: ' + response.mapper)
-            print('Status: ' + str(response.status))
-            print('Message: ' + str(response.message))
-            print('Response: ' + response.response)
+            # print('Mapper: ' + response.mapper)
+            # print('Status: ' + str(response.status))
+            # print('Message: ' + str(response.message))
+            # print('Response: ' + response.response)
             return response
 
         # Forming POST-data (cube and query) for request
@@ -41,11 +42,11 @@ class M2Retrieving:
         M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
 
         # Displaying data for testing
-        print('Mapper: ' + response.mapper)
-        print('Status: ' + str(response.status))
-        print('Message: ' + str(response.message))
-        if response.status is False:
-            print('Response: ' + response.response)
+        # print('Mapper: ' + response.mapper)
+        # print('Status: ' + str(response.status))
+        # print('Message: ' + str(response.message))
+        # if response.status is False:
+        #     print('Response: ' + response.response)
         return response
 
     @staticmethod
@@ -105,8 +106,13 @@ class M2Retrieving:
         # Processing year
         if parameters[3] == 'null':
             mapper += '0.'
-        else:
+        elif int(parameters[3]) > 2006 and int(parameters[3]) <= datetime.today().year:
             mapper += '1.'
+        else:
+            response.status = False
+            response.message = 'Введите год с 2007 по ' + str(datetime.today().year)
+            return response
+
 
         # Processing sphere
         if parameters[4] == 'null':
@@ -115,8 +121,7 @@ class M2Retrieving:
             mapper += '1.'
         else:
             response.status = False
-            message = 'Неверно указана сфера. Попробуйте еще раз'
-            response.message = message
+            response.message = 'Неверно указана сфера. Попробуйте еще раз'
             return response
 
         # Processing territory
@@ -126,8 +131,7 @@ class M2Retrieving:
             mapper += '1'
         else:
             response.status = False
-            message = 'Неверно указана территория. Попробуйте еще раз'
-            response.message = message
+            response.message = 'Неверно указана территория. Попробуйте еще раз'
             return response
 
         response.mapper = mapper
@@ -505,7 +509,8 @@ class Result:
         self.response = response
 
 
-# Testing expendituresprint(1)
+# Testing expenditures
+print(1)
 M2Retrieving.get_data('расходы,фактический,null,2011,null,null')
 print(2)
 M2Retrieving.get_data('расходы,плановый,null,2012,образование,null')
