@@ -1,29 +1,29 @@
 import re
-from req import quest
+from work_class import quest
 import datetime
 import sqlite3
 
 key_words = ['год',
-               'текущий', 'прошлый',
-               'доход', 'расход', 'дефицит', 'доля', 'долг',
-               'образование', 'среднее', 'начальное', 'высшее',
-               'объем', 'общий', 'общем',
-               'плановый', 'запланированный', 'фактический', 'бюждет', 'этот',
-               'Российская Федерация', 'Россия', 'РФ',
-               'Северо-Кавказский федеральный',
-               'Ставропольский',
-               'Ингушетия',
-               'Дагестан',
-               'Кабардино-Балкарская',
-             'Северная Осетия - Алания',
+             'текущий', 'прошлый',
+             'доход', 'расход', 'дефицит', 'доля', 'долг',
+             'образование', 'среднее', 'начальное', 'высшее',
+             'объем', 'общий', 'общем',
+             'плановый', 'запланированный', 'фактический', 'бюждет', 'этот',
+             'Российская Федерация', 'Россия', 'РФ',
+             'Северо-Кавказский федеральный',
+             'Ставропольский',
+             'Ингушетия',
+             'Дагестан',
+             'Кабардино-Балкарская',
+             'Осетия',
              'Карачаево-Черкесская',
              'Чеченская',
              'Южный',
              'Краснодарский',
-             'Астраханская',
+             'астраханская',
              'Волгоградская',
              'Ростовская',
-             'Адыгея', 'Адыгея',
+             'адыгея', 'адыгея',
              'Калмыкия',
              'Приволжский',
              'Нижегородская',
@@ -38,10 +38,10 @@ key_words = ['год',
              'Марий Эл',
              'Мордовия',
              'Татарстан',
-             'Удмуртская республика', 'Удмуртия',
-             'Чувашская Республика', 'Чувашия',
+             'Удмуртская', 'Удмуртия',
+             'Чувашская', 'Чувашия',
              'Северо-Западный',
-             'Архангельская',
+             'архангельская',
              'Ненецкий',
              'Вологодская',
              'Калининградская',
@@ -53,7 +53,7 @@ key_words = ['год',
              'Карелия',
              'Коми',
              'Сибирский',
-             'Алтайский',
+             'алтайский',
              'Красноярский',
              'Кемеровская',
              'Иркутская',
@@ -62,7 +62,7 @@ key_words = ['год',
              'Томская',
              'Забайкальский',
              'Бурятия',
-             'Алтай',
+             'алтай',
              'Тыва',
              'Хакасия',
              'Уральский',
@@ -94,7 +94,7 @@ key_words = ['год',
              'Дальневосточный',
              'Приморский',
              'Хабаровский',
-             'Амурская',
+             'амурская',
              'Камчатский',
              'Магаданская',
              'Сахалинская',
@@ -104,7 +104,7 @@ key_words = ['год',
              'Крымский',
              'Крым',
              'Севастополь',
-             'Байконур', # sections of rev and cons
+             'Байконур',  # sections of rev and cons
              'безопасность',
              'образование',
              'охрана',
@@ -126,8 +126,8 @@ useless_pile_of_crap = [
     'область', 'области', 'областью', 'областей', 'областям', 'областями', 'областях',
     'автономный', 'автономного', 'автономному', 'автономного', 'автономным', 'автономном', 'автномном', 'автономная',
     'автономной', 'автономную', 'автономною', 'автономна', 'автономные', 'автономных', 'автономными',
-    'федера́льный', 'федера́льного', 'федера́льному', 'федера́льным', 'федера́льном', 'федера́лен', 'федера́льных',
-    'федера́льным', 'федера́льными',
+    'федеральный', 'федерального', 'федеральному', 'федеральным', 'федеральном', 'федерален', 'федеральных',
+    'федеральным', 'федеральными',
     'край', 'края', 'краю', 'краем', 'крае', 'краев', 'краям', 'краями', 'краях']
 list_of_int = []
 useless_word_in_sen = []
@@ -177,77 +177,105 @@ def check_the_territories(str_user):
     return index_of_the_most_likely_variant
 
 
-s = input()
-s = re.sub(r'[^\w\s]', '', s)
-list1 = s.split()
-for i in range(len(list1)):
-    if RepresentsInt(list1[i]):
-        list_of_int.append(list1[i])
+def main_place(s):
+    s = re.sub(r'[^\w\s]', '', s)
+    list1 = s.split()
+    for s in useless_pile_of_crap:
+        if s in list1:
+            list1.remove(s)
 
 
+    i = 0
+    for _ in list1:
+        result = check_the_territories(list1[i])
+        i += 1
+        for s in key_words[20:-8]:
+            if (s == key_words[result]):
+                return s
+
+def main_sector(s):
+    s = re.sub(r'[^\w\s]', '', s)
+    list1 = s.split()
+    for s in useless_pile_of_crap:
+        if s in list1:
+            list1.remove(s)
+    i = 0
+    for _ in list1:
+        result = check_the_territories(list1[i])
+        i += 1
+        for s in key_words[-8:]:
+            if (s == key_words[result]):
+                return s
 
 
-for s in useless_pile_of_crap:
-    if s in list1:
-        list1.remove(s)
+def main_func(s):
+    s = re.sub(r'[^\w\s]', '', s)
+    list1 = s.split()
+    for i in range(len(list1)):
+        if RepresentsInt(list1[i]):
+            list_of_int.append(list1[i])
 
-for s in list_of_int:
-    if s in list1:
-        list1.remove(s)
+    for s in useless_pile_of_crap:
+        if s in list1:
+            list1.remove(s)
 
 
-user_req = quest()
+    for s in list_of_int:
+        if s in list1:
+            list1.remove(s)
 
-i = 0
-now_date = datetime.date.today()
-for _ in list1:
-    result = check_the_territories(list1[i])
+    user_req = quest()
 
-    if key_words[result] == 'плановый' or key_words[result] == 'запланированный':
-        user_req.planned_or_actual = 'плановый'
-    if key_words[result] == 'фактический':
-        user_req.planned_or_actual = "фактический"
+    i = 0
+    now_date = datetime.date.today()
+    for _ in list1:
+        result = check_the_territories(list1[i])
 
-    if key_words[result] == 'бюджет':
-        user_req.sector = 'бюджет'
-    if key_words[result] == "доход":
-        user_req.subject = "доход"
-    if key_words[result] == "расход":
-        user_req.subject = "расход"
-    if key_words[result] == "долг":
-        user_req.subject = "долг"
-    if key_words[result] == "дефицит":
-        user_req.subject = "дефицит"
+        if key_words[result] == 'плановый':
+            user_req.planned_or_actual = 'плановый'
+        if key_words[result] == 'запланированный':
+            user_req.planned_or_actual = 'запланированный'
+        if key_words[result] == 'фактический':
+            user_req.planned_or_actual = "фактический"
 
-    if key_words[result] == 'текущий':
+        if key_words[result] == 'бюджет':
+            user_req.sector = 'бюджет'
+        if key_words[result] == "доход":
+            user_req.subject = "доходы"
+        if key_words[result] == "расход":
+            user_req.subject = "расходы"
+        if key_words[result] == "дефицит":
+            user_req.subject = "дефицит"
+        if key_words[result] == 'текущий':
+            user_req.year = now_date.year
+        if key_words[result] == 'прошлый':
+            user_req.year = now_date.year - 1
+
+        for s in key_words[20:-8]:
+            if (s == key_words[result]):
+                user_req.place = s
+
+        for s in key_words[-8:]:
+            if (s == key_words[result]):
+                user_req.sector = s
+
+        i += 1
+    if user_req.sector == "":
+        user_req.sector = "null"
+    if user_req.planned_or_actual == "":
+        user_req.planned_or_actual = "null"
+    if user_req.place == "":
+        user_req.place = "null"
+    if user_req.year == 0 or user_req.year == now_date.year or user_req.year == now_date.year - 1:
+        if len(list_of_int) != 0:
+            user_req.year = int(list_of_int[0])
+
+    print(user_req.planned_or_actual)
+    print(user_req.subject)
+    if user_req.year == 0:
         user_req.year = now_date.year
-    if key_words[result] == 'прошлый':
-        user_req.year = now_date.year - 1
-
-    for s in key_words[20:-8]:
-        if (s == key_words[result]):
-            user_req.place = s
-
-    for s in key_words[-8:]:
-        if(s == key_words[result]):
-            user_req.sector = s
-
-    i += 1
-if user_req.sector == "":
-    user_req.sector = "бюджет"
-if user_req.planned_or_actual == "":
-    user_req.planned_or_actual = "фактический"
-if user_req.place == "":
-    user_req.place = "РФ"
-if user_req.year == 0 or user_req.year == now_date.year or user_req.year == now_date.year - 1:
-    if len(list_of_int) != 0:
-        user_req.year = int(list_of_int[0])
-
-
-print(user_req.planned_or_actual)
-print(user_req.subject)
-if user_req.year == 0:
-    user_req.year = now_date.year
-print(user_req.year)
-print(user_req.place)
-print(user_req.sector)
+    print(user_req.year)
+    print(user_req.place)
+    print(user_req.sector)
+    user_r = [user_req.subject, user_req.place.lower(), user_req.year, user_req.sector, user_req.planned_or_actual]
+    return user_r
