@@ -8,18 +8,19 @@ par=json.loads(json_string)
 
 
 
-#находим количество объектов во 
+#находим количество объектов в axes[1]["positions']
 k=len(par["axes"][1]["positions"])
 title=par["axes"][1]["positions"][0]["members"][0]["caption"]
-i=1
-diagramttl=[]
-diagramznach=[]
-header='null'
-znachenie=0
-normznach=[]
-exponen=[]
-pars=[]
+i=1 #счетчик
+diagramttl=[] #лист для надписей
+diagramznach=[]#лист для значений(не парсила пока)
+header='null'#заголовок
+znachenie=0#переменная, где хранится строка, которую позже буду делить сплитом
+normznach=[]#лист значений флоат
+exponen=[]#лист хранения степеней десятки 
+pars=[]#лист для хранения кусочков распарсенной строки
 
+#собираем надписи, которые позже пойдут в легенду диаграммы, и числа
 while i<k:
     header=par["axes"][1]["positions"][i]["members"][0]["caption"]
     diagramttl.append(header)
@@ -27,7 +28,8 @@ while i<k:
     diagramznach.append(znachenie)
     i = i + 1
 i=0
-min=1000
+min=1000 #поиск минимума
+#тут мы красиво парсим второе число на флоат и степень десятки 
 while i<k-1:
     if diagramznach[i]!=None:
         pars=diagramznach[i].split('E')
@@ -42,7 +44,7 @@ while i<k-1:
         normznach.append(diagramznach[i])
         exponen.append(diagramznach[i])
     i=i+1
-
+#дальше начинается Светин кусок магии с пдф
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.platypus import Paragraph, Frame
@@ -96,14 +98,14 @@ doc.save()
 
 
 i=0
-itogznach=[]
+itogznach=[]#больше массивов богу массивов! Этот - для итоговых числовых значений
 while i<k-1:
     if exponen[i]!=0:
         itogznach.append(int(normznach[i]*10**(exponen[i]-min)))
     else:
         itogznach.append(0)
     i=i+1
-
+#строим диаграмму
 import pygal
 from pygal.style import LightStyle
 pie_chart = pygal.Pie(inner_radius=.6, plot_background='white', background='white', legend_at_bottom = 'True', legend_at_bottom_columns=1, margin = 15, width = 550)
