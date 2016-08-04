@@ -21,7 +21,6 @@ class M2Retrieving:
             # print('Mapper: ' + response.mapper)
             # print('Status: ' + str(response.status))
             # print('Message: ' + str(response.message))
-            # print('Response: ' + response.response)
             return response
 
         # Find MDX-sampler for formed mapper
@@ -32,11 +31,10 @@ class M2Retrieving:
             # print('Mapper: ' + response.mapper)
             # print('Status: ' + str(response.status))
             # print('Message: ' + str(response.message))
-            # print('Response: ' + response.response)
             return response
 
         # Forming POST-data (cube and query) for request
-        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params)
+        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, response)
 
         # Sending request
         M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
@@ -45,8 +43,6 @@ class M2Retrieving:
         # print('Mapper: ' + response.mapper)
         # print('Status: ' + str(response.status))
         # print('Message: ' + str(response.message))
-        # if response.status is False:
-        #     print('Response: ' + response.response)
         return response
 
     @staticmethod
@@ -93,13 +89,13 @@ class M2Retrieving:
         # Processing param2
         if parameters[2] == 'null':
             mapper += '0.'
-        elif parameters[2] in M2Retrieving.__param2:
+        elif parameters[2] in M2Retrieving.__param2_1:
             mapper += '1.'
         else:
             response.status = False
             message = 'Параметр "' + parameters[2] + '" не верен. ' \
                                                      'Допустимы: отсутствие этого параметра, ' \
-                                                     'значение "налоговый" или "неналоговый"'
+                                                     'значение "налоговый" и "неналоговый"'
             response.message = message
             return response
 
@@ -112,7 +108,6 @@ class M2Retrieving:
             response.status = False
             response.message = 'Введите год с 2007 по ' + str(datetime.today().year)
             return response
-
 
         # Processing sphere
         if parameters[4] == 'null':
@@ -165,7 +160,7 @@ class M2Retrieving:
         return mdx_skeleton
 
     @staticmethod
-    def __refactor_mdx_skeleton(mdx_skeleton, params):
+    def __refactor_mdx_skeleton(mdx_skeleton, params, response):
         """Replacing marks in MDX samplers by real data"""
 
         mdx_cube_and_query = []
@@ -179,9 +174,12 @@ class M2Retrieving:
                 param_id = int(star[1])
 
                 # Forming output param instead of *2, *3, *4, *5
-                # TODO: Доделать показатели бюджета для CLDO01.DB
+
                 if param_id == 2:  # Replacing property2
-                    data = M2Retrieving.__param2[params[param_id]]
+                    if response.mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
+                        data = M2Retrieving.__param2_2[params[param_id]]
+                    else:
+                        data = M2Retrieving.__param2_1[params[param_id]]
                 if param_id == 3:  # Replacing year
                     data = str(params[param_id])
                 if param_id == 4:  # Replacing sphere
@@ -321,18 +319,28 @@ class M2Retrieving:
         '3.4.1.0.0.1': None,  # гд
 
         # Deficit/surplus's mappers
-        '4.4.0.0.0.0': None,
-        '4.2.0.0.0.0': None,
+        '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
+        '4.2.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
         '4.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1], [Marks].[03-6],[Years].[*3])',
-        '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
+        '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [FSYR01.DB] WHERE ([ BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
         '4.2.0.0.0.1': None,
         '4.4.0.0.0.1': None
     }
 
-    __param2 = {
+    # Outer codes for substitution in MDX-query
 
-        'налоговый': '12',
-        'неналоговый': '13'
+    # Params for 'Группа доходов'
+    __param2_1 = {
+
+        'налоговый': '05-12',
+        'неналоговый': '05-13'
+    }
+
+    # Params for 'Показатели исполнения бюджета'
+    __param2_2 = {
+
+        'налоговый': '25-6',
+        'неналоговый': '25-7'
     }
 
     __sphere = {
@@ -371,7 +379,7 @@ class M2Retrieving:
         'охрана окружающей среды': '[RZPR].[14-1203414],[RZPR].[14-1203191],[RZPR].[14-872910],'
                                    '[RZPR].[14-872714],[RZPR].[14-848836]',
 
-        'образование': '[RZPR].[14-872691],[RZPR].[14-848266],[RZPR].[14-848267],[RZPR].[14-849320],'
+        'образование': '[RZPR].[14-848266],[RZPR].[14-848267],[RZPR].[14-849320],'
                        '[RZPR].[14-343261],[RZPR].[14-848274],[RZPR].[14-849333],[RZPR].[14-873227],'
                        '[RZPR].[14-850050],[RZPR].[14-849520],[RZPR].[14-849303]',
 
@@ -394,7 +402,6 @@ class M2Retrieving:
                                        '[RZPR].[14-413268],[RZPR].[14-413269],[RZPR].[14-413270]'
     }
 
-    # Outer codes for substitution in MDX-query
     __places = {
         'байконур': '93015',
         'приволжский': '3417',
@@ -496,8 +503,8 @@ class M2Retrieving:
         'ростовская': '67653',
         'южный': '3',
         'российская федерация': '2',
-        'россия': 2,
-        'рф': 2
+        'россия': '2',
+        'рф': '2'
     }
 
 
@@ -508,7 +515,7 @@ class Result:
         self.mapper = mapper
         self.response = response
 
-
+"""
 # Testing expenditures
 print(1)
 M2Retrieving.get_data('расходы,фактический,null,2011,null,null')
@@ -531,6 +538,13 @@ M2Retrieving.get_data('расходы,запланированный,null,null,�
 print(10)
 M2Retrieving.get_data('расходы,текущий,null,null,охрана окружающей среды,коми')
 
-# Testing unusual cases
+# Testing profits
 print(11)
-M2Retrieving.get_data('расходы,null,null,2016,null,null')
+
+
+# Testing deficit/surplus
+print()
+
+# Testing unusual cases
+print(12)
+M2Retrieving.get_data('null,null,null,null,null,null')"""
