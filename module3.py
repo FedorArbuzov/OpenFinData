@@ -135,7 +135,8 @@ for i in range(ipdf.getNumPages()):
 #Сохраняем всю красоту в новый pdf
 with open('result.pdf', 'wb') as f:
    output.write(f)
-
+   
+#табличка!!!!!!
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, cm
 from reportlab.lib.styles import getSampleStyleSheet
@@ -159,7 +160,7 @@ def coord(x, y, height, unit=1):
     return x, y
 
 
-
+#вот этот кусок кода маленький но очень важный (потому что его писала я хихи)
 i=0
 qu=[]
 tablemas=[]
