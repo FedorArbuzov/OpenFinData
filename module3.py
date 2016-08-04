@@ -135,3 +135,61 @@ for i in range(ipdf.getNumPages()):
 #Сохраняем всю красоту в новый pdf
 with open('result.pdf', 'wb') as f:
    output.write(f)
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4, cm
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, Table, TableStyle
+from reportlab.platypus import Paragraph, Table, TableStyle, Image
+from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+#Set the Arial font
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+
+
+width, height = A4
+
+
+
+def coord(x, y, height, unit=1):
+    x, y = x * unit, height -  y * unit
+    return x, y
+
+
+
+i=0
+qu=[]
+tablemas=[]
+while i<k-1:
+    qu=[diagramttl[i], itogznach[i]]
+    tablemas.append(qu)
+    i = i + 1
+data=tablemas
+
+
+
+styles = getSampleStyleSheet()
+
+table = Table(data, colWidths=[8 * cm, 8 * cm], rowHeights=1*cm)
+table.setStyle(TableStyle([
+                       ('INNERGRID', (0,0), (-1,-1), 1, colors.grey),
+                       ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
+                       ('LINEABOVE',(0,1),(1,1), 1.5, colors.grey),
+                       #('BACKGROUND',(0,0),(1,0), colors.Color(0.31, 0.1, 0.45)),
+                       #('TEXTCOLOR', (0, -1), (-1, -1), colors.green),
+                       ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
+                       ('BOX', (0,0), (-1,-1), 0.01, colors.grey),
+                       ]))
+
+
+c = canvas.Canvas("abcdefg.pdf", pagesize=A4)
+c.setFont('Arial', 14)
+
+w, h = table.wrap(width, height)
+table.wrapOn(c, width, height)
+table.drawOn(c, *coord(2.5, 1, height - h, cm))
+
+c.save()
