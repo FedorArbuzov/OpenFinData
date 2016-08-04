@@ -40,9 +40,10 @@ class M2Retrieving:
         M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
 
         # Displaying data for testing
-        # print('Mapper: ' + response.mapper)
-        # print('Status: ' + str(response.status))
-        # print('Message: ' + str(response.message))
+        print('Mapper: ' + response.mapper)
+        print('Status: ' + str(response.status))
+        print('Message: ' + str(response.message))
+        print('Response: ' + response.response)
         return response
 
     @staticmethod
@@ -89,7 +90,7 @@ class M2Retrieving:
         # Processing param2
         if parameters[2] == 'null':
             mapper += '0.'
-        elif parameters[2] in M2Retrieving.__param2_1:
+        elif parameters[2] in M2Retrieving.__param2:
             mapper += '1.'
         else:
             response.status = False
@@ -177,9 +178,9 @@ class M2Retrieving:
 
                 if param_id == 2:  # Replacing property2
                     if response.mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
-                        data = M2Retrieving.__param2_2[params[param_id]]
+                        data = M2Retrieving.__param2_2[params[param_id]][1]
                     else:
-                        data = M2Retrieving.__param2_1[params[param_id]]
+                        data = M2Retrieving.__param2[params[param_id]][0]
                 if param_id == 3:  # Replacing year
                     data = str(params[param_id])
                 if param_id == 4:  # Replacing sphere
@@ -305,18 +306,18 @@ class M2Retrieving:
         # Profits' mappers
         '3.0.0.1.0.0': None,
         '3.2.0.1.0.0': None,
-        '3.0.1.1.0.0': None,  # гд
-        '3.2.1.1.0.0': None,  # гд
-        '3.2.0.0.0.0': None,
+        '3.0.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',  # гд
+        '3.2.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',  # гд
+        '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
         '3.2.1.0.0.0': None,  # гд-показатели исполнения бюджета
         '3.4.0.0.0.0': None,
         '3.4.1.0.0.0': None,  # гд-показатели исполнения бюджета
         '3.0.0.1.0.1': None,
         '3.2.0.1.0.1': None,
         '3.2.0.0.0.1': None,
-        '3.2.1.0.0.1': None,  # гд
+        '3.2.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',  # гд
         '3.4.0.0.0.1': None,
-        '3.4.1.0.0.1': None,  # гд
+        '3.4.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',  # гд
 
         # Deficit/surplus's mappers
         '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
@@ -328,19 +329,14 @@ class M2Retrieving:
     }
 
     # Outer codes for substitution in MDX-query
+    __param2 = {
 
-    # Params for 'Группа доходов'
-    __param2_1 = {
-
-        'налоговый': '05-12',
-        'неналоговый': '05-13'
-    }
-
-    # Params for 'Показатели исполнения бюджета'
-    __param2_2 = {
-
-        'налоговый': '25-6',
-        'неналоговый': '25-7'
+        'налоговый': ('[KDGROUPS].[05-12], [KDGROUPS].[05-19], [KDGROUPS].[05-23], [KDGROUPS].[05-20], '
+                      '[KDGROUPS].[05-21], [KDGROUPS].[05-22], [KDGROUPS].[05-33], [KDGROUPS].[05-34], '
+                      '[KDGROUPS].[05-35], [KDGROUPS].[05-36]', '25-6'),
+        'неналоговый': ('[KDGROUPS].[05-13], [KDGROUPS].[05-25], [KDGROUPS].[05-26], [KDGROUPS].[05-27], '
+                        '[KDGROUPS].[05-28], [KDGROUPS].[05-29], [KDGROUPS].[05-30], [KDGROUPS].[05-31], '
+                        '[KDGROUPS].[05-32], [KDGROUPS].[05-37]', '25-7')
     }
 
     __sphere = {
@@ -515,6 +511,7 @@ class Result:
         self.mapper = mapper
         self.response = response
 
+
 """
 # Testing expenditures
 print(1)
@@ -540,7 +537,7 @@ M2Retrieving.get_data('расходы,текущий,null,null,охрана ок
 
 # Testing profits
 print(11)
-
+M2Retrieving.get_data('доходы,текущий,неналоговый,null,null,москва')
 
 # Testing deficit/surplus
 print()
@@ -548,3 +545,5 @@ print()
 # Testing unusual cases
 print(12)
 M2Retrieving.get_data('null,null,null,null,null,null')"""
+
+
