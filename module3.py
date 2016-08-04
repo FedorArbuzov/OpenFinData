@@ -194,3 +194,16 @@ table.wrapOn(c, width, height)
 table.drawOn(c, *coord(2.5, 1, height - h, cm))
 
 c.save()
+
+#Добавляем станичку с таблицей
+file1 = PdfFileReader(open('result.pdf', "rb"))
+file2 = PdfFileReader(open('abcdefg.pdf', "rb"))
+
+output = PdfFileWriter()
+
+output.addPage(file1.getPage(0))
+output.addPage(file2.getPage(0))
+
+
+with open('result2.pdf', 'wb') as f:
+   output.write(f)
