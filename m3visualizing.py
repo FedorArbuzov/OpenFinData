@@ -104,6 +104,35 @@ def title_doc(a):
     a.setFillColorRGB(0, 0, 0)
     a.drawString(0.5 * inch, 10.72 * inch, 'Ваш запрос: ' + title)
 
+#метод для превращения 10^n в 10 тысяч млн млрд и тд 
+def frmt(n):
+    mas=[' тыс.',' млн.',' млрд.',' трлн.']
+    k=0
+    s=''
+    p=n
+
+    while p>0:
+    p=p//10
+    k=k+1
+
+
+    if (k>12) and (k<16):
+        n=n/ (10**12)
+        s=str(n)+mas[4]
+    if (k>9) and (k<13):
+        n = n / (10**9)
+        s=str(n)+mas[3]
+    if (k>6) and (k<10):
+        n = n / (10 ** 6)
+        s=str(n)+mas[2]
+    if (k>3) and (k<7):
+        n = n / (10 ** 3)
+        s=str(n)+mas[1]
+    if  k<4:
+        s=str(n)
+    return s
+
+
 
 # Общая цифра
 def info(a):
@@ -122,7 +151,7 @@ def info(a):
 
     a.setFont('Arial', 12)
     a.setFillColorRGB(0, 0, 0)
-    a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + str(sum) + " * (10^1000)" + " рублей")
+    a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + frmt(sum) + " * (10^1000)" + " рублей")
 
 
 # Применяем все функции к нашему документу и сохраняем его
