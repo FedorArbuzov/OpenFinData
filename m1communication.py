@@ -6,6 +6,7 @@ from req import main_func
 from req import main_place
 from req import main_sector
 from m2retrieving import M2Retrieving
+from m3visualizing import M3Visualizing
 
 API_TOKEN = '231161869:AAFpafehgQl9V-5f6-1KvwjPkzhbgdqDflU'
 bot = telebot.TeleBot(API_TOKEN)
