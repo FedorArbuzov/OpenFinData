@@ -270,7 +270,7 @@ class M2Retrieving:
         '2.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-4])',
         '2.2.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-3])',
         '2.3.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[MARKS].[03-4])',
-        '2.5.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-3])',
+        '2.5.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-3])',
         '2.4.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-4])',
 
         '2.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-4])',
@@ -506,7 +506,7 @@ class Test:
         'расходы,фактический,null,2011,null,null',
         'расходы,плановый,null,2012,образование,null',
         'расходы,фактический,null,2013,национальная оборона,null',
-        'расходы,запланированный,null,2014,физическая культура и спорт,null',
+        'расходы,запланированный,null,null,физическая культура и спорт,null',
         'расходы,текущий,null,null,общегосударственные вопросы,null',
         'расходы,фактический,null,2010,null,крым',
         'расходы,плановый,null,2009,образование,севастополь',
