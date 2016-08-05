@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 import json
-        
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.platypus import Paragraph, Frame
 from reportlab.lib.styles import getSampleStyleSheet
-        # Set the Arial font
+# Set the Arial font
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-        
+
 import pygal
 from pygal.style import LightStyle
-         
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, cm
 from reportlab.lib.styles import getSampleStyleSheet
@@ -23,17 +23,14 @@ from reportlab.lib.units import inch
 import cairosvg
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
-        
-        
-
 
 class Module3:
     def create_response(json_string):
-        
+
         par = json.loads(json_string)
-        
-        if len(par["axes"])>1:
-            
+
+        if len(par["axes"]) > 1:
+
             k = len(par["axes"][1]["positions"])
             title = par["axes"][1]["positions"][0]["members"][0]["caption"]
             i = 1
@@ -60,7 +57,7 @@ class Module3:
                     exponen.append(int(pars[1]))
                     if pow < min:
                         min = pow
-            
+
                 else:
                     diagramznach[i] = 0
                     normznach.append(diagramznach[i])
@@ -74,15 +71,13 @@ class Module3:
                 else:
                     itogznach.append(0)
                 i = i + 1
-           
-            
-            #setting the Arial font
+
+            # setting the Arial font
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
-            
+
             # Cоздаем pdf
             doc = canvas.Canvas("pattern.pdf")
-            
-            
+
             # Функция для фирменной полосы сверху
             def __top_line(a):
                 a.setFillColorRGB(0.1, 0.47, 0.8)
@@ -93,44 +88,40 @@ class Module3:
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(1, 1, 1)
                 a.drawRightString(7.77 * inch, 11.41 * inch, "OpenFinData")
-            
-            
+
             # Функция для заголовка
             def __title_doc(a):
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(0, 0, 0)
                 a.drawString(0.5 * inch, 10.72 * inch, 'Ваш запрос: ' + title)
-            
-            #метод для превращения 10^n в 10 тысяч млн млрд и тд 
+
+            # метод для превращения 10^n в 10 тысяч млн млрд и тд
             def __frmt(n):
-                mas=[' тыс.',' млн.',' млрд.',' трлн.']
-                k=0
-                s=''
-                p=n
-            
-                while p>0:
-                p=p//10
-                k=k+1
-            
-            
-                if (k>12) and (k<16):
-                    n=n/ (10**12)
-                    s=str(n)+mas[4]
-                if (k>9) and (k<13):
-                    n = n / (10**9)
-                    s=str(n)+mas[3]
-                if (k>6) and (k<10):
+                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                k = 0
+                s = ''
+                p = n
+
+                while p > 0:
+                    p = p // 10
+                k = k + 1
+
+                if (k > 12) and (k < 16):
+                    n = n / (10 ** 12)
+                    s = str(n) + mas[4]
+                if (k > 9) and (k < 13):
+                    n = n / (10 ** 9)
+                    s = str(n) + mas[3]
+                if (k > 6) and (k < 10):
                     n = n / (10 ** 6)
-                    s=str(n)+mas[2]
-                if (k>3) and (k<7):
+                    s = str(n) + mas[2]
+                if (k > 3) and (k < 7):
                     n = n / (10 ** 3)
-                    s=str(n)+mas[1]
-                if  k<4:
-                    s=str(n)
+                    s = str(n) + mas[1]
+                if k < 4:
+                    s = str(n)
                 return s
-            
-            
-            
+
             # Общая цифра
             def __info(a):
                 sum = 0
@@ -138,29 +129,27 @@ class Module3:
                 while i < k - 1:
                     sum = sum + itogznach[i]
                     i = i + 1
-            
+
                 a.setFillColorRGB(0.72, 0.85, 0.98)
                 a.rect(0 * inch, 9.85 * inch, 8.27 * inch, 0.5 * inch, stroke=0, fill=1)
-            
+
                 a.setFillColorRGB(0.1, 0.47, 0.8)
                 a.rect(0 * inch, 9.85 * inch, 0.08 * inch, 0.5 * inch, stroke=0, fill=1)
                 # a.rect(8.19 * inch, 9.85 * inch, 0.08 * inch, 0.5 * inch, stroke=0, fill=1)
-            
+
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(0, 0, 0)
-                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + frmt(sum) + " * (10^1000)" + " рублей")
-            
-            
+                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + __frmt(sum) + " * (10^1000)" + " рублей")
+
             # Применяем все функции к нашему документу и сохраняем его
-            top_line(doc)
-            title_doc(doc)
-            info(doc)
+            __top_line(doc)
+            __title_doc(doc)
+            __info(doc)
             doc.showPage()
             doc.save()
-            
-           
-            
-            pie_chart = pygal.Pie(inner_radius=.45, plot_background='white', background='white', legend_at_bottom='True',
+
+            pie_chart = pygal.Pie(inner_radius=.45, plot_background='white', background='white',
+                                  legend_at_bottom='True',
                                   legend_at_bottom_columns=1, margin=15, width=732, height=690)
             pie_chart.title = 'Диаграмма'
             i = 0
@@ -168,39 +157,37 @@ class Module3:
                 pie_chart.add(diagramttl[i], itogznach[i])
                 i = i + 1
             pie_chart.render_to_file('chart.svg')
-           
-            
+
             cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
-            
+
             # Вставляем диаграмму в pdf
-            
-            
+
+
             output = PdfFileWriter()
             ipdf = PdfFileReader(open('pattern.pdf', 'rb'))
             wpdf = PdfFileReader(open('chart.pdf', 'rb'))
             watermark = wpdf.getPage(0)
-            
+
             for i in range(ipdf.getNumPages()):
                 page = ipdf.getPage(i)
                 # Здесь корректируем позиционирование
                 page.mergeTranslatedPage(watermark, 0.3 * inch, 2 * inch, expand=False)
                 output.addPage(page)
-            
+
             # Сохраняем всю красоту в новый pdf
             with open('page1.pdf', 'wb') as f:
                 output.write(f)
-           
-            
+
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
-            
+
             width, height = A4
-            
+
             # Высчитываем итоговую сумму
             sum = 0
             while i < k - 1:
                 sum = sum + itogznach[i]
                 i = i + 1
-            
+
             i = 0
             qu = []
             tablemas = [["Параметр", "Значение *"]]  # Тут сразу и заголовки таблицы
@@ -215,9 +202,9 @@ class Module3:
                     qu = [diagramttl[i], itogznach[i]]
                     tablemas.append(qu)
                     i = i + 1
-            
+
             data = tablemas  # Данные для таблицы
-            
+
             # Стили для таблицы
             styles = getSampleStyleSheet()
             table = Table(data, colWidths=[16 * cm, 2.5 * cm], rowHeights=1.1 * cm)
@@ -233,45 +220,39 @@ class Module3:
                 ('BOX', (0, 0), (-1, -1), 0.005, colors.Color(0, 0.15, 0.28)),
                 ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.Color(0.82, 0.89, 1)]),
             ]))
-            
+
             # Создаем страницу с таблицей
             c = canvas.Canvas("page2.pdf", pagesize=A4)
             c.setFont('Arial', 14)
-            
-            
+
             # Функция для позиционирования таблицы
             def __coord(x, y, height, unit=1):
                 x, y = x * unit, height - y * unit
                 return x, y
-            
-            
+
             w, h = table.wrap(width, height)
             table.wrapOn(c, width, height)
-            table.drawOn(c, *coord(0.5, 0.8, (height - h), inch))
-            
-            
+            table.drawOn(c, *__coord(0.5, 0.8, (height - h), inch))
+
             # Замечание внизу страницы
             def __notice(a):
                 a.setFont('Arial', 10)
                 a.setFillColorRGB(0, 0, 0)
                 a.drawString(0.5 * inch, 0.5 * inch,
                              "* Для получения реальной суммы в рублях необходимо табличное значение умножить на (10^1000)")
-            
-            
-            notice(c)
+
+            __notice(c)
             c.save()
-            
-            
-            
+
             # Добавляем станичку с таблицей
             file1 = PdfFileReader(open('page1.pdf', "rb"))
             file2 = PdfFileReader(open('page2.pdf', "rb"))
-            
+
             output = PdfFileWriter()
-            
+
             output.addPage(file1.getPage(0))
             output.addPage(file2.getPage(0))
-            
+
             # Сохраняем все в итоговый файл
             with open('result.pdf', 'wb') as f:
                 output.write(f)
