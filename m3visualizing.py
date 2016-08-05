@@ -24,7 +24,9 @@ import cairosvg
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
-class Module3:
+class M3Visualizing:
+
+    @staticmethod
     def create_response(json_string):
 
         par = json.loads(json_string)

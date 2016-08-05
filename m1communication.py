@@ -6,7 +6,7 @@ from req import main_func
 from req import main_place
 from req import main_sector
 from m2retrieving import M2Retrieving
-from m3visualizing import Module3
+from m3visualizing import M3Visualizing
 
 API_TOKEN = '231161869:AAFpafehgQl9V-5f6-1KvwjPkzhbgdqDflU'
 bot = telebot.TeleBot(API_TOKEN)
@@ -264,9 +264,7 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            Module3.create_response(result.response)
             file = open('result.pdf','rb')
-            bot.send_document(message.chat.id, file)
             # TODO: отправка в чат
             # TODO: обработка строки
 
