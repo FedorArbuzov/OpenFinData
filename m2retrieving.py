@@ -1,5 +1,4 @@
 import requests
-from datetime import datetime
 
 
 # Module, which is responsible for getting required from user data
@@ -15,35 +14,35 @@ class M2Retrieving:
         response = Result()
 
         # Creating mapper based on list of parameters
-        response = M2Retrieving.__list_to_mapper(params, response)
+        mapper = M2Retrieving.__list_to_mapper(params, response)
 
         if response.message != "":
-            # print('Mapper: ' + response.mapper)
+            # print('Mapper: ' + mapper)
             # print('Status: ' + str(response.status))
             # print('Message: ' + str(response.message))
             return response
 
         # Find MDX-sampler for formed mapper
-        mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(response)
+        mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, response)
 
         # Escaping this method if no mdx skeleton for current mapper is found
         if mdx_skeleton == 0 or mdx_skeleton is None:
-            # print('Mapper: ' + response.mapper)
+            # print('Mapper: ' + mapper)
             # print('Status: ' + str(response.status))
             # print('Message: ' + str(response.message))
             return response
 
         # Forming POST-data (cube and query) for request
-        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, response)
+        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, mapper)
 
         # Sending request
         M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
 
         # Displaying data for testing
-        print('Mapper: ' + response.mapper)
-        print('Status: ' + str(response.status))
-        print('Message: ' + str(response.message))
-        print('Response: ' + response.response)
+        # print('Mapper: ' + mapper)
+        # print('Status: ' + str(response.status))
+        # print('Message: ' + str(response.message))
+        # print('Response: ' + response.response)
         return response
 
     @staticmethod
@@ -73,7 +72,6 @@ class M2Retrieving:
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
         else:
-            response.status = False
             response.message = 'Неверно выбрана предметная область.'
             return response
 
@@ -83,7 +81,6 @@ class M2Retrieving:
         elif parameters[1] in codes[1]:
             mapper += str(codes[1].get(parameters[1])) + '.'
         else:
-            response.status = False
             response.message = 'Неверно выбрана 1я характеристика предметной области'
             return response
 
@@ -93,7 +90,6 @@ class M2Retrieving:
         elif parameters[2] in M2Retrieving.__param2:
             mapper += '1.'
         else:
-            response.status = False
             message = 'Параметр "' + parameters[2] + '" не верен. ' \
                                                      'Допустимы: отсутствие этого параметра, ' \
                                                      'значение "налоговый" и "неналоговый"'
@@ -103,12 +99,8 @@ class M2Retrieving:
         # Processing year
         if parameters[3] == 'null':
             mapper += '0.'
-        elif int(parameters[3]) > 2006 and int(parameters[3]) <= datetime.today().year:
-            mapper += '1.'
         else:
-            response.status = False
-            response.message = 'Введите год с 2007 по ' + str(datetime.today().year)
-            return response
+            mapper += '1.'
 
         # Processing sphere
         if parameters[4] == 'null':
@@ -116,7 +108,6 @@ class M2Retrieving:
         elif parameters[4] in M2Retrieving.__sphere:
             mapper += '1.'
         else:
-            response.status = False
             response.message = 'Неверно указана сфера. Попробуйте еще раз'
             return response
 
@@ -126,19 +117,16 @@ class M2Retrieving:
         elif parameters[5] in M2Retrieving.__places:
             mapper += '1'
         else:
-            response.status = False
             response.message = 'Неверно указана территория. Попробуйте еще раз'
             return response
 
-        response.mapper = mapper
-
-        return response
+        return mapper
 
     @staticmethod
-    def __get_mdx_skeleton_for_mapper(response):
+    def __get_mdx_skeleton_for_mapper(mapper, response):
         """Finding MDX sampler for mapper"""
 
-        mdx_skeleton = M2Retrieving.__mappers.get(response.mapper, 0)
+        mdx_skeleton = M2Retrieving.__mappers.get(mapper, 0)
 
         # Processing error message for which MDX-query is not ready yet
         if mdx_skeleton is None:
@@ -148,10 +136,10 @@ class M2Retrieving:
         if mdx_skeleton == 0:
             index = 1
             message2 = "Возможные варианты:\r\n"
-            message1 = "Введенные параметры:\r\n" + M2Retrieving.__mapper_to_words(response.mapper)
+            message1 = "Введенные параметры:\r\n" + M2Retrieving.__mapper_to_words(mapper)
 
             for i in list(M2Retrieving.__mappers.keys()):
-                if M2Retrieving.__distance(i, response.mapper) == 1:
+                if M2Retrieving.__distance(i, mapper) == 1:
                     message2 += str(index) + '.' + M2Retrieving.__mapper_to_words(i) + '\r\n'
                     index += 1
             if index == 1:
@@ -161,7 +149,7 @@ class M2Retrieving:
         return mdx_skeleton
 
     @staticmethod
-    def __refactor_mdx_skeleton(mdx_skeleton, params, response):
+    def __refactor_mdx_skeleton(mdx_skeleton, params, mapper):
         """Replacing marks in MDX samplers by real data"""
 
         mdx_cube_and_query = []
@@ -177,7 +165,7 @@ class M2Retrieving:
                 # Forming output param instead of *2, *3, *4, *5
 
                 if param_id == 2:  # Replacing property2
-                    if response.mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
+                    if mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
                         data = M2Retrieving.__param2_2[params[param_id]][1]
                     else:
                         data = M2Retrieving.__param2[params[param_id]][0]
@@ -306,18 +294,18 @@ class M2Retrieving:
         # Profits' mappers
         '3.0.0.1.0.0': None,
         '3.2.0.1.0.0': None,
-        '3.0.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',  # гд
-        '3.2.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',  # гд
+        '3.0.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
+        '3.2.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',
         '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
-        '3.2.1.0.0.0': None,  # гд-показатели исполнения бюджета
+        '3.2.1.0.0.0': None,
         '3.4.0.0.0.0': None,
-        '3.4.1.0.0.0': None,  # гд-показатели исполнения бюджета
+        '3.4.1.0.0.0': None,
         '3.0.0.1.0.1': None,
         '3.2.0.1.0.1': None,
         '3.2.0.0.0.1': None,
-        '3.2.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',  # гд
+        '3.2.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
         '3.4.0.0.0.1': None,
-        '3.4.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',  # гд
+        '3.4.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',
 
         # Deficit/surplus's mappers
         '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
@@ -508,11 +496,9 @@ class Result:
     def __init__(self, status=False, message='', mapper='', response=''):
         self.status = status
         self.message = message
-        self.mapper = mapper
         self.response = response
 
 
-"""
 # Testing expenditures
 print(1)
 M2Retrieving.get_data('расходы,фактический,null,2011,null,null')
@@ -544,6 +530,4 @@ print()
 
 # Testing unusual cases
 print(12)
-M2Retrieving.get_data('null,null,null,null,null,null')"""
-
-
+M2Retrieving.get_data('null,null,null,null,null,null')
