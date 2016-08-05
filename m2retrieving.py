@@ -17,9 +17,6 @@ class M2Retrieving:
         mapper = M2Retrieving.__list_to_mapper(params, response)
 
         if response.message != "":
-            # print('Mapper: ' + mapper)
-            # print('Status: ' + str(response.status))
-            # print('Message: ' + str(response.message))
             return response
 
         # Find MDX-sampler for formed mapper
@@ -27,9 +24,6 @@ class M2Retrieving:
 
         # Escaping this method if no mdx skeleton for current mapper is found
         if mdx_skeleton == 0 or mdx_skeleton is None:
-            # print('Mapper: ' + mapper)
-            # print('Status: ' + str(response.status))
-            # print('Message: ' + str(response.message))
             return response
 
         # Forming POST-data (cube and query) for request
@@ -38,11 +32,6 @@ class M2Retrieving:
         # Sending request
         M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
 
-        # Displaying data for testing
-        # print('Mapper: ' + mapper)
-        # print('Status: ' + str(response.status))
-        # print('Message: ' + str(response.message))
-        # print('Response: ' + response.response)
         return response
 
     @staticmethod
@@ -163,7 +152,6 @@ class M2Retrieving:
                 param_id = int(star[1])
 
                 # Forming output param instead of *2, *3, *4, *5
-
                 if param_id == 2:  # Replacing property2
                     if mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
                         data = M2Retrieving.__param2_2[params[param_id]][1]
@@ -311,7 +299,7 @@ class M2Retrieving:
         '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
         '4.2.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
         '4.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1], [Marks].[03-6],[Years].[*3])',
-        '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [FSYR01.DB] WHERE ([ BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
+        '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
         '4.2.0.0.0.1': None,
         '4.4.0.0.0.1': None
     }
@@ -328,7 +316,7 @@ class M2Retrieving:
     }
 
     __sphere = {
-        'null': '[RZPR].[14-848223],[RZPR].[14-413284],[RZPR].[14-850484],[RZPR].[14-848398],'
+        'null': '[RZPR], [RZPR].[14-848223],[RZPR].[14-413284],[RZPR].[14-850484],[RZPR].[14-848398],'
                 '[RZPR].[14-848260],[RZPR].[14-1203414],[RZPR].[14-848266],[RZPR].[14-848294],'
                 '[RZPR].[14-848302],[RZPR].[14-848345],[RZPR].[14-1203401],[RZPR].[14-413259],'
                 '[RZPR].[14-413264],[RZPR].[14-413267],[RZPR].[14-1203208],[RZPR].[14-1203195]',
@@ -493,41 +481,71 @@ class M2Retrieving:
 
 
 class Result:
-    def __init__(self, status=False, message='', mapper='', response=''):
+    def __init__(self, status=False, message='', response=''):
         self.status = status
         self.message = message
         self.response = response
 
 
-# Testing expenditures
-print(1)
-M2Retrieving.get_data('расходы,фактический,null,2011,null,null')
-print(2)
-M2Retrieving.get_data('расходы,плановый,null,2012,образование,null')
-print(3)
-M2Retrieving.get_data('расходы,фактический,null,2013,национальная оборона,null')
-print(4)
-M2Retrieving.get_data('расходы,запланированный,null,2014,физическая культура и спорт,null')
-print(5)
-M2Retrieving.get_data('расходы,текущий,null,null,общегосударственные вопросы,null')
-print(6)
-M2Retrieving.get_data('расходы,фактический,null,2010,null,крым')
-print(7)
-M2Retrieving.get_data('расходы,плановый,null,2009,образование,севастополь')
-print(8)
-M2Retrieving.get_data('расходы,фактический,null,2010,null,пермский')
-print(9)
-M2Retrieving.get_data('расходы,запланированный,null,null,здравоохранение,санкт-петербург')
-print(10)
-M2Retrieving.get_data('расходы,текущий,null,null,охрана окружающей среды,коми')
+# Testing functional
+class Test:
+    @staticmethod
+    def testing(input_data):
+        i = 1
+        for req in input_data:
+            print(i)
+            response = M2Retrieving.get_data(req)
+            print(response.status)
+            print(response.message)
+            if response.status is False:
+                print(response.response)
+            i += 1
 
-# Testing profits
-print(11)
-M2Retrieving.get_data('доходы,текущий,неналоговый,null,null,москва')
+    test_expenditure = (
+        # Expenditure
+        'расходы,фактический,null,2011,null,null',
+        'расходы,плановый,null,2012,образование,null',
+        'расходы,фактический,null,2013,национальная оборона,null',
+        'расходы,запланированный,null,2014,физическая культура и спорт,null',
+        'расходы,текущий,null,null,общегосударственные вопросы,null',
+        'расходы,фактический,null,2010,null,крым',
+        'расходы,плановый,null,2009,образование,севастополь',
+        'расходы,фактический,null,2010,null,пермский',
+        'расходы,запланированный,null,null,здравоохранение,санкт-петербург',
+        'расходы,текущий,null,null,охрана окружающей среды,коми')
 
-# Testing deficit/surplus
-print()
+    test_profit = (
+        # Profit
+        'доходы,null,null,2012,null,null',
+        'доходы,плановый,null,2010,null,null',
+        'доходы,плановый,налоговый,2009,null,null',
+        'доходы,плановый,null,null,null,null',
+        'доходы,плановый,налоговый,null,null,null',
+        'доходы,текущий,null,null,null,null',
+        'доходы,текущий,налоговый,null,null,null',
+        'доходы,null,null,2012,null,ярославской',
+        'доходы,плановый,null,2012,null,карелия',
+        'доходы,плановый,null,null,null,коми',
+        'доходы,плановый,налоговый,null,null,томская',
+        'доходы,текущий,null,null,null,хакасия',
+        'доходы,текущий,налоговый,null,null,югра'
+    )
 
-# Testing unusual cases
-print(12)
-M2Retrieving.get_data('null,null,null,null,null,null')
+    test_surplus = (
+        # Surplus
+        'дефицит,плановый,null,null,null,null',
+        'дефицит,текущий,null,null,null,null',
+        'дефицит,null,null,2014,null,null',
+        'дефицит,null,null,2007,null,московская',
+        'дефицит,плановый,null,2007,null,санкт-петербург',
+        'дефицит,текущий,null,null,null,москва',
+    )
+
+    test_errors = (
+        'null,null,null,null,null,null'
+    )
+
+# Test.testing(Test.test_expenditure)
+# Test.testing(Test.test_profit)
+# Test.testing(Test.test_surplus)
+# Test.testing(Test.test_errors)
