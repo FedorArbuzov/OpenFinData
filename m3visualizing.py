@@ -49,28 +49,40 @@ class Module3:
                 i = i + 1
             i = 0
             min = 1000
+            print("True")
+
             while i < k - 1:
+
                 if diagramznach[i] != None:
-                    pars = diagramznach[i].split('E')
-                    normznach.append(float(pars[0]))
-                    pow = int(pars[1])
-                    exponen.append(int(pars[1]))
-                    if pow < min:
-                        min = pow
+                    if 'Е' in diagramznach[i]:
+                        pars = diagramznach[i].split('E')
+                        normznach.append(float(pars[0]))
+                        pow = int(pars[1])
+                        exponen.append(int(pars[1]))
+                        if pow < min:
+                             min= pow
+                    else:
+                        normznach.append(float(diagramznach[i]))
+                        exponen.append(0)
 
                 else:
                     diagramznach[i] = 0
                     normznach.append(diagramznach[i])
                     exponen.append(diagramznach[i])
+
+
                 i = i + 1
             i = 0
+            print("True1")
             itogznach = []
             while i < k - 1:
                 if exponen[i] != 0:
-                    itogznach.append(int(normznach[i] * 10 ** (exponen[i] - min)))
+
+                    itogznach.append(int(normznach[i] * 10 ** (exponen[i])))
                 else:
-                    itogznach.append(0)
+                    itogznach.append(int(normznach[i]))
                 i = i + 1
+            print(itogznach)
 
             # setting the Arial font
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))

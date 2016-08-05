@@ -9,7 +9,7 @@ class M2Retrieving:
 
         # Splitting input string in parameters: [Theme, Property, Property2, Year, Sphere, Territory]
         params = input_string.split(',')
-
+        
         # Creating response object
         response = Result()
 
