@@ -1,36 +1,34 @@
 # -*- coding: utf-8 -*-
+import json
+        
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.platypus import Paragraph, Frame
+from reportlab.lib.styles import getSampleStyleSheet
+        # Set the Arial font
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+        
+import pygal
+from pygal.style import LightStyle
+         
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4, cm
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, Table, TableStyle
+from reportlab.platypus import Paragraph, Table, TableStyle, Image
+from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+import cairosvg
+from PyPDF2 import PdfFileWriter, PdfFileReader
+
+        
+        
+
 
 class Module3:
     def create_response(json_string):
-        from reportlab.lib.units import inch
-        
-        kek = M2Retrieving.get_data('расходы,текущий,null,null,общегосударственные вопросы,null')
-        
-        import json
-        
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.units import inch
-        from reportlab.platypus import Paragraph, Frame
-        from reportlab.lib.styles import getSampleStyleSheet
-        # Set the Arial font
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
-        
-        import pygal
-        from pygal.style import LightStyle
-         
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.pagesizes import A4, cm
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import Paragraph, Table, TableStyle
-        from reportlab.platypus import Paragraph, Table, TableStyle, Image
-        from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
-        from reportlab.lib import colors
-        from reportlab.lib.units import inch
-        
-        # Set the Arial font
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
         
         par = json.loads(json_string)
         
@@ -78,7 +76,7 @@ class Module3:
                 i = i + 1
            
             
-            
+            #setting the Arial font
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
             
             # Cоздаем pdf
@@ -170,12 +168,12 @@ class Module3:
                 pie_chart.add(diagramttl[i], itogznach[i])
                 i = i + 1
             pie_chart.render_to_file('chart.svg')
-            import cairosvg
+           
             
             cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
             
             # Вставляем диаграмму в pdf
-            from PyPDF2 import PdfFileWriter, PdfFileReader
+            
             
             output = PdfFileWriter()
             ipdf = PdfFileReader(open('pattern.pdf', 'rb'))
@@ -263,7 +261,7 @@ class Module3:
             notice(c)
             c.save()
             
-            from PyPDF2 import PdfFileWriter, PdfFileReader
+            
             
             # Добавляем станичку с таблицей
             file1 = PdfFileReader(open('page1.pdf', "rb"))
