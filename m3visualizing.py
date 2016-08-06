@@ -118,7 +118,7 @@ class M3Visualizing:
 
                 while p > 0:
                     p = p // 10
-                k = k + 1
+                    k = k + 1
 
                 if (k > 12) and (k < 16):
                     n = n / (10 ** 12)
