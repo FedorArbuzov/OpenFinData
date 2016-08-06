@@ -299,19 +299,19 @@ class M2Retrieving:
         '2.4.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-4])',
 
         # Profits' mappers
-        '3.0.0.1.0.0': None,
-        '3.2.0.1.0.0': None,
+        '3.0.0.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',  # no details
+        '3.2.0.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',  # no details
         '3.0.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
         '3.2.1.1.0.0': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',
         '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
-        '3.2.1.0.0.0': None,
-        '3.4.0.0.0.0': None,
-        '3.4.1.0.0.0': None,
-        '3.0.0.1.0.1': None,
-        '3.2.0.1.0.1': None,
-        '3.2.0.0.0.1': None,
+        '3.2.1.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',  # no details
+        '3.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
+        '3.4.1.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',  # no details
+        '3.0.0.1.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-2],[Territories].[*5])',  # no details
+        '3.2.0.1.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-1],[Territories].[*5])',  # no details
+        '3.2.0.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',  # no details
         '3.2.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
-        '3.4.0.0.0.1': None,
+        '3.4.0.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',  # no details
         '3.4.1.0.0.1': 'SELECT {[Measures].[VALUE]}  ON COLUMNS, {*2} ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',
 
         # Deficit/surplus's mappers
@@ -567,7 +567,6 @@ class Test:
         'доходы,null,неналоговый,2008,null,москва',
         'доходы,null,неналоговый,null,null,москва',
     )
-
 
 # Test.testing(Test.test_expenditure)
 # Test.testing(Test.test_profit)
