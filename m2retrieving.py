@@ -9,7 +9,7 @@ class M2Retrieving:
 
         # Splitting input string in parameters: [Theme, Property, Property2, Year, Sphere, Territory]
         params = input_string.split(',')
-        
+
         # Creating response object
         response = Result()
 
@@ -20,7 +20,7 @@ class M2Retrieving:
             return response
 
         # Find MDX-sampler for formed mapper
-        mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, response)
+        mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, params, response)
 
         # Escaping this method if no mdx skeleton for current mapper is found
         if mdx_skeleton == 0 or mdx_skeleton is None:
@@ -44,7 +44,6 @@ class M2Retrieving:
                 'расходы': 2,
                 'доходы': 3,
                 'дефицит': 4,
-                'профицит': 4
             },
 
             {
@@ -112,7 +111,7 @@ class M2Retrieving:
         return mapper
 
     @staticmethod
-    def __get_mdx_skeleton_for_mapper(mapper, response):
+    def __get_mdx_skeleton_for_mapper(mapper, params, response):
         """Finding MDX sampler for mapper"""
 
         mdx_skeleton = M2Retrieving.__mappers.get(mapper, 0)
@@ -123,17 +122,17 @@ class M2Retrieving:
 
         # Finding the nearest mapper to given and forming response
         if mdx_skeleton == 0:
+            message = 'Запрос чуть-чуть некорректен. Пожалуйста, подправьте его, выбрав ' \
+                      'один из предложенных вариантов:\r\n'
             index = 1
-            message2 = "Возможные варианты:\r\n"
-            message1 = "Введенные параметры:\r\n" + M2Retrieving.__mapper_to_words(mapper)
-
             for i in list(M2Retrieving.__mappers.keys()):
                 if M2Retrieving.__distance(i, mapper) == 1:
-                    message2 += str(index) + '.' + M2Retrieving.__mapper_to_words(i) + '\r\n'
+                    message += '- ' + M2Retrieving.__hint(i, mapper, params)
                     index += 1
             if index == 1:
-                message2 = 'В запросе неверно несколько параметров. Попробуйте изменить запрос.   '
-            response.message = message1 + '\r\nДанный запрос некорректен:(\r\n' + message2[:-3]
+                message = 'В запросе неверно несколько параметров. Попробуйте изменить запрос.   '
+
+            response.message = message[:-2]
 
         return mdx_skeleton
 
@@ -152,16 +151,23 @@ class M2Retrieving:
                 param_id = int(star[1])
 
                 # Forming output param instead of *2, *3, *4, *5
-                if param_id == 2:  # Replacing property2
+                # Replacing property2
+                if param_id == 2:
                     if mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
                         data = M2Retrieving.__param2_2[params[param_id]][1]
                     else:
                         data = M2Retrieving.__param2[params[param_id]][0]
-                if param_id == 3:  # Replacing year
+
+                # Replacing year
+                if param_id == 3:
                     data = str(params[param_id])
-                if param_id == 4:  # Replacing sphere
+
+                # Replacing sphere
+                if param_id == 4:
                     data = M2Retrieving.__sphere[params[param_id]]
-                if param_id == 5:  # Replacing territory
+
+                # Replacing territory
+                if param_id == 5:
                     data = '08-' + M2Retrieving.__places[params[param_id]]
 
                 # Replacing mark by parameter
@@ -200,50 +206,63 @@ class M2Retrieving:
         response.response = r.text
 
     @staticmethod
-    def __mapper_to_words(mapper):
-        """Refactoring mapper in word constructions"""
+    def __hint(true_mapper, false_mapper, params):
+        """Transfer in words steps which should be made in order to form correct request"""
 
-        # Inner codes for refactoring mapper in list
+        # Inner codes for refactoring difference between correct and incorrect mapper in help message
         codes = (
             {
-                2: 'Расходы',
-                3: 'Доходы',
-                4: 'Дефицит/Профицит'
+                2: 'плановый',
+                3: 'фактический',
+                4: 'текущий',
+                5: 'запланированный'
             },
-            {
-                0: 'Тип(-)',
-                2: 'Плановый',
-                3: 'Фактический',
-                4: 'Текущий',
-                5: 'Запланированный'
-            },
-            {
-                1: 'Налоговый/Неналоговый',
-                0: 'Группа расходов(-)'
-            },
-            {
-                1: 'Год',
-                0: 'Год(-)'
-            },
-            {
-                1: 'Сфера',
-                0: 'Сфера(-)'
-            },
-            {
-                1: 'Территория',
-                0: 'Территория(-)'
-            }
+            'налоговый/неналоговый',
+            'год',
+            'сферу',
+            'территорию'
         )
 
-        # Output word construction
-        words = ''
+        items1, items2 = true_mapper.split('.'), false_mapper.split('.')
+        error_message = ''
+        count = 0
 
-        items = mapper.split('.')
-        index = 0
-        for i in items:
-            words += codes[index].get(int(i)) + '*'
-            index += 1
-        return words[:len(words) - 1]
+        for i1, i2 in zip(items1, items2):
+            if i1 != i2:
+                i1 = int(i1)
+                i2 = int(i2)
+
+                # If error is in existence or absence of parameter (without considering param1)
+                if (i1 == 0 or i1 == 1) and count != 1:
+
+                    # If parameter is not given but should be
+                    if i1 > i2:
+                        error_message = 'Укажите ' + codes[count] + '\r\n'
+
+                        # If error is in param2
+                        if count == 2:
+                            error_message = 'Укажите параметр "' + codes[count] + '"\r\n'
+
+                    # If parameter is given but should not be
+                    else:
+                        error_message = 'Не указывайте ' + codes[count] + '\r\n'
+
+                        # If error is in param2
+                        if count == 2:
+                            error_message = 'Не указывайте параметр "' + params[count] + '"\r\n'
+
+                # If parameter exist but should be another or error is in param1
+                else:
+
+                    # If there is no param1 but should be
+                    if i2 == 0 and count == 1:
+                        error_message = 'Добавьте параметр "' + codes[count].get(i1) + '"\r\n'
+                    else:
+                        error_message = 'Замените параметр "' + codes[count].get(i2) + \
+                                        '" на "' + codes[count].get(i1) + '"\r\n'
+            count += 1
+
+        return error_message
 
     @staticmethod
     def __distance(a, b):
@@ -542,8 +561,13 @@ class Test:
     )
 
     test_errors = (
-        'null,null,null,null,null,null'
+        'доходы,null,null,null,null,null',
+        'расходы,фактический,null,null,null,null',
+        'расходы,фактический,налоговый,null,null,null',
+        'доходы,null,неналоговый,2008,null,москва',
+        'доходы,null,неналоговый,null,null,москва',
     )
+
 
 # Test.testing(Test.test_expenditure)
 # Test.testing(Test.test_profit)
