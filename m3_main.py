@@ -172,11 +172,13 @@ class M3Visualizing:
                 i = i + 1
             pie_chart.render_to_file('chart.svg')
 
-            cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
+            #Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
+            #cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
 
             # Вставляем диаграмму в pdf
 
-
+            # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
+            '''
             output = PdfFileWriter()
             ipdf = PdfFileReader(open('pattern.pdf', 'rb'))
             wpdf = PdfFileReader(open('chart.pdf', 'rb'))
@@ -191,7 +193,7 @@ class M3Visualizing:
             # Сохраняем всю красоту в новый pdf
             with open('page1.pdf', 'wb') as f:
                 output.write(f)
-
+            '''
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
 
             width, height = A4
@@ -258,6 +260,8 @@ class M3Visualizing:
             __notice(c)
             c.save()
 
+            # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
+            '''
             # Добавляем станичку с таблицей
             file1 = PdfFileReader(open('page1.pdf', "rb"))
             file2 = PdfFileReader(open('page2.pdf', "rb"))
@@ -270,6 +274,7 @@ class M3Visualizing:
             # Сохраняем все в итоговый файл
             with open('result.pdf', 'wb') as f:
                 output.write(f)
+            '''
         else:
             mew = par["cells"][0][0]["value"]
             print(mew)

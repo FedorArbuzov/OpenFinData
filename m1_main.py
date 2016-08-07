@@ -108,11 +108,12 @@ def send_welcome(message):
     k = 0
     for i in data:
         for i1 in i:
-            #print(i1)
+            # print(i1)
             if i1 == '0':
                 k += 1
-    if(k > 2):
-        bot.send_message(message.chat.id, "Похоже, вы передали нам не всю информацию. Мы не сможем дать вам корректную информацию.")
+    if (k > 2):
+        bot.send_message(message.chat.id,
+                         "Похоже, вы передали нам не всю информацию. Мы не сможем дать вам корректную информацию.")
     else:
         bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
     for i in data:
@@ -177,6 +178,7 @@ def send_welcome(message):
                                       '/thmscribe — подписаться на ежедневную рассылку\n'
                                       '/unsubscribe', parse_mode='HTML')
 
+
 """
 @bot.message_handler(commands=['subscribe'])
 def send_welcome(message):
@@ -215,6 +217,7 @@ def repeat_all_messages(message):
     connection.close()
 """
 
+
 @bot.message_handler(commands=['findata'])
 def repeat_all_messages(message):
     connection = sqlite3.connect('users.db')
@@ -223,13 +226,14 @@ def repeat_all_messages(message):
     data = cursor.fetchall()
 
     if len(data) != 0:
-        cursor.execute("DELETE FROM users WHERE userid = " + str(message.chat.id))  # удаление ранее введенной юзером информации
+        cursor.execute(
+            "DELETE FROM users WHERE userid = " + str(message.chat.id))  # удаление ранее введенной юзером информации
         connection.commit()
         connection.close()
 
     s = message.text[9:]
     if (s == ""):
-        #bot.send_message(message.chat.id, "Выберите предметную область:")
+        # bot.send_message(message.chat.id, "Выберите предметную область:")
         markup = types.ReplyKeyboardMarkup()
         markup.row('доходы')
         markup.row('расходы')
@@ -247,8 +251,8 @@ def repeat_all_messages(message):
     else:
         s1 = main_func(s)
         s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, " + \
-                     str(message.chat.id) + ", \"" + str(s1[0]) + "\", \"" + str(s1[1]) + "\", \"" + str(
-        s1[2]) + "\", \"" + str(s1[3]) + "\", \"" + str(s1[4]) + "\")"
+                 str(message.chat.id) + ", \"" + str(s1[0]) + "\", \"" + str(s1[1]) + "\", \"" + str(
+            s1[2]) + "\", \"" + str(s1[3]) + "\", \"" + str(s1[4]) + "\")"
         connection = sqlite3.connect("users.db")
         cursor = connection.cursor()
         cursor.execute(s_main)
@@ -264,7 +268,10 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            file = open('result.pdf','rb')
+            M3Visualizing.create_response(result.response)
+            file1 = open('chart.svg', 'rb')
+            file2 = open('page2.pdf', 'rb')
+            bot.send_document(message.chat.id, file1, file2)
             # TODO: отправка в чат
             # TODO: обработка строки
 
@@ -283,7 +290,7 @@ def repeat_all_messages(message):
     k = 0
     for i in data:
         for i1 in i:
-            #print(i1)
+            # print(i1)
             if i1 == '0':
                 k += 1
     print(k)
@@ -306,57 +313,55 @@ def repeat_all_messages(message):
         or message.text == "налоговые" or message.text == "неналоговые") and (
                 len(data) != 0):
         k = message.text
-        if(message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"):
+        if (message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"):
             cursor.execute("UPDATE users SET subject=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-        if(message.text == "налоговые" or message.text == "неналоговые"):
-            cursor.execute("UPDATE users SET planned_or_actual=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
+        if (message.text == "налоговые" or message.text == "неналоговые"):
+            cursor.execute(
+                "UPDATE users SET planned_or_actual=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-        if(k == "расходы"):
-            #bot.send_message(message.chat.id, "Введите тип:")
+        if (k == "расходы"):
+            # bot.send_message(message.chat.id, "Введите тип:")
             markup = types.ReplyKeyboardMarkup()
             markup.row('фактические')
             markup.row('плановые')
             markup.row('текущие')
             markup.row('запланированные')
             bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
-        elif(k == "дефицит/профицит" or k == "налоговые" or k == "неналоговые"):
-            #bot.send_message(message.chat.id, "Введите тип:")
+        elif (k == "дефицит/профицит" or k == "налоговые" or k == "неналоговые"):
+            # bot.send_message(message.chat.id, "Введите тип:")
             markup = types.ReplyKeyboardMarkup()
             markup.row('плановые')
             markup.row('текущие')
             markup.row("null")
             bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
-        elif(k == "доходы"):
+        elif (k == "доходы"):
             markup = types.ReplyKeyboardMarkup()
             markup.row('налоговые')
             markup.row('неналоговые')
             bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
 
-
-
-    if (message.text == "фактические" or message.text == "плановые" or message.text == "текущие" or message.text == "запланированные" or message.text == "null") and (
+    if (
+                        message.text == "фактические" or message.text == "плановые" or message.text == "текущие" or message.text == "запланированные" or message.text == "null") and (
                 len(data) != 0):
         k = 0
         if (message.text == "фактические"):
             markup = types.ReplyKeyboardHide()
             k = message.text
             bot.send_message(message.chat.id,
-                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):", reply_markup= markup)
+                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):", reply_markup=markup)
             cursor.execute(
-                "UPDATE users SET sector=\"" + str(k) +  "\" WHERE userid=" + str(message.chat.id) + ";")
+                "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-
-
 
         if (message.text == "плановые"):
             markup = types.ReplyKeyboardHide()
             k = message.text
             bot.send_message(message.chat.id,
-                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):", reply_markup= markup)
+                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):", reply_markup=markup)
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
 
