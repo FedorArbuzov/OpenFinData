@@ -12,8 +12,8 @@ class Test:
             print(response.status)
             print(response.message)
             print(response.response)
-            if response.status is False:
-                print(response.response)
+            # if response.status is False:
+            #     print(response.response)
             i += 1
 
     test_expenditure = (
@@ -38,7 +38,7 @@ class Test:
         'доходы,плановый,налоговый,null,null,null',
         'доходы,текущий,null,null,null,null',
         'доходы,текущий,налоговый,null,null,null',
-        'доходы,null,null,2012,null,ярославской',
+        'доходы,null,null,2012,null,ярославская',
         'доходы,плановый,null,2012,null,карелия',
         'доходы,плановый,null,null,null,коми',
         'доходы,плановый,налоговый,null,null,томская',
@@ -62,10 +62,11 @@ class Test:
         'расходы,фактический,налоговый,null,null,null',
         'доходы,null,неналоговый,2008,null,москва',
         'доходы,null,неналоговый,null,null,москва',
+        'расходы,null,null,2014,null,ярославская'
     )
 
 
 # Test.testing(Test.test_expenditure)
 # Test.testing(Test.test_profit)
 # Test.testing(Test.test_surplus)
-Test.testing(Test.test_errors)
+# Test.testing(Test.test_errors)

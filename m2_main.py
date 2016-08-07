@@ -218,6 +218,11 @@ class M2Retrieving:
         # Inner codes for refactoring difference between correct and incorrect mapper in help message
         codes = (
             {
+                2: 'расходы',
+                3: 'доходы',
+                4: 'профицит/дефицит',
+            },
+            {
                 2: 'плановый',
                 3: 'фактический',
                 4: 'текущий',
@@ -233,6 +238,7 @@ class M2Retrieving:
         error_message = ''
         count = 0
 
+        # TODO: Check hint algorithm
         for i1, i2 in zip(items1, items2):
             if i1 != i2:
                 i1 = int(i1)
@@ -243,29 +249,29 @@ class M2Retrieving:
 
                     # If parameter is not given but should be
                     if i1 > i2:
-                        error_message = 'Укажите ' + codes[count - 1] + '\r\n'
+                        error_message = 'Укажите ' + codes[count] + '\r\n'
 
                         # If error is in param2
                         if count == 2:
-                            error_message = 'Укажите параметр "' + codes[count - 1] + '"\r\n'
+                            error_message = 'Укажите параметр "' + codes[count] + '"\r\n'
 
                     # If parameter is given but should not be
                     else:
-                        error_message = 'Не указывайте ' + codes[count - 1] + '\r\n'
+                        error_message = 'Не указывайте ' + codes[count] + '\r\n'
 
                         # If error is in param2
                         if count == 2:
-                            error_message = 'Не указывайте параметр "' + params[count - 1] + '"\r\n'
+                            error_message = 'Не указывайте параметр "' + params[count] + '"\r\n'
 
                 # If parameter exist but should be another or error is in param1
                 else:
 
                     # If there is no param1 but should be
                     if i2 == 0 and count == 1:
-                        error_message = 'Добавьте параметр "' + codes[count - 1].get(i1) + '"\r\n'
+                        error_message = 'Добавьте параметр "' + codes[count].get(i1) + '"\r\n'
                     else:
-                        error_message = 'Замените параметр "' + codes[count - 1].get(i2) + \
-                                        '" на "' + codes[count - 1].get(i1) + '"\r\n'
+                        error_message = 'Замените параметр "' + codes[count].get(i2) + \
+                                        '" на "' + codes[count].get(i1) + '"\r\n'
             count += 1
 
         return error_message
@@ -276,3 +282,5 @@ class Result:
         self.status = status
         self.message = message
         self.response = response
+
+M2Retrieving.get_data('расходы,null,null,2014,null,ярославская')
