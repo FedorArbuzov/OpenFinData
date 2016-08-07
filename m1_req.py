@@ -1,5 +1,5 @@
 import re
-from work_class import quest
+from m1_work_class import quest
 import datetime
 import sqlite3
 
