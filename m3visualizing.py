@@ -20,7 +20,7 @@ from reportlab.platypus import Paragraph, Table, TableStyle, Image
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-import cairosvg
+#import cairosvg
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
@@ -45,14 +45,22 @@ class M3Visualizing:
             pars = []
             while i < k:
                 header = par["axes"][1]["positions"][i]["members"][0]["caption"]
+                chick=header.isupper()
+                if chick==True:
+                    header=header.lower()
+                    header=header.capitalize()
                 diagramttl.append(header)
                 znachenie = par["cells"][i][0]["value"]
                 diagramznach.append(znachenie)
                 i = i + 1
             i = 0
-            min = 1000
-            print("True")
 
+            minim = []
+            print("True")
+            #dlina=len(diagramznach[1])
+            #print(dlina)
+
+            i=0
             while i < k - 1:
 
                 if diagramznach[i] != None:
@@ -61,8 +69,9 @@ class M3Visualizing:
                         normznach.append(float(pars[0]))
                         pow = int(pars[1])
                         exponen.append(int(pars[1]))
-                        if pow < min:
-                             min= pow
+                        print(minim)
+                        #if pow < min:
+                            # min= pow
                     else:
                         normznach.append(float(diagramznach[i]))
                         exponen.append(0)
@@ -75,7 +84,8 @@ class M3Visualizing:
 
                 i = i + 1
             i = 0
-            print("True1")
+
+
             itogznach = []
             while i < k - 1:
                 if exponen[i] != 0:
@@ -85,6 +95,7 @@ class M3Visualizing:
                     itogznach.append(int(normznach[i]))
                 i = i + 1
             print(itogznach)
+            print(minim)
 
             # setting the Arial font
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
@@ -172,6 +183,7 @@ class M3Visualizing:
                 i = i + 1
             pie_chart.render_to_file('chart.svg')
 
+            """
             cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
 
             # Вставляем диаграмму в pdf
@@ -273,3 +285,4 @@ class M3Visualizing:
         else:
             mew = par["cells"][0][0]["value"]
             print(mew)
+"""

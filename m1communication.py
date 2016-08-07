@@ -264,7 +264,10 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            file = open('result.pdf','rb')
+            file=M3Visualizing.create_response(result.response)
+            file1 = open(file, 'rb')
+            bot.send_message(message.chat.id, file1 )
+
             # TODO: отправка в чат
             # TODO: обработка строки
 
