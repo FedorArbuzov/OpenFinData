@@ -1,0 +1,286 @@
+import requests
+from m1_req import distance
+from m2_dict import mappers
+from m2_dict import param2
+from m2_dict import sphere
+from m2_dict import places
+
+
+# Module, which is responsible for getting required from user data
+class M2Retrieving:
+    @staticmethod
+    def get_data(input_string):
+        """Getting JSON data based on input parameters"""
+
+        # Splitting input string in parameters: [Theme, Property, Property2, Year, Sphere, Territory]
+        params = input_string.split(',')
+
+        # Creating response object
+        response = Result()
+
+        # Creating mapper based on list of parameters
+        mapper = M2Retrieving.__list_to_mapper(params, response)
+
+        if response.message != "":
+            return response
+
+        # Find MDX-sampler for formed mapper
+        mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, params, response)
+
+        # Escaping this method if no mdx skeleton for current mapper is found
+        if mdx_skeleton == 0 or mdx_skeleton is None:
+            return response
+
+        # Forming POST-data (cube and query) for request
+        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, mapper)
+
+        # Sending request
+        M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
+
+        return response
+
+    @staticmethod
+    def __list_to_mapper(parameters, response):
+        """Refactoring input parameters in mapper"""
+
+        # Inner codes for refactoring list in mapper
+        codes = (
+            {
+                'расходы': 2,
+                'доходы': 3,
+                'дефицит': 4,
+            },
+
+            {
+                'плановый': 2,
+                'фактический': 3,
+                'текущий': 4,
+                'запланированный': 5
+            }
+        )
+
+        mapper = ''
+
+        # TODO: refactor processing of mapper
+        # Processing theme
+        if parameters[0] in codes[0]:
+            mapper += str(codes[0].get(parameters[0])) + '.'
+        else:
+            response.message = 'Неверно выбрана предметная область.'
+            return response
+
+        # Processing param1
+        if parameters[1] == 'null':
+            mapper += '0.'
+        elif parameters[1] in codes[1]:
+            mapper += str(codes[1].get(parameters[1])) + '.'
+        else:
+            response.message = 'Неверно выбрана 1я характеристика предметной области'
+            return response
+
+        # Processing param2
+        if parameters[2] == 'null':
+            mapper += '0.'
+        elif parameters[2] in param2:
+            mapper += '1.'
+        else:
+            message = 'Параметр "' + parameters[2] + '" не верен. ' \
+                                                     'Допустимы: отсутствие этого параметра, ' \
+                                                     'значение "налоговый" и "неналоговый"'
+            response.message = message
+            return response
+
+        # Processing year
+        if parameters[3] == 'null':
+            mapper += '0.'
+        else:
+            mapper += '1.'
+
+        # Processing sphere
+        if parameters[4] == 'null':
+            mapper += '0.'
+        elif parameters[4] in sphere:
+            mapper += '1.'
+        else:
+            response.message = 'Неверно указана сфера. Попробуйте еще раз'
+            return response
+
+        # Processing territory
+        if parameters[5] == 'null':
+            mapper += '0'
+        elif parameters[5] in places:
+            mapper += '1'
+        else:
+            response.message = 'Неверно указана территория. Попробуйте еще раз'
+            return response
+
+        return mapper
+
+    @staticmethod
+    def __get_mdx_skeleton_for_mapper(mapper, params, response):
+        """Finding MDX sampler for mapper"""
+
+        mdx_skeleton = mappers.get(mapper, 0)
+
+        # Processing error message for which MDX-query is not ready yet
+        if mdx_skeleton is None:
+            response.message = 'Данный запрос еще в стадии разработки'
+
+        # Finding the nearest mapper to given and forming response
+        if mdx_skeleton == 0:
+            message = 'Запрос чуть-чуть некорректен. Пожалуйста, подправьте его, выбрав ' \
+                      'один из предложенных вариантов:\r\n'
+            index = 1
+            for i in list(mappers.keys()):
+                if distance(i, mapper) == 1:
+                    message += '- ' + M2Retrieving.__hint(i, mapper, params)
+                    index += 1
+            if index == 1:
+                message = 'В запросе неверно несколько параметров. Попробуйте изменить запрос.   '
+
+            response.message = message[:-2]
+
+        return mdx_skeleton
+
+    @staticmethod
+    def __refactor_mdx_skeleton(mdx_skeleton, params, mapper):
+        """Replacing marks in MDX samplers by real data"""
+
+        mdx_cube_and_query = []
+
+        # If there are marks for substitution in MDX-sampler
+        if '*' in mdx_skeleton:
+            temp = mdx_skeleton
+            while temp.find('*') != -1:
+                i = temp.find('*')
+                star = temp[i:i + 2]
+                param_id = int(star[1])
+
+                # Forming output param instead of *2, *3, *4, *5
+                # Replacing property2
+                if param_id == 2:
+                    if mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
+                        data = param2[params[param_id]][1]
+                    else:
+                        data = param2[params[param_id]][0]
+
+                # Replacing year
+                if param_id == 3:
+                    data = str(params[param_id])
+
+                # Replacing sphere
+                if param_id == 4:
+                    data = sphere[params[param_id]]
+
+                # Replacing territory
+                if param_id == 5:
+                    data = '08-' + places[params[param_id]]
+
+                # Replacing mark by parameter
+                mdx_skeleton = mdx_skeleton.replace(star, data)
+
+                # Cutting temp in order ro find next mark
+                temp = temp[i + 1:]
+
+        # Defining name of the cube from MDX-query
+        query_by_elements = mdx_skeleton.split(' ')
+        from_element = query_by_elements[query_by_elements.index('FROM') + 1]
+        cube = from_element[1:len(from_element) - 4]
+
+        # Adding cube and MDX-query
+        mdx_cube_and_query.append(cube)
+        mdx_cube_and_query.append(mdx_skeleton)
+
+        return mdx_cube_and_query
+
+    @staticmethod
+    def __send_mdx_request(data_mart_code, mdx_query, response):
+        """Sending POST request to remote server"""
+
+        data = {'dataMartCode': data_mart_code, 'mdxQuery': mdx_query}
+        r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
+
+        # Processing if MDX-query fails
+        if '"success": false' in r.text:
+            response.message = 'Запрос не удался:('
+            response.response = r.text
+            return
+
+        # Updating params of resulting object
+        response.status = True
+        response.message = 'OK'
+        response.response = r.text
+
+    @staticmethod
+    def __hint(true_mapper, false_mapper, params):
+        """Transfer in words steps which should be made in order to form correct request"""
+
+        # Inner codes for refactoring difference between correct and incorrect mapper in help message
+        codes = (
+            {
+                2: 'расходы',
+                3: 'доходы',
+                4: 'профицит/дефицит',
+            },
+            {
+                2: 'плановый',
+                3: 'фактический',
+                4: 'текущий',
+                5: 'запланированный'
+            },
+            'налоговый/неналоговый',
+            'год',
+            'сферу',
+            'территорию'
+        )
+
+        items1, items2 = true_mapper.split('.'), false_mapper.split('.')
+        error_message = ''
+        count = 0
+
+        # TODO: Check hint algorithm
+        for i1, i2 in zip(items1, items2):
+            if i1 != i2:
+                i1 = int(i1)
+                i2 = int(i2)
+
+                # If error is in existence or absence of parameter (without considering param1)
+                if (i1 == 0 or i1 == 1) and count != 1:
+
+                    # If parameter is not given but should be
+                    if i1 > i2:
+                        error_message = 'Укажите ' + codes[count] + '\r\n'
+
+                        # If error is in param2
+                        if count == 2:
+                            error_message = 'Укажите параметр "' + codes[count] + '"\r\n'
+
+                    # If parameter is given but should not be
+                    else:
+                        error_message = 'Не указывайте ' + codes[count] + '\r\n'
+
+                        # If error is in param2
+                        if count == 2:
+                            error_message = 'Не указывайте параметр "' + params[count] + '"\r\n'
+
+                # If parameter exist but should be another or error is in param1
+                else:
+
+                    # If there is no param1 but should be
+                    if i2 == 0 and count == 1:
+                        error_message = 'Добавьте параметр "' + codes[count].get(i1) + '"\r\n'
+                    else:
+                        error_message = 'Замените параметр "' + codes[count].get(i2) + \
+                                        '" на "' + codes[count].get(i1) + '"\r\n'
+            count += 1
+
+        return error_message
+
+
+class Result:
+    def __init__(self, status=False, message='', response=''):
+        self.status = status
+        self.message = message
+        self.response = response
+
+M2Retrieving.get_data('расходы,null,null,2014,null,ярославская')
