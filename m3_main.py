@@ -172,9 +172,9 @@ class M3Visualizing:
                 s = ''
                 if (k > 12) and (k < 16):
                     s = mas[3]
-                if (k > 9) and (k < 13):
+                if (k > 8) and (k < 13):
                     s = mas[2]
-                if (k > 6) and (k < 10):
+                if (k > 6) and (k < 9):
                     s = mas[1]
                 if (k > 3) and (k < 7):
                     s = mas[0]
@@ -189,8 +189,10 @@ class M3Visualizing:
                 i = 0
                 while i < k - 1:
                     if dopoln_chis > 3:
-                        itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
+                        itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis-1)))
                         i += 1
+
+                print(dopoln_chis)
 
                 i = 0
                 sum = 0
@@ -357,24 +359,27 @@ class M3Visualizing:
                 mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
                 k = dopoln_chis
                 s = ''
-                if (k > 12) and (k < 16):
+                if (k > 11) and (k < 16):
                     s = mas[3]
-                if (k > 9) and (k < 13):
+                if (k > 8) and (k < 12):
                     s = mas[2]
-                if (k > 6) and (k < 10):
+                if (k > 6) and (k < 9):
                     s = mas[1]
                 if (k > 3) and (k < 7):
                     s = mas[0]
                 return s
 
+
             some_number = par["cells"][0][0]["value"]
             some_number = round(float(some_number))
+            dlina = len(str(some_number))
+            print(dlina)
             if some_number > 0:
-                dlina = len(str(some_number))
+
                 if dlina > 3:
-                    some_number /= 10 ** (dlina - 3)
+                    some_number /= 10 ** (dlina - 4)
                     some_number = round(some_number)
-                    stepen = __formation(dlina - 3)
+                    stepen = __formation(dlina - 4)
             else:
                 stepen = ''
             some_number = str(some_number)
