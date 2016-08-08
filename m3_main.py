@@ -77,11 +77,8 @@ class M3Visualizing:
 
                 i = i + 1
             i = 0
-            print(exponen)
-            print("True1")
             itogznach = []
-            print(diagramznach)
-            print(normznach)
+
 
             #считаем итоговое значение(на самом деле нет)
             while i < k - 1:
@@ -101,6 +98,7 @@ class M3Visualizing:
                 i=i+1
 
             i=0
+            #находим количество цифр в числе
             dopoln_chis=minznach[0]
             while i<k-1:
                 if minznach[i]<dopoln_chis:
@@ -108,8 +106,7 @@ class M3Visualizing:
                 i=i+1
 
 
-            print(itogznach)
-            print(minznach)
+
             print(dopoln_chis)
 
 
@@ -139,6 +136,7 @@ class M3Visualizing:
                 a.drawString(0.5 * inch, 10.72 * inch, 'Ваш запрос: ' + title)
 
             # метод для превращения 10^n в 10 тысяч млн млрд и тд
+            #метод неочень, я попозже его переправлю
             def __frmt(n):
                 mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
                 k = n
@@ -163,6 +161,7 @@ class M3Visualizing:
                     s = str(n)
                 return s
 
+            #вот это хороший метод
             def __formation(dopoln_chis):
                 mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
                 k=dopoln_chis
@@ -241,7 +240,7 @@ class M3Visualizing:
             width, height = A4
 
             # Высчитываем итоговую сумму
-
+            #переделываем итоговое значение
             i=0
             while i<k-1:
                 if dopoln_chis>3:
@@ -250,14 +249,15 @@ class M3Visualizing:
 
             dop_chis=__formation(dopoln_chis)
 
-            print("yop")
-            print(itogznach)
+
             i=0
             sum = 0
             while i < k - 1:
                 sum = sum + itogznach[i]
                 i = i + 1
 
+
+            #пихаем значения красиво в табличку
             i = 0
             qu = []
             tablemas = [["Параметр", "Значение *"]]  # Тут сразу и заголовки таблицы
@@ -329,7 +329,11 @@ class M3Visualizing:
             with open('result.pdf', 'wb') as f:
                 output.write(f)
             '''
-            print("Keki")
+
+            return None
+
         else:
             mew = par["cells"][0][0]["value"]
-            print(mew)
+            mew=round(float(mew))
+            mew=str(mew)+" рублей"
+            return mew

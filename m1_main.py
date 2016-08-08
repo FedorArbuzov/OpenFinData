@@ -268,11 +268,14 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            M3Visualizing.create_response(result.response)
-            file1 = open('chart.svg', 'rb')
-            file2 = open('page2.pdf', 'rb')
-            bot.send_document(message.chat.id, file1)
-            bot.send_document(message.chat.id, file2)
+            m3_result = M3Visualizing.create_response(result.response)
+            if m3_result is None:
+                file1 = open('chart.svg', 'rb')
+                file2 = open('page2.pdf', 'rb')
+                bot.send_document(message.chat.id, file1)
+                bot.send_document(message.chat.id, file2)
+            else:
+                bot.send_message(message.chat.id, m3_result)
             # TODO: отправка в чат
             # TODO: обработка строки
 
