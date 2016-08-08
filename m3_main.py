@@ -184,8 +184,16 @@ class M3Visualizing:
 
             # Общая цифра
             def __info(a):
-                sum = 0
+                # Высчитываем итоговую сумму
+                # переделываем итоговое значение
                 i = 0
+                while i < k - 1:
+                    if dopoln_chis > 3:
+                        itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
+                        i = i + 1
+
+                i = 0
+                sum = 0
                 while i < k - 1:
                     sum = sum + itogznach[i]
                     i = i + 1
@@ -199,7 +207,7 @@ class M3Visualizing:
 
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(0, 0, 0)
-                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + __frmt(sum) + " * (10^1000)" + " рублей")
+                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + str(sum) + ' ' + dop_chis + ' ' + " рублей")
 
             # Применяем все функции к нашему документу и сохраняем его
             __top_line(doc)
@@ -230,13 +238,11 @@ class M3Visualizing:
             ipdf = PdfFileReader(open('pattern.pdf', 'rb'))
             wpdf = PdfFileReader(open('chart.pdf', 'rb'))
             watermark = wpdf.getPage(0)
-
             for i in range(ipdf.getNumPages()):
                 page = ipdf.getPage(i)
                 # Здесь корректируем позиционирование
                 page.mergeTranslatedPage(watermark, 0.3 * inch, 2 * inch, expand=False)
                 output.addPage(page)
-
             # Сохраняем всю красоту в новый pdf
             with open('page1.pdf', 'wb') as f:
                 output.write(f)
@@ -245,14 +251,17 @@ class M3Visualizing:
 
             width, height = A4
 
+            '''
             # Высчитываем итоговую сумму
-            # переделываем итоговое значение
-            i = 0
-            while i < k - 1:
-                if dopoln_chis > 3:
-                    itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
-                    i += 1
+            #переделываем итоговое значение
+            i=0
+            while i<k-1:
+            if dopoln_chis>3:
+            itogznach[i]=round(itogznach[i]/(10**(dopoln_chis-1)))
+            i=i+1
+            '''
 
+            # Общая сумма (для вычисления процентов нужна)
             i = 0
             sum = 0
             while i < k - 1:
@@ -332,12 +341,9 @@ class M3Visualizing:
             # Добавляем станичку с таблицей
             file1 = PdfFileReader(open('page1.pdf', "rb"))
             file2 = PdfFileReader(open('page2.pdf', "rb"))
-
             output = PdfFileWriter()
-
             output.addPage(file1.getPage(0))
             output.addPage(file2.getPage(0))
-
             # Сохраняем все в итоговый файл
             with open('result.pdf', 'wb') as f:
                 output.write(f)
