@@ -20,7 +20,7 @@ from reportlab.platypus import Paragraph, Table, TableStyle, Image
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-import cairosvg
+#import cairosvg
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
