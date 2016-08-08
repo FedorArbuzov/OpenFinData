@@ -22,7 +22,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 #import cairosvg
 from PyPDF2 import PdfFileWriter, PdfFileReader
-
+import textwrap
 
 class M3Visualizing:
 
@@ -181,8 +181,16 @@ class M3Visualizing:
 
             # Общая цифра
             def __info(a):
-                sum = 0
+                # Высчитываем итоговую сумму
+                # переделываем итоговое значение
                 i = 0
+                while i < k - 1:
+                    if dopoln_chis > 3:
+                        itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
+                        i = i + 1
+
+                i = 0
+                sum = 0
                 while i < k - 1:
                     sum = sum + itogznach[i]
                     i = i + 1
@@ -196,7 +204,7 @@ class M3Visualizing:
 
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(0, 0, 0)
-                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + __frmt(sum) + " * (10^1000)" + " рублей")
+                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + str(sum) + ' ' + dop_chis + ' ' + " рублей")
 
             # Применяем все функции к нашему документу и сохраняем его
             __top_line(doc)
@@ -241,6 +249,7 @@ class M3Visualizing:
 
             width, height = A4
 
+            '''
             # Высчитываем итоговую сумму
             #переделываем итоговое значение
             i=0
@@ -248,16 +257,17 @@ class M3Visualizing:
                 if dopoln_chis>3:
                     itogznach[i]=round(itogznach[i]/(10**(dopoln_chis-1)))
                     i=i+1
+            '''
 
-
-
+            # Общая сумма (для вычисления процентов нужна)
             i=0
             sum = 0
             while i < k - 1:
                 sum = sum + itogznach[i]
                 i = i + 1
 
-            #стили для текста в левой ячейке
+
+
             styles = getSampleStyleSheet()
             styleN = styles['BodyText']
             styleN.wordWrap = 'True'
@@ -269,9 +279,10 @@ class M3Visualizing:
             qu = []
             tablemas = [["Параметр", "Значение *"]]  # Тут сразу и заголовки таблицы
             if (sum != 0):
+
                 while i < k - 1:
                     # Тут мы высчитываем проценты, чтобы вставить их в табличку
-                    qu = [Paragraph((diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN), itogznach[i]]
+                    qu = [Paragraph(diagramttl[i] + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN), itogznach[i]]
                     tablemas.append(qu)
                     i = i + 1
             else:
@@ -320,7 +331,7 @@ class M3Visualizing:
                 a.setFont('Arial', 10)
                 a.setFillColorRGB(0, 0, 0)
                 a.drawString(0.5 * inch, 0.5 * inch,
-                             "*Значения приведены в "+dop_chis+" рублей")
+                             "* Значения приведены в "+ dop_chis +" рублей")
 
             __notice(c)
             c.save()
