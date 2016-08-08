@@ -256,8 +256,15 @@ class M3Visualizing:
             i = 0
             sum = 0
             while i < k - 1:
-                sum += itogznach[i]
-                i += 1
+                sum = sum + itogznach[i]
+                i = i + 1
+
+            #стили для текста в левой ячейке
+            styles = getSampleStyleSheet()
+            styleN = styles['BodyText']
+            styleN.wordWrap = 'True'
+            styleN.fontName = 'Arial'
+            styleN.leading = 14
 
             # пихаем значения красиво в табличку
             i = 0
@@ -266,7 +273,7 @@ class M3Visualizing:
             if sum != 0:
                 while i < k - 1:
                     # Тут мы высчитываем проценты, чтобы вставить их в табличку
-                    qu = [str(diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", itogznach[i]]
+                    qu = [Paragraph((diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN), itogznach[i]]
                     tablemas.append(qu)
                     i += 1
             else:
@@ -279,11 +286,15 @@ class M3Visualizing:
 
             # Стили для таблицы
             styles = getSampleStyleSheet()
-            table = Table(data, colWidths=[16 * cm, 2.5 * cm], rowHeights=1.1 * cm)
+            table = Table(data, colWidths=[16 * cm, 2.5 * cm])
             table.setStyle(TableStyle([
                 # ('INNERGRID', (0,0), (-1,-1), 1.5, colors.white),
                 ('LINEBEFORE', (1, 0), (-1, -1), 0.5, colors.white),
                 ('LEFTPADDING', (0, 0), (-1, -1), 11),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                # ('LEADING', (0, 0), (-1, -1), 5),
                 ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
                 # ('LINEABOVE',(0,1),(1,1), 2, colors.white),
                 ('BACKGROUND', (0, 0), (1, 0), colors.Color(0.05, 0.27, 0.63)),
