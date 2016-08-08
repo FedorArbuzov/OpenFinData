@@ -26,6 +26,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
 
+
     @staticmethod
     def create_response(json_string):
 
@@ -333,7 +334,31 @@ class M3Visualizing:
             return None
 
         else:
-            mew = par["cells"][0][0]["value"]
-            mew=round(float(mew))
-            mew=str(mew)+" рублей"
-            return mew
+            # вот это хороший метод
+            def __formation(dopoln_chis):
+                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                k = dopoln_chis
+                s = ''
+                if (k > 12) and (k < 16):
+                    s = mas[3]
+                if (k > 9) and (k < 13):
+                    s = mas[2]
+                if (k > 6) and (k < 10):
+                    s = mas[1]
+                if (k > 3) and (k < 7):
+                    s = mas[0]
+                return s
+
+            some_number = par["cells"][0][0]["value"]
+            some_number=round(float(some_number))
+            if some_number>0:
+                dlina=len(str(some_number))
+                if dlina>3:
+                    some_number=some_number/10**(dlina-3)
+                    some_number=round(some_number)
+                    stepen=__formation(dlina-3)
+            else:
+                stepen=''
+            some_number = str(some_number)
+            some_number= some_number + stepen+ " рублей"
+            return some_number
