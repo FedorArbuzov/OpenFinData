@@ -272,7 +272,9 @@ def repeat_all_messages(message):
             if m3_result is None:
                 file1 = open('chart.svg', 'rb')
                 file2 = open('page2.pdf', 'rb')
+                file3 = open('pattern.pdf', 'rb')
                 bot.send_document(message.chat.id, file1)
+                bot.send_document(message.chat.id, file3)
                 bot.send_document(message.chat.id, file2)
             else:
                 bot.send_message(message.chat.id, m3_result)

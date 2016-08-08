@@ -177,6 +177,7 @@ class M3Visualizing:
                     s=mas[0]
                 return s
 
+            dop_chis = __formation(dopoln_chis)
 
             # Общая цифра
             def __info(a):
@@ -248,7 +249,6 @@ class M3Visualizing:
                     itogznach[i]=round(itogznach[i]/(10**(dopoln_chis-1)))
                     i=i+1
 
-            dop_chis=__formation(dopoln_chis)
 
 
             i=0
