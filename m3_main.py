@@ -61,7 +61,7 @@ class M3Visualizing:
                 diagramttl.append(header)
                 znachenie = par["cells"][i][0]["value"]
                 diagramznach.append(znachenie)
-                i = i + 1
+                i += 1
             i = 0
 
             # парсим число
@@ -82,7 +82,7 @@ class M3Visualizing:
                     normznach.append(diagramznach[i])
                     exponen.append(diagramznach[i])
 
-                i = i + 1
+                i += 1
             i = 0
             itogznach = []
 
@@ -93,7 +93,7 @@ class M3Visualizing:
                     itogznach.append(int(normznach[i] * 10 ** (exponen[i])))
                 else:
                     itogznach.append(int(normznach[i]))
-                i = i + 1
+                i += 1
             i = 0
             minznach = []
             while i < k - 1:
@@ -101,7 +101,7 @@ class M3Visualizing:
                     minznach.append(len(str(itogznach[i])))
                 else:
                     minznach.append(1000)
-                i = i + 1
+                i += 1
 
             i = 0
             # находим количество цифр в числе
@@ -109,7 +109,7 @@ class M3Visualizing:
             while i < k - 1:
                 if minznach[i] < dopoln_chis:
                     dopoln_chis = minznach[i]
-                i = i + 1
+                i += 1
 
             print(dopoln_chis)
 
@@ -150,16 +150,16 @@ class M3Visualizing:
                 p = n
 
                 if (k > 12) and (k < 16):
-                    n = n / (10 ** 12)
+                    n /= (10 ** 12)
                     s = str(n) + mas[3]
                 if (k > 9) and (k < 13):
-                    n = n / (10 ** 9)
+                    n /= (10 ** 9)
                     s = str(n) + mas[2]
                 if (k > 6) and (k < 10):
-                    n = n / (10 ** 6)
+                    n /= (10 ** 6)
                     s = str(n) + mas[1]
                 if (k > 3) and (k < 7):
-                    n = n / (10 ** 3)
+                    n /= (10 ** 3)
                     s = str(n) + mas[0]
                 if k < 4:
                     s = str(n)
@@ -190,13 +190,13 @@ class M3Visualizing:
                 while i < k - 1:
                     if dopoln_chis > 3:
                         itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
-                        i = i + 1
+                        i += 1
 
                 i = 0
                 sum = 0
                 while i < k - 1:
                     sum = sum + itogznach[i]
-                    i = i + 1
+                    i += 1
 
                 a.setFillColorRGB(0.72, 0.85, 0.98)
                 a.rect(0 * inch, 9.85 * inch, 8.27 * inch, 0.5 * inch, stroke=0, fill=1)
@@ -266,7 +266,7 @@ class M3Visualizing:
             sum = 0
             while i < k - 1:
                 sum = sum + itogznach[i]
-                i = i + 1
+                i += 1
 
             #стили для текста в левой ячейке
             styles = getSampleStyleSheet()
@@ -372,7 +372,7 @@ class M3Visualizing:
             if some_number > 0:
                 dlina = len(str(some_number))
                 if dlina > 3:
-                    some_number = some_number / 10 ** (dlina - 3)
+                    some_number /= 10 ** (dlina - 3)
                     some_number = round(some_number)
                     stepen = __formation(dlina - 3)
             else:
