@@ -268,18 +268,17 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            m3_result = M3Visualizing.create_response(result.response)
-            if m3_result is None:
-                file1 = open('chart.svg', 'rb')
-                file2 = open('page2.pdf', 'rb')
-                file3 = open('pattern.pdf', 'rb')
+            m3_result = M3Visualizing.create_response(message.chat.id, result.response)
+            if m3_result.is_file is False:
+                bot.send_message(message.chat.id, m3_result.number)
+            else:
+                path = m3_result.path + "\\"
+                file1 = open(path + 'chart.svg', 'rb')
+                file2 = open(path + 'page2.pdf', 'rb')
+                file3 = open(path + 'pattern.pdf', 'rb')
                 bot.send_document(message.chat.id, file1)
                 bot.send_document(message.chat.id, file3)
                 bot.send_document(message.chat.id, file2)
-            else:
-                bot.send_message(message.chat.id, m3_result)
-            # TODO: отправка в чат
-            # TODO: обработка строки
 
 
 @bot.message_handler(content_types=["text"])
@@ -350,7 +349,7 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
 
     if (
-                        message.text == "фактические" or message.text == "плановые" or message.text == "текущие" or message.text == "запланированные" or message.text == "null") and (
+                                message.text == "фактические" or message.text == "плановые" or message.text == "текущие" or message.text == "запланированные" or message.text == "null") and (
                 len(data) != 0):
         k = 0
         if (message.text == "фактические"):
