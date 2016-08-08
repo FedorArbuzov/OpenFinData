@@ -20,7 +20,7 @@ from reportlab.platypus import Paragraph, Table, TableStyle, Image
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-import cairosvg
+#import cairosvg
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
@@ -30,9 +30,9 @@ class M3Visualizing:
     def create_response(json_string):
 
         par = json.loads(json_string)
-
+        #проверка на то, детализировать или нет
         if len(par["axes"]) > 1:
-
+            #парсим парсим
             k = len(par["axes"][1]["positions"])
             title = par["axes"][1]["positions"][0]["members"][0]["caption"]
             i = 1
@@ -43,26 +43,28 @@ class M3Visualizing:
             normznach = []
             exponen = []
             pars = []
+            #парсим
             while i < k:
                 header = par["axes"][1]["positions"][i]["members"][0]["caption"]
+                if header.isupper()==True:
+                    header=header.lower()
+                    header=header.capitalize()
+
                 diagramttl.append(header)
                 znachenie = par["cells"][i][0]["value"]
                 diagramznach.append(znachenie)
                 i = i + 1
             i = 0
-            min = 1000
-            print("True")
 
+            #парсим число
             while i < k - 1:
 
-                if diagramznach[i] != None:
+                if (diagramznach[i] != None):
                     if 'Е' in diagramznach[i]:
                         pars = diagramznach[i].split('E')
                         normznach.append(float(pars[0]))
-                        pow = int(pars[1])
-                        exponen.append(int(pars[1]))
-                        if pow < min:
-                             min= pow
+                        exponen.append(pars[1])
+
                     else:
                         normznach.append(float(diagramznach[i]))
                         exponen.append(0)
@@ -75,8 +77,13 @@ class M3Visualizing:
 
                 i = i + 1
             i = 0
+            print(exponen)
             print("True1")
             itogznach = []
+            print(diagramznach)
+            print(normznach)
+
+            #считаем итоговое значение(на самом деле нет)
             while i < k - 1:
                 if exponen[i] != 0:
 
@@ -84,7 +91,29 @@ class M3Visualizing:
                 else:
                     itogznach.append(int(normznach[i]))
                 i = i + 1
+            i=0
+            minznach=[]
+            while i<k-1:
+                if itogznach[i]!=0:
+                    minznach.append(len(str(itogznach[i])))
+                else:
+                    minznach.append(1000)
+                i=i+1
+
+            i=0
+            dopoln_chis=minznach[0]
+            while i<k-1:
+                if minznach[i]<dopoln_chis:
+                    dopoln_chis=minznach[i]
+                i=i+1
+
+
             print(itogznach)
+            print(minznach)
+            print(dopoln_chis)
+
+
+
 
             # setting the Arial font
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
@@ -112,29 +141,42 @@ class M3Visualizing:
             # метод для превращения 10^n в 10 тысяч млн млрд и тд
             def __frmt(n):
                 mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
-                k = 0
+                k = n
                 s = ''
                 p = n
 
-                while p > 0:
-                    p = p // 10
-                    k = k + 1
+
 
                 if (k > 12) and (k < 16):
                     n = n / (10 ** 12)
-                    s = str(n) + mas[4]
+                    s = str(n) + mas[3]
                 if (k > 9) and (k < 13):
                     n = n / (10 ** 9)
-                    s = str(n) + mas[3]
+                    s = str(n) + mas[2]
                 if (k > 6) and (k < 10):
                     n = n / (10 ** 6)
-                    s = str(n) + mas[2]
+                    s = str(n) + mas[1]
                 if (k > 3) and (k < 7):
                     n = n / (10 ** 3)
-                    s = str(n) + mas[1]
+                    s = str(n) + mas[0]
                 if k < 4:
                     s = str(n)
                 return s
+
+            def __formation(dopoln_chis):
+                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                k=dopoln_chis
+                s=''
+                if (k > 12) and (k < 16):
+                    s=mas[3]
+                if (k > 9) and (k < 13):
+                    s=mas[2]
+                if (k > 6) and (k < 10):
+                    s=mas[1]
+                if (k > 3) and (k < 7):
+                    s=mas[0]
+                return s
+
 
             # Общая цифра
             def __info(a):
@@ -199,6 +241,18 @@ class M3Visualizing:
             width, height = A4
 
             # Высчитываем итоговую сумму
+
+            i=0
+            while i<k-1:
+                if dopoln_chis>3:
+                    itogznach[i]=round(itogznach[i]/(10**(dopoln_chis-1)))
+                    i=i+1
+
+            dop_chis=__formation(dopoln_chis)
+
+            print("yop")
+            print(itogznach)
+            i=0
             sum = 0
             while i < k - 1:
                 sum = sum + itogznach[i]
@@ -255,7 +309,7 @@ class M3Visualizing:
                 a.setFont('Arial', 10)
                 a.setFillColorRGB(0, 0, 0)
                 a.drawString(0.5 * inch, 0.5 * inch,
-                             "* Для получения реальной суммы в рублях необходимо табличное значение умножить на (10^1000)")
+                             "*Значения приведены в "+dop_chis+" рублей")
 
             __notice(c)
             c.save()
@@ -275,6 +329,7 @@ class M3Visualizing:
             with open('result.pdf', 'wb') as f:
                 output.write(f)
             '''
+            print("Keki")
         else:
             mew = par["cells"][0][0]["value"]
             print(mew)

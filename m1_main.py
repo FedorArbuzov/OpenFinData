@@ -8,7 +8,7 @@ from m1_req import main_sector
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
-API_TOKEN = '231161869:AAFpafehgQl9V-5f6-1KvwjPkzhbgdqDflU'
+API_TOKEN = '261583934:AAGhkbne0Yi7sSCnO0fXVbUimQUMa-0kwRg'
 bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
@@ -271,7 +271,8 @@ def repeat_all_messages(message):
             M3Visualizing.create_response(result.response)
             file1 = open('chart.svg', 'rb')
             file2 = open('page2.pdf', 'rb')
-            bot.send_document(message.chat.id, file1, file2)
+            bot.send_document(message.chat.id, file1)
+            bot.send_document(message.chat.id, file2)
             # TODO: отправка в чат
             # TODO: обработка строки
 
