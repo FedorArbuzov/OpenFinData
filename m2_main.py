@@ -282,5 +282,3 @@ class Result:
         self.status = status
         self.message = message
         self.response = response
-
-M2Retrieving.get_data('расходы,null,null,2014,null,ярославская')
