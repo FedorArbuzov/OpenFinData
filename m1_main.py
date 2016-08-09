@@ -272,9 +272,9 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            filename11="dima.svg"
-            filename12="dima.pdf"
-            m3_result = M3Visualizing.create_response(message.chat.id, result.response,filename11,filename12)
+            filename11 = "dima.svg"
+            filename12 = "dima.pdf"
+            m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename11, filename12)
             if m3_result.is_file is False:
                 bot.send_message(message.chat.id, m3_result.number)
             else:
@@ -282,11 +282,10 @@ def repeat_all_messages(message):
                 bot.send_message(message.chat.id, m3_result.number)
                 file1 = open(path + filename11, 'rb')
                 file2 = open(path + filename12, 'rb')
-                #file3 = open(path + 'pattern.pdf', 'rb')
+                # file3 = open(path + 'pattern.pdf', 'rb')
                 bot.send_document(message.chat.id, file1)
-                #bot.send_document(message.chat.id, file3)
+                # bot.send_document(message.chat.id, file3)
                 bot.send_document(message.chat.id, file2)
-
 
 
 @bot.message_handler(content_types=["text"])
@@ -422,7 +421,8 @@ def voice_processing(message):
     bytes_ogg_file = file.content
     r = requests.post(url, headers, str(bytes_ogg_file))
     if 'Unknown Content-Type' in str(r.text):
-        bot.send_message(message.chat.id, 'Хехехе извините, сегодня кусок кода, обрабатывающий голосовые запросы в отпуске:(')
+        bot.send_message(message.chat.id,
+                         'Хехехе извините, сегодня кусок кода, обрабатывающий голосовые запросы в отпуске:(')
 
 
 if __name__ == '__main__':
