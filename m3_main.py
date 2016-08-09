@@ -31,7 +31,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string):
+    def create_response(user_id, json_string,filename1,filename2):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет
@@ -208,7 +208,7 @@ class M3Visualizing:
                 pie_chart.add(diagramttl[i], itogznach[i])
                 i += 1
 
-            pie_chart.render_to_file(path + "\\" + 'chart.svg')
+            pie_chart.render_to_file(path + "\\" + filename1)
 
             # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
             # cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
@@ -297,7 +297,7 @@ class M3Visualizing:
             ]))
 
             # Создаем страницу с таблицей
-            c = canvas.Canvas(path + "\\" + "page2.pdf", pagesize=A4)
+            c = canvas.Canvas(path + "\\" + filename2, pagesize=A4)
             c.setFont('Arial', 14)
 
             # Функция для позиционирования таблицы
@@ -331,7 +331,8 @@ class M3Visualizing:
             with open('result.pdf', 'wb') as f:
                 output.write(f)
             '''
-
+            #os.rename("chart.svg",filename1)
+            #os.rename("page2.pdf",filename2)
             # TODO: поиск главного значения для вывода в сообщении
             result.number = str(sum)+" "+dop_chis+" рублей"
             result.is_file=True
