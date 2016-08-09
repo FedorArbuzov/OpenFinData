@@ -84,6 +84,7 @@ class M3Visualizing:
 
                 i += 1
             i = 0
+            print(normznach)
             itogznach = []
 
             # считаем итоговое значение(на самом деле нет)
@@ -105,6 +106,7 @@ class M3Visualizing:
 
             i = 0
             # находим количество цифр в числе
+            #dopoln_chis - число с минимальным количеством цифр
             dopoln_chis = minznach[0]
             while i < k - 1:
                 if minznach[i] < dopoln_chis:
@@ -172,9 +174,9 @@ class M3Visualizing:
                 s = ''
                 if (k > 12) and (k < 16):
                     s = mas[3]
-                if (k > 8) and (k < 13):
+                if (k > 9) and (k < 13):
                     s = mas[2]
-                if (k > 6) and (k < 9):
+                if (k > 6) and (k < 10):
                     s = mas[1]
                 if (k > 3) and (k < 7):
                     s = mas[0]
@@ -354,40 +356,52 @@ class M3Visualizing:
             # TODO: поиск главного значения для вывода в сообщении
             result.number = None
         else:
-            # вот это хороший метод
-            def __formation(dopoln_chis):
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
-                k = dopoln_chis
-                s = ''
-                if (k > 11) and (k < 16):
-                    s = mas[3]
-                if (k > 8) and (k < 12):
-                    s = mas[2]
-                if (k > 6) and (k < 9):
-                    s = mas[1]
-                if (k > 3) and (k < 7):
-                    s = mas[0]
-                return s
 
+            #использовать метод уже после проверки на то, есть 0 или нет
+            #метод по анализу числа на миллионы миллиарды (РАБОЧИЙ ФИНАЛЬНАЯ ВЕРСИЯ)
+            def __vyvod_chisla(chislo):
+                chislo_str=str(chislo)
+                length1=len(chislo_str)
+                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                k = length1
+                smallestpower=0
+                stri=''
+                s = ''
+                if (k > 12) and (k < 15):
+                    smallestpower=12
+                    s=mas[3]
+
+                if (k > 9) and (k < 13):
+                    smallestpower=9
+                    s=mas[2]
+
+                if (k > 6) and (k < 10):
+                    smallestpower=6
+                    s=mas[1]
+
+                if (k > 3) and (k < 7):
+                    smallestpower=3
+                    s=mas[0]
+
+                if length1>3:
+                    chislo/=10**smallestpower
+                    stri=str(round(chislo))+" "+s+" рублей"
+                else:
+                    stri=str(round(chislo))+" рублей"
+                return stri
 
             some_number = par["cells"][0][0]["value"]
             some_number = round(float(some_number))
-            dlina = len(str(some_number))
-            print(dlina)
-            if some_number > 0:
+            print(some_number)
 
-                if dlina > 3:
-                    some_number /= 10 ** (dlina - 4)
-                    some_number = round(some_number)
-                    stepen = __formation(dlina - 4)
-            else:
-                stepen = ''
-            some_number = str(some_number)
-            some_number = some_number + stepen + " рублей"
-            result.number = some_number
+            if some_number>0:
+                result.number=__vyvod_chisla(some_number)
+            else:result.number=str(some_number)+" рублей"
 
         return result
 
+
+     #метод по созданию папочки
     @staticmethod
     def __create_folder(user_id):
         """Method which creates folder for request"""
