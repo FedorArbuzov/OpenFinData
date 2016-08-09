@@ -211,6 +211,7 @@ def main_sector(s):
 def main_func(s):
     s = re.sub(r'[^\w\s]', '', s)
     list1 = s.split()
+    list_of_int = []
     for i in range(len(list1)):
         if RepresentsInt(list1[i]):
             list_of_int.append(list1[i])
@@ -272,7 +273,7 @@ def main_func(s):
 
     print(user_req.planned_or_actual)
     print(user_req.subject)
-    if user_req.year == 0:
+    if user_req.year == 0 and user_req.year < 2016 and user_req.year > 2006:
         user_req.year = now_date.year
     print(user_req.year)
     print(user_req.place)
