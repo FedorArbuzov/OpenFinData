@@ -20,19 +20,27 @@ from reportlab.platypus import Paragraph, Table, TableStyle, Image
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-#import cairosvg
+# import cairosvg
+import os
+import datetime
+import random
+import string
+from m2_main import M2Retrieving
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
 class M3Visualizing:
-
     @staticmethod
-    def create_response(json_string):
-
+    def create_response(user_id, json_string):
+        result = Result()
         par = json.loads(json_string)
-
+        # проверка на то, детализировать или нет
         if len(par["axes"]) > 1:
 
+            # указание в возвращаемом объекте то, что файлы будут созданы
+            result.is_file = True
+
+            # парсим парсим
             k = len(par["axes"][1]["positions"])
             title = par["axes"][1]["positions"][0]["members"][0]["caption"]
             i = 1
@@ -43,26 +51,28 @@ class M3Visualizing:
             normznach = []
             exponen = []
             pars = []
+            # парсим
             while i < k:
                 header = par["axes"][1]["positions"][i]["members"][0]["caption"]
+                if header.isupper() == True:
+                    header = header.lower()
+                    header = header.capitalize()
+
                 diagramttl.append(header)
                 znachenie = par["cells"][i][0]["value"]
                 diagramznach.append(znachenie)
-                i = i + 1
+                i += 1
             i = 0
-            min = 1000
-            print("True")
 
+            # парсим число
             while i < k - 1:
 
-                if diagramznach[i] != None:
+                if (diagramznach[i] != None):
                     if 'Е' in diagramznach[i]:
                         pars = diagramznach[i].split('E')
                         normznach.append(float(pars[0]))
-                        pow = int(pars[1])
-                        exponen.append(int(pars[1]))
-                        if pow < min:
-                             min= pow
+                        exponen.append(pars[1])
+
                     else:
                         normznach.append(float(diagramznach[i]))
                         exponen.append(0)
@@ -72,25 +82,47 @@ class M3Visualizing:
                     normznach.append(diagramznach[i])
                     exponen.append(diagramznach[i])
 
-
-                i = i + 1
+                i += 1
             i = 0
-            print("True1")
             itogznach = []
+
+            # считаем итоговое значение(на самом деле нет)
             while i < k - 1:
                 if exponen[i] != 0:
 
                     itogznach.append(int(normznach[i] * 10 ** (exponen[i])))
                 else:
                     itogznach.append(int(normznach[i]))
-                i = i + 1
-            print(itogznach)
+                i += 1
+            i = 0
+            minznach = []
+            while i < k - 1:
+                if itogznach[i] != 0:
+                    minznach.append(len(str(itogznach[i])))
+                else:
+                    minznach.append(1000)
+                i += 1
+
+            i = 0
+            # находим количество цифр в числе
+            dopoln_chis = minznach[0]
+            while i < k - 1:
+                if minznach[i] < dopoln_chis:
+                    dopoln_chis = minznach[i]
+                i += 1
+
+            print(dopoln_chis)
+
+            # создание папки и возвращение пути к ней
+            path = M3Visualizing.__create_folder(str(user_id))
+            # записывание пути в возвращаемый объект
+            result.path = path
 
             # setting the Arial font
             pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
 
             # Cоздаем pdf
-            doc = canvas.Canvas("pattern.pdf")
+            doc = canvas.Canvas(path + "\\" + "pattern.pdf")
 
             # Функция для фирменной полосы сверху
             def __top_line(a):
@@ -110,39 +142,63 @@ class M3Visualizing:
                 a.drawString(0.5 * inch, 10.72 * inch, 'Ваш запрос: ' + title)
 
             # метод для превращения 10^n в 10 тысяч млн млрд и тд
+            # метод неочень, я попозже его переправлю
             def __frmt(n):
                 mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
-                k = 0
+                k = n
                 s = ''
                 p = n
 
-                while p > 0:
-                    p = p // 10
-                    k = k + 1
-
                 if (k > 12) and (k < 16):
-                    n = n / (10 ** 12)
-                    s = str(n) + mas[4]
-                if (k > 9) and (k < 13):
-                    n = n / (10 ** 9)
+                    n /= (10 ** 12)
                     s = str(n) + mas[3]
-                if (k > 6) and (k < 10):
-                    n = n / (10 ** 6)
+                if (k > 9) and (k < 13):
+                    n /= (10 ** 9)
                     s = str(n) + mas[2]
-                if (k > 3) and (k < 7):
-                    n = n / (10 ** 3)
+                if (k > 6) and (k < 10):
+                    n /= (10 ** 6)
                     s = str(n) + mas[1]
+                if (k > 3) and (k < 7):
+                    n /= (10 ** 3)
+                    s = str(n) + mas[0]
                 if k < 4:
                     s = str(n)
                 return s
 
+            # вот это хороший метод
+            def __formation(dopoln_chis):
+                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                k = dopoln_chis
+                s = ''
+                if (k > 12) and (k < 16):
+                    s = mas[3]
+                if (k > 8) and (k < 13):
+                    s = mas[2]
+                if (k > 6) and (k < 9):
+                    s = mas[1]
+                if (k > 3) and (k < 7):
+                    s = mas[0]
+                return s
+
+            dop_chis = __formation(dopoln_chis)
+
             # Общая цифра
             def __info(a):
-                sum = 0
+                # Высчитываем итоговую сумму
+                # переделываем итоговое значение
                 i = 0
                 while i < k - 1:
+                    if dopoln_chis > 3:
+                        itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis-1)))
+                        i += 1
+
+                print(dopoln_chis)
+
+                i = 0
+                sum = 0
+                while i < k - 1:
                     sum = sum + itogznach[i]
-                    i = i + 1
+                    i += 1
 
                 a.setFillColorRGB(0.72, 0.85, 0.98)
                 a.rect(0 * inch, 9.85 * inch, 8.27 * inch, 0.5 * inch, stroke=0, fill=1)
@@ -153,7 +209,7 @@ class M3Visualizing:
 
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(0, 0, 0)
-                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + __frmt(sum) + " * (10^1000)" + " рублей")
+                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + str(sum) + ' ' + dop_chis + ' ' + " рублей")
 
             # Применяем все функции к нашему документу и сохраняем его
             __top_line(doc)
@@ -169,11 +225,12 @@ class M3Visualizing:
             i = 0
             while i < k - 1:
                 pie_chart.add(diagramttl[i], itogznach[i])
-                i = i + 1
-            pie_chart.render_to_file('chart.svg')
+                i += 1
 
-            #Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
-            #cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
+            pie_chart.render_to_file(path + "\\" + 'chart.svg')
+
+            # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
+            # cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
 
             # Вставляем диаграмму в pdf
 
@@ -183,13 +240,11 @@ class M3Visualizing:
             ipdf = PdfFileReader(open('pattern.pdf', 'rb'))
             wpdf = PdfFileReader(open('chart.pdf', 'rb'))
             watermark = wpdf.getPage(0)
-
             for i in range(ipdf.getNumPages()):
                 page = ipdf.getPage(i)
                 # Здесь корректируем позиционирование
                 page.mergeTranslatedPage(watermark, 0.3 * inch, 2 * inch, expand=False)
                 output.addPage(page)
-
             # Сохраняем всю красоту в новый pdf
             with open('page1.pdf', 'wb') as f:
                 output.write(f)
@@ -198,36 +253,59 @@ class M3Visualizing:
 
             width, height = A4
 
+            '''
             # Высчитываем итоговую сумму
+            #переделываем итоговое значение
+            i=0
+            while i<k-1:
+            if dopoln_chis>3:
+            itogznach[i]=round(itogznach[i]/(10**(dopoln_chis-1)))
+            i=i+1
+            '''
+
+            # Общая сумма (для вычисления процентов нужна)
+            i = 0
             sum = 0
             while i < k - 1:
                 sum = sum + itogznach[i]
-                i = i + 1
+                i += 1
 
+            #стили для текста в левой ячейке
+            styles = getSampleStyleSheet()
+            styleN = styles['BodyText']
+            styleN.wordWrap = 'True'
+            styleN.fontName = 'Arial'
+            styleN.leading = 14
+
+            # пихаем значения красиво в табличку
             i = 0
             qu = []
             tablemas = [["Параметр", "Значение *"]]  # Тут сразу и заголовки таблицы
-            if (sum != 0):
+            if sum != 0:
                 while i < k - 1:
                     # Тут мы высчитываем проценты, чтобы вставить их в табличку
-                    qu = [str(diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", itogznach[i]]
+                    qu = [Paragraph((diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN), itogznach[i]]
                     tablemas.append(qu)
-                    i = i + 1
+                    i += 1
             else:
                 while i < k - 1:
                     qu = [diagramttl[i], itogznach[i]]
                     tablemas.append(qu)
-                    i = i + 1
+                    i += 1
 
             data = tablemas  # Данные для таблицы
 
             # Стили для таблицы
             styles = getSampleStyleSheet()
-            table = Table(data, colWidths=[16 * cm, 2.5 * cm], rowHeights=1.1 * cm)
+            table = Table(data, colWidths=[16 * cm, 2.5 * cm])
             table.setStyle(TableStyle([
                 # ('INNERGRID', (0,0), (-1,-1), 1.5, colors.white),
                 ('LINEBEFORE', (1, 0), (-1, -1), 0.5, colors.white),
                 ('LEFTPADDING', (0, 0), (-1, -1), 11),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                # ('LEADING', (0, 0), (-1, -1), 5),
                 ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
                 # ('LINEABOVE',(0,1),(1,1), 2, colors.white),
                 ('BACKGROUND', (0, 0), (1, 0), colors.Color(0.05, 0.27, 0.63)),
@@ -238,7 +316,7 @@ class M3Visualizing:
             ]))
 
             # Создаем страницу с таблицей
-            c = canvas.Canvas("page2.pdf", pagesize=A4)
+            c = canvas.Canvas(path + "\\" + "page2.pdf", pagesize=A4)
             c.setFont('Arial', 14)
 
             # Функция для позиционирования таблицы
@@ -255,7 +333,7 @@ class M3Visualizing:
                 a.setFont('Arial', 10)
                 a.setFillColorRGB(0, 0, 0)
                 a.drawString(0.5 * inch, 0.5 * inch,
-                             "* Для получения реальной суммы в рублях необходимо табличное значение умножить на (10^1000)")
+                             "*Значения приведены в " + dop_chis + " рублей")
 
             __notice(c)
             c.save()
@@ -265,16 +343,72 @@ class M3Visualizing:
             # Добавляем станичку с таблицей
             file1 = PdfFileReader(open('page1.pdf', "rb"))
             file2 = PdfFileReader(open('page2.pdf', "rb"))
-
             output = PdfFileWriter()
-
             output.addPage(file1.getPage(0))
             output.addPage(file2.getPage(0))
-
             # Сохраняем все в итоговый файл
             with open('result.pdf', 'wb') as f:
                 output.write(f)
             '''
+
+            # TODO: поиск главного значения для вывода в сообщении
+            result.number = None
         else:
-            mew = par["cells"][0][0]["value"]
-            print(mew)
+            # вот это хороший метод
+            def __formation(dopoln_chis):
+                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                k = dopoln_chis
+                s = ''
+                if (k > 11) and (k < 16):
+                    s = mas[3]
+                if (k > 8) and (k < 12):
+                    s = mas[2]
+                if (k > 6) and (k < 9):
+                    s = mas[1]
+                if (k > 3) and (k < 7):
+                    s = mas[0]
+                return s
+
+
+            some_number = par["cells"][0][0]["value"]
+            some_number = round(float(some_number))
+            dlina = len(str(some_number))
+            print(dlina)
+            if some_number > 0:
+
+                if dlina > 3:
+                    some_number /= 10 ** (dlina - 4)
+                    some_number = round(some_number)
+                    stepen = __formation(dlina - 4)
+            else:
+                stepen = ''
+            some_number = str(some_number)
+            some_number = some_number + stepen + " рублей"
+            result.number = some_number
+
+        return result
+
+    @staticmethod
+    def __create_folder(user_id):
+        """Method which creates folder for request"""
+        # Defining current hour
+        now_time = datetime.datetime.now()
+        cur_hour = now_time.hour
+
+        # Forming random string
+        random_str = ''.join(random.sample(string.ascii_lowercase, 5))
+
+        # Forming path
+        path = 'tmp' + str(cur_hour) + '_' + user_id + random_str
+
+        # Creating folder
+        os.mkdir(path)
+
+        return path
+
+
+class Result:
+    def __init__(self, is_file=False, number='', path=''):
+        self.is_file = is_file
+        self.number = number
+        self.path = path

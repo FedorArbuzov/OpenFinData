@@ -12,3 +12,6 @@ PyPDF2==1.26.0
 pyTelegramBotAPI==2.1.5
 reportlab==3.3.0
 requests==2.7.0
+lxml==3.6.1
+pycairo==1.10.0
+cairosvg==2.0.0rc4

@@ -269,6 +269,9 @@ class M2Retrieving:
                     # If there is no param1 but should be
                     if i2 == 0 and count == 1:
                         error_message = 'Добавьте параметр "' + codes[count].get(i1) + '"\r\n'
+                    # If there is param1 but should not be
+                    elif i1 == 0 and count == 1:
+                        error_message = 'Не указывайте параметр "' + codes[count].get(i2) + '"\r\n'
                     else:
                         error_message = 'Замените параметр "' + codes[count].get(i2) + \
                                         '" на "' + codes[count].get(i1) + '"\r\n'
@@ -282,5 +285,3 @@ class Result:
         self.status = status
         self.message = message
         self.response = response
-
-M2Retrieving.get_data('расходы,null,null,2014,null,ярославская')

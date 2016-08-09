@@ -8,7 +8,7 @@ from m1_req import main_sector
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
-API_TOKEN = '250645074:AAF4vfI4wY177VWQYNzPBAt-JYFVyAWyn1I'
+API_TOKEN = '261583934:AAGhkbne0Yi7sSCnO0fXVbUimQUMa-0kwRg'
 bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
@@ -29,7 +29,7 @@ def represents_int(s):
     except ValueError:
         return False
 
-'''
+
 # остановка ввода запроса
 @bot.message_handler(commands=['stopfin'])
 def repeat_all_messages(message):
@@ -44,7 +44,7 @@ def repeat_all_messages(message):
         connection.close()
         bot.send_message(message.chat.id,
                          "Мы забыли про ваш предыдущий вопрос. Можете начать снова с командой /findata")
-'''
+
 
 # строковый ввод вопроса
 @bot.message_handler(commands=['custom'])
@@ -74,10 +74,6 @@ def send_welcome(message):
 # команда выбора региона (choose region)
 @bot.message_handler(commands=['cr'])
 def send_welcome(message):
-    bot.send_message(message.chat.id,
-                     "Если вы хотите узнать информацию о Российской Федерации в целом, "
-                     "введите /cr. Если вас интересует конкретный регион, введите /cr *название региона* "
-                     "(например, /cr Московская область):")
     connection = sqlite3.connect('users.db')
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
@@ -126,7 +122,6 @@ def send_welcome(message):
 
 
 # Ввод сферы
-'''
 @bot.message_handler(commands=['thm'])
 def send_welcome(message):
     connection = sqlite3.connect('users.db')
@@ -152,6 +147,7 @@ def send_welcome(message):
             if (ss == None):
                 bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли ?.Попробуйте еще раз")
             else:
+
                 cursor.execute("UPDATE users SET subject=\"" + ss + "\" WHERE userid=" + str(message.chat.id) + ";")
                 connection.commit()
                 connection.close()
@@ -162,7 +158,7 @@ def send_welcome(message):
     else:
         bot.send_message(message.chat.id, "Ой. Эта команда имеет смысл только внутри потока комманд /findata. "
                                           "Если вы хотите получить финансовые данные, то начните с команнды /findata.")
-'''
+
 
 # команда старта
 @bot.message_handler(commands=['start'])
@@ -173,7 +169,7 @@ def send_welcome(message):
                                       'Чтобы сразу приступить к формированию отчета, введите /findata')
 
 
-# команда помощи
+# команды старта и помощи
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
     bot.send_message(message.chat.id, '<b>Список команд:</b>\n'
@@ -272,11 +268,17 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            M3Visualizing.create_response(result.response)
-            file1 = open('chart.svg', 'rb')
-            file2 = open('page2.pdf', 'rb')
-            bot.send_document(message.chat.id, file1)
-            bot.send_document(message.chat.id, file2)
+            m3_result = M3Visualizing.create_response(message.chat.id, result.response)
+            if m3_result.is_file is False:
+                bot.send_message(message.chat.id, m3_result.number)
+            else:
+                path = m3_result.path + "\\"
+                file1 = open(path + 'chart.svg', 'rb')
+                file2 = open(path + 'page2.pdf', 'rb')
+                file3 = open(path + 'pattern.pdf', 'rb')
+                bot.send_document(message.chat.id, file1)
+                bot.send_document(message.chat.id, file3)
+                bot.send_document(message.chat.id, file2)
 
 
 @bot.message_handler(content_types=["text"])
@@ -347,7 +349,7 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
 
     if (
-                        message.text == "фактические" or message.text == "плановые" or message.text == "текущие" or message.text == "запланированные" or message.text == "null") and (
+                                message.text == "фактические" or message.text == "плановые" or message.text == "текущие" or message.text == "запланированные" or message.text == "null") and (
                 len(data) != 0):
         k = 0
         if (message.text == "фактические"):
@@ -371,7 +373,7 @@ def repeat_all_messages(message):
             connection.commit()
             connection.close()
 
-            types.ReplyKeyboardHide()
+            markup = types.ReplyKeyboardHide()
 
         if (message.text == "текущие" or message.text == "null"):
             markup = types.ReplyKeyboardHide()
@@ -383,7 +385,9 @@ def repeat_all_messages(message):
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-
+            bot.send_message(message.chat.id,
+                             "Если вы хотите узнать информацию о бюджете в целом, введите /thm. Если вас интересует "
+                             "конкретная область, введите /thm *название сферы* (например, /thm образование):")
 
         if (message.text == "запланированные"):
             markup = types.ReplyKeyboardHide()
@@ -395,49 +399,14 @@ def repeat_all_messages(message):
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-        national_issues_button = types.InlineKeyboardButton('Общегосударственные вопросы', callback_data='2')
-        national_defence_button = types.InlineKeyboardButton('Нац. оборона', callback_data='3')
-        law_enforcement_button = types.InlineKeyboardButton('Нац. безопасность',
-                                                            callback_data='4')
-        national_economy_button = types.InlineKeyboardButton('Нац. экономика', callback_data='5')
-        hcs_button = types.InlineKeyboardButton('ЖКХ', callback_data='6')
-        environmental_protection_button = types.InlineKeyboardButton('Защита окружающей среды', callback_data='7')
-        education_button = types.InlineKeyboardButton('Образование', callback_data='8')
-        culture_and_cinematography_button = types.InlineKeyboardButton('Культура', callback_data='9')
-        health_care_button = types.InlineKeyboardButton('Здравоохранение', callback_data='10')
-        social_policy_button = types.InlineKeyboardButton('Соц. политика', callback_data='11')
-        physical_culture_and_sport = types.InlineKeyboardButton('Спорт', callback_data='11')
-        none_button = types.InlineKeyboardButton('🤔', callback_data='12')
-        keyboard = types.InlineKeyboardMarkup()
-        keyboard.add(national_issues_button)
-        keyboard.add(national_defence_button, education_button)
-        keyboard.add(law_enforcement_button, national_economy_button)
-        keyboard.add(physical_culture_and_sport, culture_and_cinematography_button, hcs_button)
-        keyboard.add(environmental_protection_button)
-        keyboard.add(health_care_button, social_policy_button)
-        keyboard.add(none_button)
-        bot.send_message(message.chat.id, 'Выберите сферу: ', reply_markup=keyboard)
+            bot.send_message(message.chat.id,
+                             "Если вы хотите узнать информацию о бюджете в целом, введите /thm. Если вас интересует "
+                             "конкретная область, введите /thm *название сферы* (например, /thm образование):")
 
 
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    if call.message:
-        print("УСЛОВИЕ ВЫПОЛНЕНО")
-        connection = sqlite3.connect('users.db')
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM users WHERE userid = " + str(call.message.message_id))
-        data = cursor.fetchall()
-        if call.data == '2' or '3' or '4' or '5' or '6' or '7' or '8' or '9' or '10' or '11':
-            if len(data) != 0:
-                print("УСЛОВИЕ ВЫПОЛНЕНО")
-                cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(call.message.message_id) + ";")
-                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=" ")
-        if call.data == '12':
-
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Вы выбрали общие расходы")
-        connection.commit()
-        connection.close()
+@bot.message_handler(content_types=["voice"])
+def voice_processing(message):
+    bot.send_message(message.chat.id, 'Мы приняли ваш голосовой запрос')
 
 
 if __name__ == '__main__':
