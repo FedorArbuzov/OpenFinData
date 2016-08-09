@@ -1,14 +1,18 @@
 import telebot
 import datetime
 import sqlite3
+import requests
+import uuid
 from telebot import types
 from m1_req import main_func
 from m1_req import main_place
 from m1_req import main_sector
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
+from config import TELEGRAM_API_TOKEN
+from config import YANDEX_API_KEY
 
-API_TOKEN = '261583934:AAGhkbne0Yi7sSCnO0fXVbUimQUMa-0kwRg'
+API_TOKEN = TELEGRAM_API_TOKEN
 bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
@@ -406,7 +410,15 @@ def repeat_all_messages(message):
 
 @bot.message_handler(content_types=["voice"])
 def voice_processing(message):
-    bot.send_message(message.chat.id, 'Мы приняли ваш голосовой запрос')
+    url = 'https://asr.yandex.net/asr_xml?uuid=' + uuid.uuid4().hex + '&key=' + YANDEX_API_KEY
+    url += '&topic=queries&lang=ru-RU'
+    headers = {'Content-Type': 'audio/x-speex'}
+    file_info = bot.get_file(message.voice.file_id)
+    file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN, file_info.file_path))
+    bytes_ogg_file = file.content
+    r = requests.post(url, headers, str(bytes_ogg_file))
+    if 'Unknown Content-Type' in str(r.text):
+        bot.send_message(message.chat.id, 'Хехехе извините, сегодня кусок кода, обрабатывающий голосовые запросы в отпуске:(')
 
 
 if __name__ == '__main__':
