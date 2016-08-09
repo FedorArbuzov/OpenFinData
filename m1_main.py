@@ -404,5 +404,10 @@ def repeat_all_messages(message):
                              "конкретная область, введите /thm *название сферы* (например, /thm образование):")
 
 
+@bot.message_handler(content_types=["voice"])
+def voice_processing(message):
+    bot.send_message(message.chat.id, 'Мы приняли ваш голосовой запрос')
+
+
 if __name__ == '__main__':
     bot.polling(none_stop=True)
