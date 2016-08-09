@@ -145,27 +145,6 @@ class M3Visualizing:
 
             # метод для превращения 10^n в 10 тысяч млн млрд и тд
             # метод неочень, я попозже его переправлю
-            def __frmt(n):
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
-                k = n
-                s = ''
-                p = n
-
-                if (k > 12) and (k < 16):
-                    n /= (10 ** 12)
-                    s = str(n) + mas[3]
-                if (k > 9) and (k < 13):
-                    n /= (10 ** 9)
-                    s = str(n) + mas[2]
-                if (k > 6) and (k < 10):
-                    n /= (10 ** 6)
-                    s = str(n) + mas[1]
-                if (k > 3) and (k < 7):
-                    n /= (10 ** 3)
-                    s = str(n) + mas[0]
-                if k < 4:
-                    s = str(n)
-                return s
 
             # вот это хороший метод
             def __formation(dopoln_chis):
@@ -354,7 +333,8 @@ class M3Visualizing:
             '''
 
             # TODO: поиск главного значения для вывода в сообщении
-            result.number = None
+            result.number = str(sum)+" "+dop_chis+" рублей"
+            result.is_file=True
         else:
 
             #использовать метод уже после проверки на то, есть 0 или нет
@@ -396,8 +376,9 @@ class M3Visualizing:
 
             if some_number>0:
                 result.number=__vyvod_chisla(some_number)
-            else:result.number=str(some_number)+" рублей"
-
+            else:
+                result.number=str(some_number)+" рублей"
+            result.is_file=False
         return result
 
 
