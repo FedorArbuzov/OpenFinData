@@ -25,13 +25,12 @@ import os
 import datetime
 import random
 import string
-from m2_main import M2Retrieving
 from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string,filename1,filename2):
+    def create_response(user_id, json_string, filename1, filename2):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет
@@ -106,7 +105,7 @@ class M3Visualizing:
 
             i = 0
             # находим количество цифр в числе
-            #dopoln_chis - число с минимальным количеством цифр
+            # dopoln_chis - число с минимальным количеством цифр
             dopoln_chis = minznach[0]
             while i < k - 1:
                 if minznach[i] < dopoln_chis:
@@ -170,7 +169,7 @@ class M3Visualizing:
                 i = 0
                 while i < k - 1:
                     if dopoln_chis > 3:
-                        itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis-1)))
+                        itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
                         i += 1
 
                 print(dopoln_chis)
@@ -251,7 +250,7 @@ class M3Visualizing:
                 sum = sum + itogznach[i]
                 i += 1
 
-            #стили для текста в левой ячейке
+            # стили для текста в левой ячейке
             styles = getSampleStyleSheet()
             styleN = styles['BodyText']
             styleN.wordWrap = 'True'
@@ -265,7 +264,8 @@ class M3Visualizing:
             if sum != 0:
                 while i < k - 1:
                     # Тут мы высчитываем проценты, чтобы вставить их в табличку
-                    qu = [Paragraph((diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN), itogznach[i]]
+                    qu = [Paragraph((diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN),
+                          itogznach[i]]
                     tablemas.append(qu)
                     i += 1
             else:
@@ -331,59 +331,60 @@ class M3Visualizing:
             with open('result.pdf', 'wb') as f:
                 output.write(f)
             '''
-            #os.rename("chart.svg",filename1)
-            #os.rename("page2.pdf",filename2)
+            # os.rename("chart.svg",filename1)
+            # os.rename("page2.pdf",filename2)
             # TODO: поиск главного значения для вывода в сообщении
-            result.number = str(sum)+" "+dop_chis+" рублей"
-            result.is_file=True
+            result.number = str(sum) + " " + dop_chis + " рублей"
+            result.is_file = True
         else:
 
-            #использовать метод уже после проверки на то, есть 0 или нет
-            #метод по анализу числа на миллионы миллиарды (РАБОЧИЙ ФИНАЛЬНАЯ ВЕРСИЯ)
+            # использовать метод уже после проверки на то, есть 0 или нет
+            # метод по анализу числа на миллионы миллиарды (РАБОЧИЙ ФИНАЛЬНАЯ ВЕРСИЯ)
             def __vyvod_chisla(chislo):
-                chislo_str=str(chislo)
-                length1=len(chislo_str)
+                chislo_str = str(chislo)
+                length1 = len(chislo_str)
                 mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
                 k = length1
-                smallestpower=0
-                stri=''
+                smallestpower = 0
+                stri = ''
                 s = ''
                 if (k > 12) and (k < 15):
-                    smallestpower=12
-                    s=mas[3]
+                    smallestpower = 12
+                    s = mas[3]
 
                 if (k > 9) and (k < 13):
-                    smallestpower=9
-                    s=mas[2]
+                    smallestpower = 9
+                    s = mas[2]
 
                 if (k > 6) and (k < 10):
-                    smallestpower=6
-                    s=mas[1]
+                    smallestpower = 6
+                    s = mas[1]
 
                 if (k > 3) and (k < 7):
-                    smallestpower=3
-                    s=mas[0]
+                    smallestpower = 3
+                    s = mas[0]
 
-                if length1>3:
-                    chislo/=10**smallestpower
-                    stri=str(round(chislo))+" "+s+" рублей"
+                if length1 > 3:
+                    chislo /= 10 ** smallestpower
+                    stri = str(round(chislo)) + " " + s + " рублей"
                 else:
-                    stri=str(round(chislo))+" рублей"
+                    stri = str(round(chislo)) + " рублей"
                 return stri
 
             some_number = par["cells"][0][0]["value"]
             some_number = round(float(some_number))
             print(some_number)
 
-            if some_number>0:
-                result.number=__vyvod_chisla(some_number)
+            if some_number > 0:
+                result.number = __vyvod_chisla(some_number)
             else:
-                result.number=str(some_number)+" рублей"
-            result.is_file=False
+                result.number = str(some_number) + " рублей"
+            result.is_file = False
         return result
 
 
-     #метод по созданию папочки
+        # метод по созданию папочки
+
     @staticmethod
     def __create_folder(user_id):
         """Method which creates folder for request"""

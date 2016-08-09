@@ -4,6 +4,7 @@ from m2_dict import mappers
 from m2_dict import param2
 from m2_dict import sphere
 from m2_dict import places
+from m2_dict import places_cld
 
 
 # Module, which is responsible for getting required from user data
@@ -148,6 +149,11 @@ class M2Retrieving:
 
         mdx_cube_and_query = []
 
+        # Defining name of the cube from MDX-query
+        query_by_elements = mdx_skeleton.split(' ')
+        from_element = query_by_elements[query_by_elements.index('FROM') + 1]
+        cube = from_element[1:len(from_element) - 4]
+
         # If there are marks for substitution in MDX-sampler
         if '*' in mdx_skeleton:
             temp = mdx_skeleton
@@ -174,18 +180,16 @@ class M2Retrieving:
 
                 # Replacing territory
                 if param_id == 5:
-                    data = '08-' + places[params[param_id]]
+                    if 'CLDO02' in mdx_skeleton:
+                        data = '08-' + places_cld[params[param_id]]
+                    else:
+                        data = '08-' + places[params[param_id]]
 
                 # Replacing mark by parameter
                 mdx_skeleton = mdx_skeleton.replace(star, data)
 
                 # Cutting temp in order ro find next mark
                 temp = temp[i + 1:]
-
-        # Defining name of the cube from MDX-query
-        query_by_elements = mdx_skeleton.split(' ')
-        from_element = query_by_elements[query_by_elements.index('FROM') + 1]
-        cube = from_element[1:len(from_element) - 4]
 
         # Adding cube and MDX-query
         mdx_cube_and_query.append(cube)
