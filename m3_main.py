@@ -36,9 +36,6 @@ class M3Visualizing:
         # проверка на то, детализировать или нет
         if len(par["axes"]) > 1:
 
-            # указание в возвращаемом объекте то, что файлы будут созданы
-            result.is_file = True
-
             # парсим парсим
             k = len(par["axes"][1]["positions"])
             title = par["axes"][1]["positions"][0]["members"][0]["caption"]
@@ -53,7 +50,7 @@ class M3Visualizing:
             # парсим
             while i < k:
                 header = par["axes"][1]["positions"][i]["members"][0]["caption"]
-                if header.isupper() == True:
+                if header.isupper() is True:
                     header = header.lower()
                     header = header.capitalize()
 
@@ -66,7 +63,7 @@ class M3Visualizing:
             # парсим число
             while i < k - 1:
 
-                if (diagramznach[i] != None):
+                if diagramznach[i] is not None:
                     if 'Е' in diagramznach[i]:
                         pars = diagramznach[i].split('E')
                         normznach.append(float(pars[0]))
@@ -379,12 +376,10 @@ class M3Visualizing:
                 result.number = __vyvod_chisla(some_number)
             else:
                 result.number = str(some_number) + " рублей"
-            result.is_file = False
+
         return result
 
-
-        # метод по созданию папочки
-
+    # метод по созданию папочки
     @staticmethod
     def __create_folder(user_id):
         """Method which creates folder for request"""

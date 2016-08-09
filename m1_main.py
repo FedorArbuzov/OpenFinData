@@ -8,13 +8,14 @@ from m1_req import main_place
 from m1_req import main_sector
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
-from config import TELEGRAM_API_TOKEN
+from config import TELEGRAM_API_TOKEN1
+from config import TELEGRAM_API_TOKEN2
 
-API_TOKEN = TELEGRAM_API_TOKEN
-API_TOKEN = '250645074:AAF4vfI4wY177VWQYNzPBAt-JYFVyAWyn1I'
+API_TOKEN = TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
 
 global_variable = 0
+
 
 def set_global_variable_to_one():
     global global_variable
@@ -55,6 +56,7 @@ def repeat_all_messages(message):
         bot.send_message(message.chat.id,
                          "Мы забыли про ваш предыдущий вопрос. Можете начать снова с командой /findata")
 
+
 '''
 # строковый ввод вопроса
 @bot.message_handler(commands=['custom'])
@@ -80,6 +82,7 @@ def send_welcome(message):
         connection.close()
         bot.send_message(message.chat.id, "Мы получили ваш запрос и скоро на него ответим")
 '''
+
 
 # команда выбора региона (choose region)
 @bot.message_handler(commands=['cr'])
@@ -137,6 +140,7 @@ def send_welcome(message):
         for i1 in i:
             pass
 
+
 '''
 # Ввод сферы
 @bot.message_handler(commands=['thm'])
@@ -176,6 +180,7 @@ def send_welcome(message):
         bot.send_message(message.chat.id, "Ой. Эта команда имеет смысл только внутри потока комманд /findata. "
                                           "Если вы хотите получить финансовые данные, то начните с команнды /findata.")
 '''
+
 
 # команда старта
 @bot.message_handler(commands=['start'])
@@ -267,14 +272,14 @@ def repeat_all_messages(message):
 
     else:
         s1 = main_func(s)
-        #s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, " + \
+        # s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, " + \
         #         str(message.chat.id) + ", \"" + str(s1[0]) + "\", \"" + str(s1[1]) + "\", \"" + str(
         #    s1[2]) + "\", \"" + str(s1[3]) + "\", \"" + str(s1[4]) + "\")"
-        #connection = sqlite3.connect("users.db")
-        #cursor = connection.cursor()
-        #cursor.execute(s_main)
-        #connection.commit()
-        #connection.close()
+        # connection = sqlite3.connect("users.db")
+        # cursor = connection.cursor()
+        # cursor.execute(s_main)
+        # connection.commit()
+        # connection.close()
         s_mod2 = ""
         s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
         print(s_mod2)
@@ -443,28 +448,12 @@ def repeat_all_messages(message):
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-        bot.send_message(message.chat.id, 'Если вы хотите узнать информацию о Российской Федерации в целом, введите /cr. '
+        bot.send_message(message.chat.id,
+                         'Если вы хотите узнать информацию о Российской Федерации в целом, введите /cr. '
                          'Если вас интересует конкретный регион, введите /cr *название региона* '
                          '(например, /cr Московская область):')
 
 
-@bot.message_handler(content_types=["voice"])
-def voice_processing(message):
-    from m1_speechkit import speech_to_text
-
-    file_info = bot.get_file(message.voice.file_id)
-    file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN, file_info.file_path))
-
-    # TODO: передача кода в нейросеть
-    text = speech_to_text(bytes=file.content)
-    msg = 'Ваш запрос: "' + text + '". Подождите чуть-чуть, мы его обрабатываем:)'
-    if text == "":
-        msg = "Не удалось распознать текст сообщения"
-    bot.send_message(message.chat.id, msg)
-
-    # if 'Unknown Content-Type' in str(r.text):
-    #     bot.send_message(message.chat.id,
-    #                      'Хехехе извините, сегодня кусок кода, обрабатывающий голосовые запросы в отпуске:(')
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     if call.message:
@@ -531,7 +520,7 @@ def callback_inline(call):
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                        text='Вы выбрали Социальную политику')
+                                      text='Вы выбрали Социальную политику')
         elif call.data == '12':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
@@ -547,6 +536,23 @@ def callback_inline(call):
         connection.commit()
         connection.close()
         set_global_variable_to_one()
+
+
+@bot.message_handler(content_types=["voice"])
+def voice_processing(message):
+    from m1_speechkit import speech_to_text
+
+    file_info = bot.get_file(message.voice.file_id)
+    file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN1, file_info.file_path))
+
+    # TODO: передача кода в нейросеть
+    text = speech_to_text(bytes=file.content)
+
+    msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
+    if text is not None:
+        msg = 'Ваш запрос: "' + text + '". Подождите чуть-чуть, идет его обработка!'
+
+    bot.send_message(message.chat.id, msg)
 
 
 if __name__ == '__main__':
