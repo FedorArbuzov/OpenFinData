@@ -31,7 +31,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string):
+    def create_response(user_id, json_string,filename1,filename2):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет
@@ -84,6 +84,7 @@ class M3Visualizing:
 
                 i += 1
             i = 0
+            print(normznach)
             itogznach = []
 
             # считаем итоговое значение(на самом деле нет)
@@ -105,6 +106,7 @@ class M3Visualizing:
 
             i = 0
             # находим количество цифр в числе
+            #dopoln_chis - число с минимальным количеством цифр
             dopoln_chis = minznach[0]
             while i < k - 1:
                 if minznach[i] < dopoln_chis:
@@ -143,27 +145,6 @@ class M3Visualizing:
 
             # метод для превращения 10^n в 10 тысяч млн млрд и тд
             # метод неочень, я попозже его переправлю
-            def __frmt(n):
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
-                k = n
-                s = ''
-                p = n
-
-                if (k > 12) and (k < 16):
-                    n /= (10 ** 12)
-                    s = str(n) + mas[3]
-                if (k > 9) and (k < 13):
-                    n /= (10 ** 9)
-                    s = str(n) + mas[2]
-                if (k > 6) and (k < 10):
-                    n /= (10 ** 6)
-                    s = str(n) + mas[1]
-                if (k > 3) and (k < 7):
-                    n /= (10 ** 3)
-                    s = str(n) + mas[0]
-                if k < 4:
-                    s = str(n)
-                return s
 
             # вот это хороший метод
             def __formation(dopoln_chis):
@@ -172,9 +153,9 @@ class M3Visualizing:
                 s = ''
                 if (k > 12) and (k < 16):
                     s = mas[3]
-                if (k > 8) and (k < 13):
+                if (k > 9) and (k < 13):
                     s = mas[2]
-                if (k > 6) and (k < 9):
+                if (k > 6) and (k < 10):
                     s = mas[1]
                 if (k > 3) and (k < 7):
                     s = mas[0]
@@ -227,7 +208,7 @@ class M3Visualizing:
                 pie_chart.add(diagramttl[i], itogznach[i])
                 i += 1
 
-            pie_chart.render_to_file(path + "\\" + 'chart.svg')
+            pie_chart.render_to_file(path + "\\" + filename1)
 
             # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
             # cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
@@ -316,7 +297,7 @@ class M3Visualizing:
             ]))
 
             # Создаем страницу с таблицей
-            c = canvas.Canvas(path + "\\" + "page2.pdf", pagesize=A4)
+            c = canvas.Canvas(path + "\\" + filename2, pagesize=A4)
             c.setFont('Arial', 14)
 
             # Функция для позиционирования таблицы
@@ -350,44 +331,59 @@ class M3Visualizing:
             with open('result.pdf', 'wb') as f:
                 output.write(f)
             '''
-
+            #os.rename("chart.svg",filename1)
+            #os.rename("page2.pdf",filename2)
             # TODO: поиск главного значения для вывода в сообщении
-            result.number = None
+            result.number = str(sum)+" "+dop_chis+" рублей"
+            result.is_file=True
         else:
-            # вот это хороший метод
-            def __formation(dopoln_chis):
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
-                k = dopoln_chis
-                s = ''
-                if (k > 11) and (k < 16):
-                    s = mas[3]
-                if (k > 8) and (k < 12):
-                    s = mas[2]
-                if (k > 6) and (k < 9):
-                    s = mas[1]
-                if (k > 3) and (k < 7):
-                    s = mas[0]
-                return s
 
+            #использовать метод уже после проверки на то, есть 0 или нет
+            #метод по анализу числа на миллионы миллиарды (РАБОЧИЙ ФИНАЛЬНАЯ ВЕРСИЯ)
+            def __vyvod_chisla(chislo):
+                chislo_str=str(chislo)
+                length1=len(chislo_str)
+                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                k = length1
+                smallestpower=0
+                stri=''
+                s = ''
+                if (k > 12) and (k < 15):
+                    smallestpower=12
+                    s=mas[3]
+
+                if (k > 9) and (k < 13):
+                    smallestpower=9
+                    s=mas[2]
+
+                if (k > 6) and (k < 10):
+                    smallestpower=6
+                    s=mas[1]
+
+                if (k > 3) and (k < 7):
+                    smallestpower=3
+                    s=mas[0]
+
+                if length1>3:
+                    chislo/=10**smallestpower
+                    stri=str(round(chislo))+" "+s+" рублей"
+                else:
+                    stri=str(round(chislo))+" рублей"
+                return stri
 
             some_number = par["cells"][0][0]["value"]
             some_number = round(float(some_number))
-            dlina = len(str(some_number))
-            print(dlina)
-            if some_number > 0:
+            print(some_number)
 
-                if dlina > 3:
-                    some_number /= 10 ** (dlina - 4)
-                    some_number = round(some_number)
-                    stepen = __formation(dlina - 4)
+            if some_number>0:
+                result.number=__vyvod_chisla(some_number)
             else:
-                stepen = ''
-            some_number = str(some_number)
-            some_number = some_number + stepen + " рублей"
-            result.number = some_number
-
+                result.number=str(some_number)+" рублей"
+            result.is_file=False
         return result
 
+
+     #метод по созданию папочки
     @staticmethod
     def __create_folder(user_id):
         """Method which creates folder for request"""
