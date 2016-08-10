@@ -2,23 +2,17 @@ import telebot
 import datetime
 import sqlite3
 import requests
-import operator as op
 from telebot import types
 from m1_req import main_func
 from m1_req import main_place
 from m1_req import main_sector
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
+from config import TELEGRAM_API_TOKEN1
+from config import TELEGRAM_API_TOKEN2
 
-API_TOKEN = '250645074:AAF4vfI4wY177VWQYNzPBAt-JYFVyAWyn1I'
+API_TOKEN = TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
-
-global_variable = 0
-
-
-def set_global_variable_to_one():
-    global global_variable
-    global_variable = 1
 
 
 # первое подключение к бд
@@ -164,7 +158,7 @@ def send_welcome(message):
         bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
         filename11 = "dima.svg"
         filename12 = "dima.pdf"
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response)
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1='1', filename2='2')
         if m3_result.is_file is False:
             bot.send_message(message.chat.id, m3_result.number)
         else:
@@ -532,7 +526,6 @@ def callback_inline(call):
                                       text='Вы выбрали Отсутствие конкретной сферы')
         connection.commit()
         connection.close()
-        set_global_variable_to_one()
 
 
 @bot.message_handler(content_types=["voice"])
