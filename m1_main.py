@@ -541,8 +541,33 @@ def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN1, file_info.file_path))
 
-    # TODO: передача кода в нейросеть
+    # передача кода в нейросеть
     text = speech_to_text(bytes=file.content)
+    s1 = main_func(text)
+    s_mod2 = ""
+    s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    print(s_mod2)
+    result = M2Retrieving.get_data(s_mod2)
+    if result.status is False:
+        bot.send_message(message.chat.id, result.message)
+    else:
+        bot.send_message(message.chat.id, "Все хорошо")
+        print(result.response)
+        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
+        filename11 = "dima.svg"
+        filename12 = "dima.pdf"
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename11, filename12)
+        if m3_result.is_file is False:
+            bot.send_message(message.chat.id, m3_result.number)
+        else:
+            path = m3_result.path + "\\"
+            bot.send_message(message.chat.id, m3_result.number)
+            file1 = open(path + filename11, 'rb')
+            file2 = open(path + filename12, 'rb')
+            # file3 = open(path + 'pattern.pdf', 'rb')
+            bot.send_document(message.chat.id, file1)
+            # bot.send_document(message.chat.id, file3)
+            bot.send_document(message.chat.id, file2)
 
     msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
     if text is not None:
