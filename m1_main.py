@@ -91,7 +91,7 @@ def send_welcome(message):
             cursor.execute("UPDATE users SET place=\"" + "null" + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, 'Спасибо!')
+            #bot.send_message(message.chat.id, 'Спасибо!')
         else:
             print(s)
             s = main_place(s)
@@ -100,7 +100,7 @@ def send_welcome(message):
                 cursor.execute("UPDATE users SET place=\"" + s + "\" WHERE userid=" + str(message.chat.id) + ";")
                 connection.commit()
                 connection.close()
-                bot.send_message(message.chat.id, 'Спасибо!')
+                #bot.send_message(message.chat.id, 'Спасибо!')
             else:
                 bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли 😰")
     else:
@@ -124,7 +124,7 @@ def send_welcome(message):
     else:
         connection = sqlite3.connect('users.db')
         cursor = connection.cursor()
-        bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
+        #bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
         s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, " + \
                  str(message.chat.id) + ", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(
             0) + "\", \"" + str(0) + "\", \"" + str(0) + "\")"
@@ -144,6 +144,8 @@ def send_welcome(message):
     for n, i in enumerate(new_data):
         if i == 0 or i == '0' or i == None:
             new_data[n] = 'null'
+        if i=="дефицит/профицит":
+            new_data[n]="дефицит"
 
     new_data[3] = new_data[3].lower()
     s_mod2 = ""
@@ -156,9 +158,9 @@ def send_welcome(message):
         bot.send_message(message.chat.id, "Все хорошо")
         print(result.response)
         bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-        filename11 = "dima.svg"
-        filename12 = "dima.pdf"
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1='1', filename2='2')
+        filename11 = "1.svg"
+        filename12 = "2.pdf"
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1='1.svg', filename2='2.pdf')
         if m3_result.is_file is False:
             bot.send_message(message.chat.id, m3_result.number)
         else:
@@ -280,8 +282,8 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, "Все хорошо")
             print(result.response)
             bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            filename11 = "dima.svg"
-            filename12 = "dima.pdf"
+            filename11 = "1.svg"
+            filename12 = "2.pdf"
             m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename11, filename12)
             if m3_result.is_file is False:
                 bot.send_message(message.chat.id, m3_result.number)
@@ -443,6 +445,9 @@ def repeat_all_messages(message):
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
+            bot.send_message(message.chat.id, 'Если вы хотите узнать информацию о Российской Федерации в целом, '
+                                              'введите /cr. Если вас интересует конкретный регион, введите '
+                                              '/cr *название региона* (например, /cr Московская область):')
 
 
 @bot.callback_query_handler(func=lambda call: True)
