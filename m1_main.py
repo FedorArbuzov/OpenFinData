@@ -151,8 +151,8 @@ def send_welcome(message):
     s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(new_data[4]) + ',' + str(new_data[7]) + ',' + str(new_data[3])
     print(s_mod2)
     filename1 = s_mod2.replace('null', '')
-    filename1 = filename1.replace(',', '-')
-    filename1 = filename1.replace('--', '-') + '.svg'
+    filename1 = filename1.replace(',', '_')
+    filename1 = filename1.replace('__', '_') + '.svg'
     filename2 = filename1.replace('.svg', '.pdf')
     print('filename1 = ' + filename1 +'\n' + 'filename2 = ' + filename2)
     result = M2Retrieving.get_data(s_mod2)
@@ -162,18 +162,18 @@ def send_welcome(message):
         bot.send_message(message.chat.id, "Все хорошо")
         print(result.response)
         bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1=filename1, filename2=filename2)
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1, filename2)
         if m3_result.is_file is False:
             bot.send_message(message.chat.id, m3_result.number)
         else:
             path = m3_result.path + "\\"
             bot.send_message(message.chat.id, m3_result.number)
-            filename1 = open(path + filename1, 'rb')
-            filename2 = open(path + filename2, 'rb')
+            file1 = open(path + filename1, 'rb')
+            file2 = open(path + filename2, 'rb')
             # file3 = open(path + 'pattern.pdf', 'rb')
-            bot.send_document(message.chat.id, filename1)
+            bot.send_document(message.chat.id, file1)
             # bot.send_document(message.chat.id, file3)
-            bot.send_document(message.chat.id, filename2)
+            bot.send_document(message.chat.id, file2)
 
 
 # команда старта
