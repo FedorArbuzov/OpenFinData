@@ -60,7 +60,6 @@ def send_welcome(message):
     cursor = connection.cursor()
     cursor.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
     data = cursor.fetchall()
-
     # защита от предварительного ввода пользователем запроса во время обработки предыдущего
     if len(data) != 0:
         bot.send_message(message.chat.id,
@@ -217,8 +216,6 @@ def send_welcome(message):
         bot.send_message(p, "Добрейший вечерочек, а вы уже подписались на нашу рассылку. Зачем это делать еше раз ?  ")
     connection.commit()
     connection.close()
-
-
 @bot.message_handler(commands=['unsubscribe'])
 def repeat_all_messages(message):
     bot.send_message(message.chat.id,
@@ -332,6 +329,14 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id,
                              "Данные за этот год отсутствуют. Повторите ввод:")
 
+    if message.text == '-':
+        cursor.execute("UPDATE users SET year=" + 'null' + " WHERE userid=" + str(message.chat.id) + ";")
+        connection.commit()
+        connection.close()
+        bot.send_message(message.chat.id,
+                         'Если вы хотите узнать информацию о Российской Федерации в целом, введите /cr. '
+                         'Если вас интересует конкретный регион, введите /cr *название региона* '
+                         '(например, /cr Московская область):')
 
     if (message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"
         or message.text == "налоговый" or message.text == "неналоговый") and (
@@ -402,7 +407,8 @@ def repeat_all_messages(message):
             markup = types.ReplyKeyboardHide()
             k = message.text
             bot.send_message(message.chat.id,
-                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):", reply_markup=markup)
+                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010) или введите -, чтобы не указывать год:", reply_markup=markup)
+
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
@@ -412,7 +418,8 @@ def repeat_all_messages(message):
             markup = types.ReplyKeyboardHide()
             k = message.text
             bot.send_message(message.chat.id,
-                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010):", reply_markup=markup)
+                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010) или введите -, чтобы не указывать год:",
+                             reply_markup=markup)
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
 
@@ -545,8 +552,6 @@ def voice_processing(message):
 
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN1, file_info.file_path))
-
-    # TODO: передача кода в нейросеть
     text = speech_to_text(bytes=file.content)
 
     msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
