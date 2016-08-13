@@ -2,6 +2,7 @@ import telebot
 import datetime
 import sqlite3
 import requests
+from transliterate import translit as tr
 from telebot import types
 from m1_req import main_func
 from m1_req import main_place
@@ -49,32 +50,6 @@ def repeat_all_messages(message):
         bot.send_message(message.chat.id,
                          "Мы забыли про ваш предыдущий вопрос. "
                          "Можете начать снова с командой /findata")
-
-
-'''
-# строковый ввод вопроса
-@bot.message_handler(commands=['custom'])
-def send_welcome(message):
-    # подключение к бд
-    connection = sqlite3.connect('users.db')
-    cursor = connection.cursor()
-    cursor.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
-    data = cursor.fetchall()
-    # защита от предварительного ввода пользователем запроса во время обработки предыдущего
-    if len(data) != 0:
-        bot.send_message(message.chat.id,
-                         "Вы уже задали нам вопрос. Сейчас мы ответим на него и вы сможете задать следующий")
-    else:
-        s = message.text[8:]
-        s1 = main_func(s)
-        # заполнение строки запроса к бд
-        s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, {0}, \"{1}\", \"{2}\", \"{3}\", \"{4}\", \"{5}\")".format(
-            str(message.chat.id), str(s1[0]), str(s1[1]), str(s1[2]), str(s1[3]), str(s1[4]))
-        cursor.execute(s_main)
-        connection.commit()
-        connection.close()
-        bot.send_message(message.chat.id, "Мы получили ваш запрос и скоро на него ответим")
-'''
 
 
 # команда выбора региона (choose region)
@@ -147,31 +122,34 @@ def send_welcome(message):
             new_data[n]="дефицит"
 
     new_data[3] = new_data[3].lower()
-    s_mod2 = ""
+    s_mod2, filename1, filename2 = '', '', ''
     s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(new_data[4]) + ',' + str(new_data[7]) + ',' + str(new_data[3])
-    print(s_mod2)
     result = M2Retrieving.get_data(s_mod2)
+    s_mod2 = tr(s_mod2, 'ru', reversed=True)
+    filename1 = s_mod2.replace('null', '')
+    filename1 = filename1.replace(',', '_')
+    filename1 = filename1.replace('__', '_') + '.svg'
+    filename2 = filename1.replace('.svg', '.pdf')
+    print('filename1 = ' + filename1 +'\n' + 'filename2 = ' + filename2)
     if result.status is False:
         bot.send_message(message.chat.id, result.message)
     else:
         bot.send_message(message.chat.id, "Все хорошо")
         print(result.response)
         bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-        filename11 = "1.svg"
-        filename12 = "2.pdf"
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1='1.svg', filename2='2.pdf')
+
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1, filename2)
         if m3_result.is_file is False:
             bot.send_message(message.chat.id, m3_result.number)
         else:
             path = m3_result.path + "\\"
             bot.send_message(message.chat.id, m3_result.number)
-            file1 = open(path + filename11, 'rb')
-            file2 = open(path + filename12, 'rb')
+            file1 = open(path + filename1, 'rb')
+            file2 = open(path + filename2, 'rb')
             # file3 = open(path + 'pattern.pdf', 'rb')
             bot.send_document(message.chat.id, file1)
             # bot.send_document(message.chat.id, file3)
             bot.send_document(message.chat.id, file2)
-
 
 # команда старта
 @bot.message_handler(commands=['start'])
@@ -271,6 +249,7 @@ def repeat_all_messages(message):
         # connection.close()
         s_mod2 = ""
         s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        s_mod2 = s_mod2.translate('en')
         print(s_mod2)
         result = M2Retrieving.get_data(s_mod2)
         if result.status is False:
