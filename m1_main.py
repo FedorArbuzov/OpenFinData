@@ -16,6 +16,13 @@ from config import TELEGRAM_API_TOKEN2
 API_TOKEN = TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
 
+TERRITORY_MSG = 'Чтобы узнать информацию о Российской Федерации в целом, просто нажмите /cr. ' \
+                'Чтобу узнать данные по конкретному региону, введите /cr *название региона* ' \
+                '(например, /cr Московская область)'
+YEAR_MSG = 'Введите год цифрами с 2007 по ' + \
+           str(datetime.datetime.now().year - 1) + \
+           ' или поставьте "-", чтобы пропустить данный шаг'
+
 # первое подключение к бд
 connection_first = sqlite3.connect('subscribe.db')
 cursor_first = connection_first.cursor()
@@ -61,8 +68,7 @@ def send_welcome(message):
             else:
                 bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли 😰")
     else:
-        bot.send_message(message.chat.id, "Эта команда имеет смысл только внутри потока команд /findata. "
-                                          "Начните с команды /findata, если хотите получить финансовые данные")
+        bot.send_message(message.chat.id, "Рановато вы перешли на области😏 Начните лучше с команды /findata")
 
     con = sqlite3.connect('users.db')
     cursor = con.cursor()
@@ -77,7 +83,7 @@ def send_welcome(message):
                 k += 1
     if (k > 2):
         bot.send_message(message.chat.id,
-                         "Похоже, вы передали нам не всю информацию. Мы не сможем дать вам корректную информацию.")
+                         "Похоже, вы передали нам не всю информацию🙃 Попробуйте начать сначала /findata")
     else:
         connection = sqlite3.connect('users.db')
         cursor = connection.cursor()
@@ -97,7 +103,7 @@ def send_welcome(message):
             count += 1
 
     for n, i in enumerate(new_data):
-        if i == 0 or i == '0' or i == None:
+        if i == 0 or i == '0' or i is None:
             new_data[n] = 'null'
         if i == "дефицит/профицит":
             new_data[n] = "дефицит"
@@ -124,9 +130,8 @@ def send_welcome(message):
 def send_welcome(message):
     bot.send_message(message.chat.id, '<b>Список команд:</b>\n'
                                       '/start   — начать работу с ботом\n'
-                                      '/findata — получить финансовый отчет\n'
-                                      '/thmscribe — подписаться на ежедневную рассылку\n'
-                                      '/unsubscribe', parse_mode='HTML')
+                                      '/findata — получить финансовый отчет\n',
+                     parse_mode='HTML')
 
 
 @bot.message_handler(commands=['findata'])
@@ -149,7 +154,7 @@ def repeat_all_messages(message):
         markup.row('доходы')
         markup.row('расходы')
         markup.row('дефицит/профицит')
-        bot.send_message(message.chat.id, "Выбирайте", reply_markup=markup)
+        bot.send_message(message.chat.id, "Жмакните на одну из кнопок!", reply_markup=markup)
         connection = sqlite3.connect('users.db')
         cursor = connection.cursor()
         s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, " + \
@@ -184,30 +189,24 @@ def repeat_all_messages(message):
 
     if represents_int(message.text) and len(data) != 0:
         i = int(message.text)
-        if 2006 < i < 2016:
+        if 2006 < i < now_date.year:
             cursor.execute("UPDATE users SET year=" + str(i) + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id,
-                             'Если вы хотите узнать информацию о Российской Федерации в целом, введите /cr. '
-                             'Если вас интересует конкретный регион, введите /cr *название региона* '
-                             '(например, /cr Московская область):')
+            bot.send_message(message.chat.id, TERRITORY_MSG)
 
         else:
             bot.send_message(message.chat.id,
-                             "Данные за этот год отсутствуют. Повторите ввод:")
+                             "Упс, данных за такой год, к сожалению, нет🙈 Повторите ввод:")
 
     elif message.text == '-':
         cursor.execute("UPDATE users SET year=" + 'null' + " WHERE userid=" + str(message.chat.id) + ";")
         connection.commit()
         connection.close()
-        bot.send_message(message.chat.id,
-                         'Если вы хотите узнать информацию о Российской Федерации в целом, введите /cr. '
-                         'Если вас интересует конкретный регион, введите /cr *название региона* '
-                         '(например, /cr Московская область):')
+        bot.send_message(message.chat.id, TERRITORY_MSG)
 
     elif (message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"
-        or message.text == "налоговый" or message.text == "неналоговый") and (
+          or message.text == "налоговый" or message.text == "неналоговый") and (
                 len(data) != 0):
         k = message.text
         if (message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"):
@@ -242,41 +241,36 @@ def repeat_all_messages(message):
             keyboard.add(health_care_button, social_policy_button)
             keyboard.add(none_button)
 
-            bot.send_message(message.chat.id, 'Выберите сферу: ', reply_markup=keyboard)
-            # bot.send_message(message.chat.id, "Введите тип:")
-
+            bot.send_message(message.chat.id, 'Какая сфера расходов вас интересует?', reply_markup=keyboard)
             markup = types.ReplyKeyboardMarkup()
             markup.row('фактический')
             markup.row('плановый')
             markup.row('текущий')
             markup.row('запланированный')
-            bot.send_message(message.chat.id, "После выберите тип расходов:", reply_markup=markup)
+            bot.send_message(message.chat.id, "После укажите тип расходов:", reply_markup=markup)
         elif (k == "дефицит/профицит" or k == "налоговый" or k == "неналоговый"):
-            # bot.send_message(message.chat.id, "Введите тип:")
             markup = types.ReplyKeyboardMarkup()
             markup.row('плановый')
             markup.row('текущий')
-            markup.row("null")
-            bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
+            markup.row("null")  # TODO: Ренейминг: "пропустить этот пункт 👉"
+            bot.send_message(message.chat.id, "Выберите тип доходов:", reply_markup=markup)
         elif (k == "доходы"):
             markup = types.ReplyKeyboardMarkup()
             markup.row('налоговый')
             markup.row('неналоговый')
-            bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
+            bot.send_message(message.chat.id, "Налоговые или неналоговые?", reply_markup=markup)
 
     elif (message.text == "фактический" or
-                message.text == "плановый" or
-                message.text == "текущий" or
-                message.text == "запланированный" or
-                message.text == "null") and (
+                  message.text == "плановый" or
+                  message.text == "текущий" or
+                  message.text == "запланированный" or
+                  message.text == "null") and (
                 len(data) != 0):
         k = 0
         if (message.text == "фактический"):
             markup = types.ReplyKeyboardHide()
             k = message.text
-            bot.send_message(message.chat.id,
-                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010) или введите -, чтобы не указывать год:",
-                             reply_markup=markup)
+            bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
 
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
@@ -286,9 +280,7 @@ def repeat_all_messages(message):
         if (message.text == "плановый" or message.text == "null"):
             markup = types.ReplyKeyboardHide()
             k = message.text
-            bot.send_message(message.chat.id,
-                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010) или введите -, чтобы не указывать год:",
-                             reply_markup=markup)
+            bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
 
@@ -300,16 +292,13 @@ def repeat_all_messages(message):
         if (message.text == "текущий"):
             markup = types.ReplyKeyboardHide()
             k = message.text
-            bot.send_message(message.chat.id, "Вы выбрали текущий год", reply_markup=markup)
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             cursor.execute(
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, 'Если вы хотите узнать информацию о Российской Федерации в целом, '
-                                              'введите /cr. Если вас интересует конкретный регион, введите '
-                                              '/cr *название региона* (например, /cr Московская область):')
+            bot.send_message(message.chat.id, TERRITORY_MSG)
 
         if (message.text == "запланированный"):
             markup = types.ReplyKeyboardHide()
@@ -321,11 +310,9 @@ def repeat_all_messages(message):
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, 'Если вы хотите узнать информацию о Российской Федерации в целом, '
-                                              'введите /cr. Если вас интересует конкретный регион, введите '
-                                              '/cr *название региона* (например, /cr Московская область):')
+            bot.send_message(message.chat.id, TERRITORY_MSG)
     else:
-        bot.send_message(message.chat.id, 'Проверьте правильность ввода')
+        bot.send_message(message.chat.id, 'хмм... Проверьте правильность ввода')
 
 
 @bot.inline_handler(lambda query: len(query.query) > 0)
@@ -335,6 +322,7 @@ def query_text(query):
     s1 = main_func(text)
     s_mod2 = ""
     s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    print(s_mod2)
     result = M2Retrieving.get_data(s_mod2)
     filename1, filename2 = 'f1', 'f2'
     if result.status is False:
@@ -353,8 +341,8 @@ def query_text(query):
 
         finally:
             bot.answer_inline_query(query.id, result_array)
-            
-    
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     if call.message:
@@ -367,73 +355,73 @@ def callback_inline(call):
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Общегосударственные вопросы')
+                                      text='Вы выбрали "Общегосударственные вопросы"')
         elif call.data == '3':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Национальную оборону')
+                                      text='Вы выбрали "Национальную оборону"')
         elif call.data == '4':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Национальную безопасность и правоохранительные органы')
+                                      text='Вы выбрали "Национальную безопасность и правоохранительные органы"')
         elif call.data == '5':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Национальную экономику')
+                                      text='Вы выбрали "Национальную экономику"')
         elif call.data == '6':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали ЖКХ')
+                                      text='Вы выбрали "ЖКХ"')
         elif call.data == '7':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Защиту окружающей среды')
+                                      text='Вы выбрали "Защиту окружающей среды"')
         elif call.data == '8':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Образование')
+                                      text='Вы выбрали "Образование"')
         elif call.data == '9':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Культуру')
+                                      text='Вы выбрали "Культуру"')
         elif call.data == '10':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали здравоохранение')
+                                      text='Вы выбрали "Здравоохранение"')
         elif call.data == '11':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Социальную политику')
+                                      text='Вы выбрали "Социальную политику"')
         elif call.data == '12':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + call.data + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text="Вы выбрали Спорт и физическую культуру")
+                                      text='Вы выбрали "Спорт и физическую культуру"')
         elif call.data == '13':
             if len(data) != 0:
                 cursor.execute("UPDATE users SET thm=\"" + 'null' + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали Отсутствие конкретной сферы')
+                                      text='Вы выбрали "Хмм. Меня интересуют расходы в целом"')
         connection.commit()
         connection.close()
 
@@ -479,8 +467,7 @@ def querying_and_visualizing(message, s_mod2):
     if result.status is False:
         bot.send_message(message.chat.id, result.message)
     else:
-        bot.send_message(message.chat.id, "Все хорошо")
-        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
+        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам😊")
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
         if m3_result.is_file is False:
