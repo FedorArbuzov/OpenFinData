@@ -76,66 +76,67 @@ def send_welcome(message):
     data = cursor.fetchall()
     if len(data) != 0:
         s = str(message.text)[4:]
-        if s == "":
-            cursor.execute("UPDATE users SET place=\"" + "null" + "\" WHERE userid=" + str(message.chat.id) + ";")
-            connection.commit()
-            connection.close()
-        else:
-            print(s)
-            s = main_place(s)
-            if s is not None:
+        if s == "" or main_place(s) != None:
+            if s == '':
+                cursor.execute("UPDATE users SET place=\"" + "null" + "\" WHERE userid=" + str(message.chat.id) + ";")
+                connection.commit()
+                connection.close()
+
+            if main_place(s) is not None:
+                s = main_place(s)
                 cursor.execute("UPDATE users SET place=\"" + s + "\" WHERE userid=" + str(message.chat.id) + ";")
                 connection.commit()
                 connection.close()
+
+            con = sqlite3.connect('users.db')
+            cursor = con.cursor()
+            cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
+            data = cursor.fetchall()
+            con.close()
+            k = 0
+            for i in data:
+                for i1 in i:
+                    # print(i1)
+                    if i1 == '0':
+                        k += 1
+            if k > 2:
+                bot.send_message(message.chat.id, ERROR_NOT_FULL_INFO)
             else:
-                bot.send_message(message.chat.id, ERROR_NO_UNDERSTANDING)
+                connection = sqlite3.connect('users.db')
+                cursor = connection.cursor()
+                # bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
+                s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, " + \
+                         str(message.chat.id) + ", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(
+                    0) + "\", \"" + str(
+                    0) + "\", \"" + str(0) + "\", \"" + str(0) + "\")"
+                cursor.execute(s_main)
+                connection.commit()
+                connection.close()
+
+            new_data = []
+            count = 0
+            while count <= 7:
+                for item in data:
+                    new_data.append(item[count])
+                    count += 1
+
+            for n, i in enumerate(new_data):
+                if i == 0 or i == '0' or i is None:
+                    new_data[n] = 'null'
+                if i == "дефицит/профицит":
+                    new_data[n] = "дефицит"
+
+            new_data[3] = new_data[3].lower()
+            s_mod2, filename1, filename2 = '', '', ''
+            s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(
+                new_data[4]) + ',' + str(
+                new_data[7]) + ',' + str(new_data[3])
+
+            querying_and_visualizing(message, s_mod2)
+        else:
+            bot.send_message(message.chat.id, ERROR_NO_UNDERSTANDING)
     else:
         bot.send_message(message.chat.id, ERROR_CR_MSG)
-
-    con = sqlite3.connect('users.db')
-    cursor = con.cursor()
-    cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
-    data = cursor.fetchall()
-    con.close()
-    k = 0
-    for i in data:
-        for i1 in i:
-            # print(i1)
-            if i1 == '0':
-                k += 1
-    if k > 2:
-        bot.send_message(message.chat.id, ERROR_NOT_FULL_INFO)
-    else:
-        connection = sqlite3.connect('users.db')
-        cursor = connection.cursor()
-        # bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
-        s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, " + \
-                 str(message.chat.id) + ", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(
-            0) + "\", \"" + str(0) + "\", \"" + str(0) + "\")"
-        cursor.execute(s_main)
-        connection.commit()
-        connection.close()
-
-    new_data = []
-    count = 0
-    while count <= 7:
-        for item in data:
-            new_data.append(item[count])
-            count += 1
-
-    for n, i in enumerate(new_data):
-        if i == 0 or i == '0' or i is None:
-            new_data[n] = 'null'
-        if i == "дефицит/профицит":
-            new_data[n] = "дефицит"
-
-    new_data[3] = new_data[3].lower()
-    s_mod2, filename1, filename2 = '', '', ''
-    s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(new_data[4]) + ',' + str(
-        new_data[7]) + ',' + str(new_data[3])
-
-    querying_and_visualizing(message, s_mod2)
-
 
 # команда старта
 @bot.message_handler(commands=['start'])
