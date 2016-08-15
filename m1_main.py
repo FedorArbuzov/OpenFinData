@@ -287,6 +287,7 @@ def repeat_all_messages(message):
             markup = types.ReplyKeyboardMarkup()
             markup.row('налоговые')
             markup.row('неналоговые')
+            markup.row("пропустить этот пункт 👉")
             bot.send_message(message.chat.id, MSG_BEFORE_NALOG_NENALOG, reply_markup=markup)
 
     elif (message.text == "фактические" or
