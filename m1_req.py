@@ -284,7 +284,7 @@ def main_func(s):
         for s in key_words[-11:]:
             if s == key_words[result]:
                 # print(result)
-                user_req.sector = str(result - 120)
+                user_req.sector = str(result - 121)
 
         i += 1
     if user_req.sector == "":
@@ -299,10 +299,5 @@ def main_func(s):
         else:
             user_req.year = "null"
 
-    print(user_req.planned_or_actual)
-    print(user_req.subject)
-    print(user_req.year)
-    print(user_req.place)
-    print(user_req.sector)
     user_r = [user_req.subject, user_req.place.lower(), user_req.year, user_req.sector, user_req.planned_or_actual]
     return user_r
