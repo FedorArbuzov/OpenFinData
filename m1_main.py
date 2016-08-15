@@ -131,43 +131,6 @@ def send_welcome(message):
                                       '/unsubscribe', parse_mode='HTML')
 
 
-"""
-@bot.message_handler(commands=['subscribe'])
-def send_welcome(message):
-    # print(message.chat.id)
-    p = message.chat.id
-    connection = sqlite3.connect('subscribe.db')
-    cursor = connection.cursor()
-    cursor.execute('SELECT * FROM users')
-    k = cursor.fetchall()
-    t = True
-    for i in range(len(k)):
-        print(k[i][1])
-        print(p)
-        if (k[i][1] == p):
-            t = False
-            break
-    if (t):
-        bot.send_message(message.chat.id, 'Вы подписались на нашу рассылку!')
-        s = 'INSERT INTO users (id, userid) VALUES(NULL, ' + str(p) + ')'
-        cursor.execute(s)
-    else:
-        bot.send_message(p, "Добрейший вечерочек, а вы уже подписались на нашу рассылку. Зачем это делать еше раз ?  ")
-    connection.commit()
-    connection.close()
-@bot.message_handler(commands=['unsubscribe'])
-def repeat_all_messages(message):
-    bot.send_message(message.chat.id,
-                     "Вы отписались от нашей рассылки. Пусть это останется на вашей совести.Но если захотите вернуться, то вы всегда сможете это сделать с помощью команды /thmscribe")
-    connection = sqlite3.connect('subscribe.db')
-    cursor = connection.cursor()
-    query = "DELETE FROM users WHERE userid = " + str(message.chat.id) + ";"
-    cursor.execute(query)
-    connection.commit()
-    connection.close()
-"""
-
-
 @bot.message_handler(commands=['findata'])
 def repeat_all_messages(message):
     connection = sqlite3.connect('users.db')
@@ -240,7 +203,7 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id,
                              "Данные за этот год отсутствуют. Повторите ввод:")
 
-    if message.text == '-':
+    elif message.text == '-':
         cursor.execute("UPDATE users SET year=" + 'null' + " WHERE userid=" + str(message.chat.id) + ";")
         connection.commit()
         connection.close()
@@ -249,7 +212,7 @@ def repeat_all_messages(message):
                          'Если вас интересует конкретный регион, введите /cr *название региона* '
                          '(например, /cr Московская область):')
 
-    if (message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"
+    elif (message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"
         or message.text == "налоговый" or message.text == "неналоговый") and (
                 len(data) != 0):
         k = message.text
@@ -307,7 +270,7 @@ def repeat_all_messages(message):
             markup.row('неналоговый')
             bot.send_message(message.chat.id, "Выбирайте:", reply_markup=markup)
 
-    if (message.text == "фактический" or
+    elif (message.text == "фактический" or
                 message.text == "плановый" or
                 message.text == "текущий" or
                 message.text == "запланированный" or
@@ -326,7 +289,7 @@ def repeat_all_messages(message):
             connection.commit()
             connection.close()
 
-        if (message.text == "плановый"):
+        if (message.text == "плановый" or message.text == "null"):
             markup = types.ReplyKeyboardHide()
             k = message.text
             bot.send_message(message.chat.id,
@@ -340,7 +303,7 @@ def repeat_all_messages(message):
 
             markup = types.ReplyKeyboardHide()
 
-        if (message.text == "текущий" or message.text == "null"):
+        if (message.text == "текущий"):
             markup = types.ReplyKeyboardHide()
             k = message.text
             bot.send_message(message.chat.id, "Вы выбрали текущий год", reply_markup=markup)
@@ -367,6 +330,8 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, 'Если вы хотите узнать информацию о Российской Федерации в целом, '
                                               'введите /cr. Если вас интересует конкретный регион, введите '
                                               '/cr *название региона* (например, /cr Московская область):')
+    else:
+        bot.send_message(message.chat.id, 'Проверьте правильность ввода')
 
 
 @bot.inline_handler(lambda query: len(query.query) > 0)
