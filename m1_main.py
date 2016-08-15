@@ -95,8 +95,6 @@ def send_welcome(message):
         for item in data:
             new_data.append(item[count])
             count += 1
-            print(count)
-            print(new_data)
 
     for n, i in enumerate(new_data):
         if i == 0 or i == '0' or i == None:
@@ -170,22 +168,18 @@ def repeat_all_messages(message):
 
 @bot.message_handler(content_types=["text"])
 def repeat_all_messages(message):
-    print(message.text)
-
     markup = types.ReplyKeyboardHide()
 
     connection = sqlite3.connect('users.db')
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM users WHERE userid = " + str(message.chat.id))
     data = cursor.fetchall()
-    print(data)
     k = 0
     for i in data:
         for i1 in i:
-            # print(i1)
             if i1 == '0':
                 k += 1
-    print(k)
+
     now_date = datetime.date.today()
 
     if represents_int(message.text) and len(data) != 0:
@@ -346,8 +340,6 @@ def query_text(query):
     if result.status is False:
         pass
     else:
-        print(result.response)
-
         m3_result = M3Visualizing.create_response(query.id, result.response, filename1, filename2)
         try:
             result_array = []

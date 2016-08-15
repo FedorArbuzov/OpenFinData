@@ -109,8 +109,6 @@ class M3Visualizing:
                     dopoln_chis = minznach[i]
                 i += 1
 
-            print(dopoln_chis)
-
             # создание папки и возвращение пути к ней
             path = M3Visualizing.__create_folder(str(user_id))
             # записывание пути в возвращаемый объект
@@ -168,8 +166,6 @@ class M3Visualizing:
                     if dopoln_chis > 3:
                         itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
                         i += 1
-
-                print(dopoln_chis)
 
                 i = 0
                 sum = 0
@@ -372,7 +368,6 @@ class M3Visualizing:
             if some_number is None:
                 some_number=0
             some_number = round(float(some_number))
-            print(some_number)
 
             if some_number > 0:
                 result.number = __vyvod_chisla(some_number)
