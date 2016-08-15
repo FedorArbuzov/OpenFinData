@@ -208,7 +208,7 @@ def main_place(s):
         result = check_the_territories(list1[i])
         i += 1
         for s in key_words[19:-8]:
-            if (s == key_words[result]):
+            if s == key_words[result]:
                 return s
 
 def main_sector(s):
@@ -222,7 +222,7 @@ def main_sector(s):
         result = check_the_territories(list1[i])
         i += 1
         for s in key_words[-8:]:
-            if (s == key_words[result]):
+            if s == key_words[result]:
                 return s
 
 
@@ -273,7 +273,7 @@ def main_func(s):
             user_req.year = now_date.year - 1
 
         for s in key_words[21:-11]:
-            if (s == key_words[result]):
+            if s == key_words[result]:
                 user_req.place = s
 
         if key_words[result] == 'налоговые':
@@ -282,9 +282,9 @@ def main_func(s):
             user_req.sector = 'неналоговый'
 
         for s in key_words[-11:]:
-            if (s == key_words[result]):
+            if s == key_words[result]:
                 # print(result)
-                user_req.sector = str(result - 121)
+                user_req.sector = str(result - 120)
 
         i += 1
     if user_req.sector == "":

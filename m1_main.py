@@ -164,12 +164,12 @@ def repeat_all_messages(message):
     else:
         s1 = main_func(s)
         s_mod2 = ""
-        
-        if(s1[0] == "расходы"):
+
+        if s1[0] == "расходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
-        elif(s1[0] == "доходы"):
+        elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-        
+
         querying_and_visualizing(message, s_mod2)
 
 
@@ -448,16 +448,16 @@ def voice_processing(message):
     text = speech_to_text(bytes=file.content)
 
     if text is not None:
-        msg = 'Ваш запрос: "' + text + '". Подождите чуть-чуть, идет его обработка!'
+        msg = 'Ваш запрос: "' + text + '". Подождите совсем чуть-чуть, идет его обработка!👌'
         bot.send_message(message.chat.id, msg)
         s1 = main_func(text)
         s_mod2 = ""
-        
-        if(s1[0] == "расходы"):
+
+        if s1[0] == "расходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
-        elif(s1[0] == "доходы"):
+        elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-        
+
         querying_and_visualizing(message, s_mod2)
     else:
         msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
@@ -480,7 +480,7 @@ def querying_and_visualizing(message, s_mod2):
     if result.status is False:
         bot.send_message(message.chat.id, result.message)
     else:
-        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам😊")
+        bot.send_message(message.chat.id, "Спасибо!🙌 Сейчас мы сформируем ответ и отправим его вам😊")
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
         if m3_result.is_file is False:
