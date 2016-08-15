@@ -6,7 +6,7 @@ import sqlite3
 key_words = ['год', 'налоговые', 'неналоговые'
              'текущий', 'прошлый',
              'доход', 'расход', 'дефицит', 'доля', 'долг',
-             'образование', 'среднее', 'начальное', 'высшее',
+             'среднее', 'начальное', 'высшее',
              'объем', 'общий', 'общем',
              'плановый', 'запланированный', 'фактический', 'бюждет', 'этот',
              'Российская Федерация', 'Россия', 'РФ',
@@ -207,8 +207,8 @@ def main_place(s):
     for _ in list1:
         result = check_the_territories(list1[i])
         i += 1
-        for s in key_words[20:-8]:
-            if (s == key_words[result]):
+        for s in key_words[19:-8]:
+            if s == key_words[result]:
                 return s
 
 def main_sector(s):
@@ -222,7 +222,7 @@ def main_sector(s):
         result = check_the_territories(list1[i])
         i += 1
         for s in key_words[-8:]:
-            if (s == key_words[result]):
+            if s == key_words[result]:
                 return s
 
 
@@ -272,8 +272,8 @@ def main_func(s):
         if key_words[result] == 'прошлый':
             user_req.year = now_date.year - 1
 
-        for s in key_words[22:-11]:
-            if (s == key_words[result]):
+        for s in key_words[21:-11]:
+            if s == key_words[result]:
                 user_req.place = s
 
         if key_words[result] == 'налоговые':
@@ -282,9 +282,9 @@ def main_func(s):
             user_req.sector = 'неналоговый'
 
         for s in key_words[-11:]:
-            if (s == key_words[result]):
+            if s == key_words[result]:
                 # print(result)
-                user_req.sector = str(result - 121)
+                user_req.sector = str(result - 120)
 
         i += 1
     if user_req.sector == "":
@@ -296,11 +296,11 @@ def main_func(s):
     if user_req.year == 0 or user_req.year == now_date.year or user_req.year == now_date.year - 1:
         if len(list_of_int) != 0:
             user_req.year = int(list_of_int[0])
+    else:
+        user_req.year = "null"
 
     print(user_req.planned_or_actual)
     print(user_req.subject)
-    if user_req.year == 0 and user_req.year < 2016 and user_req.year > 2006:
-        user_req.year = now_date.year
     print(user_req.year)
     print(user_req.place)
     print(user_req.sector)

@@ -6,22 +6,45 @@ from transliterate import translit as tr
 from telebot import types
 from m1_req import main_func
 from m1_req import main_place
-from m1_req import main_sector
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 from m1_speechkit import speech_to_text
 from config import TELEGRAM_API_TOKEN1
 from config import TELEGRAM_API_TOKEN2
 
-API_TOKEN = TELEGRAM_API_TOKEN1
-bot = telebot.TeleBot(API_TOKEN)
-
+# Constants for text and messages
+START_MSG = 'Я — экспертная система OpenFinData. Я могу представить вам ' \
+            'финансовый отчет о любой области за определенный год.\n' \
+            'Чтобы получить список команд, нажмите /help\n' \
+            'Чтобы сразу приступить к формированию отчета, введите /findata'
+COMMANDS_MSG = '<b>Список команд:</b>\n' \
+               '/start   — начать работу с ботом\n' \
+               '/findata — получить финансовый отчет\n'
 TERRITORY_MSG = 'Чтобы узнать информацию о Российской Федерации в целом, просто нажмите /cr. ' \
                 'Чтобу узнать данные по конкретному региону, введите /cr *название региона* ' \
                 '(например, /cr Московская область)'
 YEAR_MSG = 'Введите год цифрами с 2007 по ' + \
            str(datetime.datetime.now().year - 1) + \
            ' или поставьте "-", чтобы пропустить данный шаг'
+
+ERROR_CR_MSG = 'Рановато вы перешли на области😏 Начните лучше с команды /findata'
+ERROR_NO_UNDERSTANDING = 'Боюсь, что мы вас не поняли 😰'
+ERROR_NOT_FULL_INFO = 'Похоже, вы передали нам не всю информацию🙃 Попробуйте начать сначала /findata'
+ERROR_NO_DATA_THIS_YEAR = 'Упс, данных за такой год, к сожалению, нет🙈 Попробуйте еще раз!'
+ERROR_CHECK_INPUT = 'Хмм... Проверьте правильность ввода🔎'
+
+ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
+
+MSG_BEFORE_THEMES = 'Жмакните на одну из кнопок!'
+MSG_BEFORE_SPHERE = 'Какая сфера расходов вас интересует?'
+MSG_BEFORE_NALOG_NENALOG = 'Налоговые или неналоговые?'
+MSG_BEFORE_TYPE_EXPENDITURES = 'После укажите тип расходов:'
+MSG_BEFORE_TYPE_PROFIT = 'Выберите тип доходов:'
+MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет его обработка!?'
+
+
+API_TOKEN = TELEGRAM_API_TOKEN1
+bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
 connection_first = sqlite3.connect('subscribe.db')
@@ -55,20 +78,17 @@ def send_welcome(message):
             cursor.execute("UPDATE users SET place=\"" + "null" + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            # bot.send_message(message.chat.id, 'Спасибо!')
         else:
             print(s)
             s = main_place(s)
-            if (s != None):
-
+            if s is not None:
                 cursor.execute("UPDATE users SET place=\"" + s + "\" WHERE userid=" + str(message.chat.id) + ";")
                 connection.commit()
                 connection.close()
-                # bot.send_message(message.chat.id, 'Спасибо!')
             else:
-                bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли 😰")
+                bot.send_message(message.chat.id, ERROR_NO_UNDERSTANDING)
     else:
-        bot.send_message(message.chat.id, "Рановато вы перешли на области😏 Начните лучше с команды /findata")
+        bot.send_message(message.chat.id, ERROR_CR_MSG)
 
     con = sqlite3.connect('users.db')
     cursor = con.cursor()
@@ -81,9 +101,8 @@ def send_welcome(message):
             # print(i1)
             if i1 == '0':
                 k += 1
-    if (k > 2):
-        bot.send_message(message.chat.id,
-                         "Похоже, вы передали нам не всю информацию🙃 Попробуйте начать сначала /findata")
+    if k > 2:
+        bot.send_message(message.chat.id, ERROR_NOT_FULL_INFO)
     else:
         connection = sqlite3.connect('users.db')
         cursor = connection.cursor()
@@ -119,19 +138,13 @@ def send_welcome(message):
 # команда старта
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.send_message(message.chat.id, 'Я — экспертная система OpenFinData. Я могу представить вам '
-                                      'финансовый отчет о любой области за определенный год.\n'
-                                      'Чтобы получить список команд, нажмите /help\n'
-                                      'Чтобы сразу приступить к формированию отчета, введите /findata')
+    bot.send_message(message.chat.id, START_MSG)
 
 
 # команды помощи
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
-    bot.send_message(message.chat.id, '<b>Список команд:</b>\n'
-                                      '/start   — начать работу с ботом\n'
-                                      '/findata — получить финансовый отчет\n',
-                     parse_mode='HTML')
+    bot.send_message(message.chat.id, COMMANDS_MSG, parse_mode='HTML')
 
 
 @bot.message_handler(commands=['findata'])
@@ -148,13 +161,13 @@ def repeat_all_messages(message):
         connection.close()
 
     s = message.text[9:]
-    if (s == ""):
+    if s == "":
         # bot.send_message(message.chat.id, "Выберите предметную область:")
         markup = types.ReplyKeyboardMarkup()
         markup.row('доходы')
         markup.row('расходы')
         markup.row('дефицит/профицит')
-        bot.send_message(message.chat.id, "Жмакните на одну из кнопок!", reply_markup=markup)
+        bot.send_message(message.chat.id, MSG_BEFORE_THEMES, reply_markup=markup)
         connection = sqlite3.connect('users.db')
         cursor = connection.cursor()
         s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, " + \
@@ -167,12 +180,13 @@ def repeat_all_messages(message):
     else:
         s1 = main_func(s)
         s_mod2 = ""
-        
-        if(s1[0] == "расходы"):
+
+        if s1[0] == "расходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
-        elif(s1[0] == "доходы"):
+        elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-        
+        elif s1[0] == "дефицит":
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2])  + "," + "null" + "," + s1[1]
         querying_and_visualizing(message, s_mod2)
 
 
@@ -201,8 +215,7 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, TERRITORY_MSG)
 
         else:
-            bot.send_message(message.chat.id,
-                             "Упс, данных за такой год, к сожалению, нет🙈 Повторите ввод:")
+            bot.send_message(message.chat.id, ERROR_NO_DATA_THIS_YEAR)
 
     elif message.text == '-':
         cursor.execute("UPDATE users SET year=" + 'null' + " WHERE userid=" + str(message.chat.id) + ";")
@@ -250,24 +263,24 @@ def repeat_all_messages(message):
             keyboard.add(health_care_button, social_policy_button)
             keyboard.add(none_button)
 
-            bot.send_message(message.chat.id, 'Какая сфера расходов вас интересует?', reply_markup=keyboard)
+            bot.send_message(message.chat.id, MSG_BEFORE_SPHERE, reply_markup=keyboard)
             markup = types.ReplyKeyboardMarkup()
             markup.row('фактические')
             markup.row('плановые')
             markup.row('текущие')
             markup.row('запланированные')
-            bot.send_message(message.chat.id, "После укажите тип расходов:", reply_markup=markup)
+            bot.send_message(message.chat.id, MSG_BEFORE_TYPE_EXPENDITURES, reply_markup=markup)
         elif k == "дефицит/профицит" or k == "налоговые" or k == "неналоговые":
             markup = types.ReplyKeyboardMarkup()
             markup.row('плановые')
             markup.row('текущие')
             markup.row("пропустить этот пункт 👉")
-            bot.send_message(message.chat.id, "Выберите тип доходов:", reply_markup=markup)
+            bot.send_message(message.chat.id, MSG_BEFORE_TYPE_PROFIT, reply_markup=markup)
         elif k == "доходы":
             markup = types.ReplyKeyboardMarkup()
             markup.row('налоговые')
             markup.row('неналоговые')
-            bot.send_message(message.chat.id, "Налоговые или неналоговые?", reply_markup=markup)
+            bot.send_message(message.chat.id, MSG_BEFORE_NALOG_NENALOG, reply_markup=markup)
 
     elif (message.text == "фактические" or
                   message.text == "плановые" or
@@ -276,7 +289,7 @@ def repeat_all_messages(message):
                   message.text == "пропустить этот пункт 👉") and (
                 len(data) != 0):
         k = 0
-        if (message.text == "фактические"):
+        if message.text == "фактические":
             markup = types.ReplyKeyboardHide()
             k = "фактический"
             bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
@@ -286,7 +299,7 @@ def repeat_all_messages(message):
             connection.commit()
             connection.close()
 
-        if (message.text == "плановые" or message.text == "пропустить этот пункт 👉"):
+        if message.text == "плановые" or message.text == "пропустить этот пункт 👉":
             markup = types.ReplyKeyboardHide()
             if message.text == "плановые":
                 k = "плановый"
@@ -323,7 +336,7 @@ def repeat_all_messages(message):
             connection.close()
             bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
     else:
-        bot.send_message(message.chat.id, 'Хмм... Проверьте правильность ввода🔎')
+        bot.send_message(message.chat.id, ERROR_CHECK_INPUT)
 
 
 @bot.inline_handler(lambda query: len(query.query) > 0)
@@ -442,7 +455,7 @@ def voice_processing(message):
     connection = sqlite3.connect('users.db')
     cursor = connection.cursor()
     cursor.execute(
-        "DELETE FROM users WHERE userid = " + str(message.chat.id))  # удаление ранее введенной юзером информации
+        "DELETE FROM users WHERE userid = " + str(message.chat.id))
     connection.commit()
     connection.close()
 
@@ -451,19 +464,21 @@ def voice_processing(message):
     text = speech_to_text(bytes=file.content)
 
     if text is not None:
-        msg = 'Ваш запрос: "' + text + '". Подождите чуть-чуть, идет его обработка!'
+        msg = 'Ваш запрос: "' + text + '". '
         bot.send_message(message.chat.id, msg)
         s1 = main_func(text)
         s_mod2 = ""
-        
-        if(s1[0] == "расходы"):
+
+        if s1[0] == "расходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
-        elif(s1[0] == "доходы"):
+        elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-        
+        elif s1[0] == "дефицит":
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2])  + "," + "null" + "," + s1[1]
+
         querying_and_visualizing(message, s_mod2)
     else:
-        msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
+        msg = ERROR_CANNOT_UNDERSTAND_VOICE
         bot.send_message(message.chat.id, msg)
 
 
@@ -483,7 +498,7 @@ def querying_and_visualizing(message, s_mod2):
     if result.status is False:
         bot.send_message(message.chat.id, result.message)
     else:
-        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам😊")
+        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ🙌 и отправим его вам😊")
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
         if m3_result.is_file is False:

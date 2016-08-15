@@ -346,7 +346,6 @@ class M3Visualizing:
             '''
             # os.rename("chart.svg",filename1)
             # os.rename("page2.pdf",filename2)
-            # TODO: поиск главного значения для вывода в сообщении
             result.number = str(sum) + " " + dop_chis + " рублей"
             result.is_file = True
         else:
