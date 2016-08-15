@@ -34,7 +34,7 @@ ERROR_NO_DATA_THIS_YEAR = 'Упс, данных за такой год, к со�
 ERROR_CHECK_INPUT = 'Хмм... Проверьте правильность ввода🔎'
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
 ERROR_NULL_DATA_FOR_SUCH_REQUEST = 'К сожалению, этих данных в системе нет🤕 Не отчаивайтесь! Есть много ' \
-                                  'других цифр😉 Жми /search'
+                                   'других цифр😉 Жми /search'
 
 MSG_BEFORE_THEMES = 'Жмакните на одну из кнопок!'
 MSG_BEFORE_SPHERE = 'Какая сфера расходов вас интересует?'
@@ -42,8 +42,7 @@ MSG_BEFORE_NALOG_NENALOG = 'Налоговые или неналоговые?'
 MSG_BEFORE_TYPE_EXPENDITURES = 'После укажите тип расходов:'
 MSG_BEFORE_TYPE_PROFIT = 'Выберите тип доходов:'
 MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет его обработка!?'
-MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ🙌 и отправим его вам😊"
-
+MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ🙌\n и отправим его вам😊"
 
 API_TOKEN = TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
@@ -254,7 +253,7 @@ def repeat_all_messages(message):
             health_care_button = types.InlineKeyboardButton('Здравоохранение', callback_data='10')
             social_policy_button = types.InlineKeyboardButton('Соц. политика', callback_data='11')
             physical_culture_and_sport = types.InlineKeyboardButton('Спорт', callback_data='12')
-            none_button = types.InlineKeyboardButton('🤔', callback_data='13')
+            none_button = types.InlineKeyboardButton('Хмм...', callback_data='13')
 
             keyboard = types.InlineKeyboardMarkup()
             keyboard.add(national_issues_button)
@@ -347,7 +346,12 @@ def query_text(query):
     input_message_content = text
     s1 = main_func(text)
     s_mod2 = ""
-    s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    if s1[0] == "расходы":
+        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
+    elif s1[0] == "доходы":
+        s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    elif s1[0] == "дефицит":
+        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
     print(s_mod2)
     result = M2Retrieving.get_data(s_mod2)
     filename1, filename2 = 'f1', 'f2'
@@ -476,7 +480,7 @@ def voice_processing(message):
         elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
         elif s1[0] == "дефицит":
-            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2])  + "," + "null" + "," + s1[1]
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
 
         querying_and_visualizing(message, s_mod2)
     else:

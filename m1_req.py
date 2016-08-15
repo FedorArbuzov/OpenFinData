@@ -3,7 +3,7 @@ from m1_work_class import quest
 import datetime
 import sqlite3
 
-key_words = ['год', 'налоговые', 'неналоговые'
+key_words = ['год', 'налоговые', 'неналоговые',
              'текущий', 'прошлый',
              'доход', 'расход', 'дефицит', 'доля', 'долг',
              'среднее', 'начальное', 'высшее',
@@ -119,7 +119,7 @@ key_words = ['год', 'налоговые', 'неналоговые'
 useless_pile_of_crap = [
     'в', 'без', 'до', 'из', 'к', 'на', 'по', 'о', 'от', 'перед', 'при', 'через', 'с', 'у', 'за', 'над', 'об', 'под',
     'про', 'для', 'не'
-    'республика', 'республики',
+                  'республика', 'республики',
     'республики', 'республик',
     'республике', 'республикам',
     'республику', 'республики',
@@ -173,12 +173,13 @@ def check_the_territories(str_user):
     i = 0
     for _ in key_words:
         distance_between_input_and_table_data = distance(str_user, key_words[i])
-        if distance_between_input_and_table_data < minimum_value:
+        if distance_between_input_and_table_data < minimum_value and distance_between_input_and_table_data < 4:
             minimum_value = distance_between_input_and_table_data
             index_of_the_most_likely_variant = i
         i += 1
 
     return index_of_the_most_likely_variant
+
 
 # Основная функция
 def check_the_sphere(str_user):
@@ -202,7 +203,6 @@ def main_place(s):
         if s in list1:
             list1.remove(s)
 
-
     i = 0
     for _ in list1:
         result = check_the_territories(list1[i])
@@ -210,6 +210,7 @@ def main_place(s):
         for s in key_words[19:-8]:
             if s == key_words[result]:
                 return s
+
 
 def main_sector(s):
     s = re.sub(r'[^\w\s]', '', s)
@@ -237,7 +238,6 @@ def main_func(s):
     for s in useless_pile_of_crap:
         if s in list1:
             list1.remove(s)
-
 
     for s in list_of_int:
         if s in list1:
@@ -298,7 +298,6 @@ def main_func(s):
             user_req.year = int(list_of_int[0])
         else:
             user_req.year = "null"
-            user_req.planned_or_actual = "текущий"
 
     print(user_req.planned_or_actual)
     print(user_req.subject)
@@ -307,4 +306,3 @@ def main_func(s):
     print(user_req.sector)
     user_r = [user_req.subject, user_req.place.lower(), user_req.year, user_req.sector, user_req.planned_or_actual]
     return user_r
-

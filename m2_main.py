@@ -67,8 +67,7 @@ class M2Retrieving:
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
         else:
-            response.message = 'Неверно выбрана предметная область (' + \
-                               parameters[0] + '). Попробуйте еще раз /search'
+            response.message = '😂😂😂😏\nНеверно выбрана предметная область!\n Попробуйте еще раз /search'
             return response
 
         # Processing param1
@@ -105,7 +104,7 @@ class M2Retrieving:
         elif parameters[4] in sphere:
             mapper += '1.'
         else:
-            response.message = 'Неверно указана сфера (' + parameters[4] + '). Попробуйте еще раз /search'
+            response.message = 'Неверно указана сфера ("' + parameters[4] + '"). Попробуйте еще раз /search'
             return response
 
         # Processing territory
@@ -114,7 +113,7 @@ class M2Retrieving:
         elif parameters[5] in places:
             mapper += '1'
         else:
-            response.message = 'Неверно указана территория (' + parameters[4] + '). Попробуйте еще раз /search'
+            response.message = 'Неверно указана территория ("' + parameters[4] + '"). Попробуйте еще раз /search'
             return response
 
         return mapper
@@ -131,7 +130,7 @@ class M2Retrieving:
 
         # Finding the nearest mapper to given and forming response
         if mdx_skeleton == 0:
-            message = 'Запрос чуть-чуть некорректен. Пожалуйста, подправьте его, выбрав ' \
+            message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
                       'один из предложенных вариантов:\r\n'
             index = 1
             for i in list(mappers.keys()):
@@ -139,9 +138,9 @@ class M2Retrieving:
                     message += '- ' + M2Retrieving.__hint(i, mapper, params)
                     index += 1
             if index == 1:
-                message = 'В запросе неверно несколько параметров. Попробуйте изменить запрос.   '
+                message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
 
-            response.message = message[:-2] + '\n /search'
+            response.message = message[:-2] + '\n Жмите /search'
 
         return mdx_skeleton
 
