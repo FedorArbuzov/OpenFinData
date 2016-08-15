@@ -142,7 +142,7 @@ class M3Visualizing:
 
             # вот это хороший метод
             def __formation(dopoln_chis):
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                mas = [' тыс.', ' млн', ' млрд', ' трлн']
                 k = dopoln_chis
                 s = ''
                 if (k > 12) and (k < 16):
@@ -253,12 +253,12 @@ class M3Visualizing:
             # пихаем значения красиво в табличку
             i = 0
             qu = []
-            tablemas = [["Параметр", "Значение *"]]  # Тут сразу и заголовки таблицы
+            tablemas = [["Параметр", "Значение"]]  # Тут сразу и заголовки таблицы
             if sum != 0:
                 while i < k - 1:
                     # Тут мы высчитываем проценты, чтобы вставить их в табличку
-                    qu = [Paragraph((diagramttl[i]) + "  (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN),
-                          itogznach[i]]
+                    qu = [Paragraph((diagramttl[i]) + "    (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN),
+                          str(itogznach[i]) + dop_chis]
                     tablemas.append(qu)
                     i += 1
             else:
@@ -271,7 +271,7 @@ class M3Visualizing:
 
             # Стили для таблицы
             styles = getSampleStyleSheet()
-            table = Table(data, colWidths=[16 * cm, 2.5 * cm])
+            table = Table(data, colWidths=[15 * cm, 3.5 * cm])
             table.setStyle(TableStyle([
                 # ('INNERGRID', (0,0), (-1,-1), 1.5, colors.white),
                 ('LINEBEFORE', (1, 0), (-1, -1), 0.5, colors.white),
@@ -290,7 +290,7 @@ class M3Visualizing:
             ]))
 
             # Создаем страницу с таблицей
-            c = canvas.Canvas(path + "\\" + filename_pdf, pagesize=A4)
+            c = canvas.Canvas(path + "\\" + "table_" + filename_pdf, pagesize=A4)
             c.setFont('Arial', 14)
 
             # Функция для позиционирования таблицы
@@ -300,8 +300,9 @@ class M3Visualizing:
 
             w, h = table.wrap(width, height)
             table.wrapOn(c, width, height)
-            table.drawOn(c, *__coord(0.5, 0.8, (height - h), inch))
+            table.drawOn(c, *__coord(0.5, 1.4, (height - h), inch))
 
+            """
             # Замечание внизу страницы
             def __notice(a):
                 a.setFont('Arial', 10)
@@ -310,7 +311,26 @@ class M3Visualizing:
                              "*Значения приведены в " + dop_chis + " рублей")
 
             __notice(c)
+            """
             c.save()
+
+            # фирменный шаблон
+            input1 = PdfFileReader(open("my_pattern.pdf", "rb"))
+            page1 = input1.getPage(0)
+
+            # страница с таблицей
+            input2 = PdfFileReader(open(path + "\\" + "table_" + filename_pdf, "rb"))
+            page2 = input2.getPage(0)
+
+            # накладываем страницу с таблицей на шаблон
+            page1.mergePage(page2)
+
+            # формируем итоговый файл
+            output = PdfFileWriter()
+            output.addPage(page1)
+            outputStream = open(path + "\\" + filename_pdf, "wb")
+            output.write(outputStream)
+            outputStream.close()
 
             # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
             '''
