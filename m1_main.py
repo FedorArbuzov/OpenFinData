@@ -151,7 +151,7 @@ def send_welcome(message):
     bot.send_message(message.chat.id, COMMANDS_MSG, parse_mode='HTML')
 
 
-@bot.message_handler(commands=['findata'])
+@bot.message_handler(commands=['search'])
 def repeat_all_messages(message):
     connection = sqlite3.connect('users.db')
     cursor = connection.cursor()
