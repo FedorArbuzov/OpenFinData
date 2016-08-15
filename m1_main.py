@@ -55,16 +55,13 @@ def send_welcome(message):
             cursor.execute("UPDATE users SET place=\"" + "null" + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            # bot.send_message(message.chat.id, 'Спасибо!')
         else:
             print(s)
             s = main_place(s)
-            if (s != None):
-
+            if s is not None:
                 cursor.execute("UPDATE users SET place=\"" + s + "\" WHERE userid=" + str(message.chat.id) + ";")
                 connection.commit()
                 connection.close()
-                # bot.send_message(message.chat.id, 'Спасибо!')
             else:
                 bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли 😰")
     else:
@@ -81,7 +78,7 @@ def send_welcome(message):
             # print(i1)
             if i1 == '0':
                 k += 1
-    if (k > 2):
+    if k > 2:
         bot.send_message(message.chat.id,
                          "Похоже, вы передали нам не всю информацию🙃 Попробуйте начать сначала /findata")
     else:
@@ -148,7 +145,7 @@ def repeat_all_messages(message):
         connection.close()
 
     s = message.text[9:]
-    if (s == ""):
+    if s == "":
         # bot.send_message(message.chat.id, "Выберите предметную область:")
         markup = types.ReplyKeyboardMarkup()
         markup.row('доходы')
@@ -197,7 +194,7 @@ def repeat_all_messages(message):
 
         else:
             bot.send_message(message.chat.id,
-                             "Упс, данных за такой год, к сожалению, нет🙈 Повторите ввод:")
+                             "Упс, данных за такой год, к сожалению, нет🙈 Попробуйте еще раз!")
 
     elif message.text == '-':
         cursor.execute("UPDATE users SET year=" + 'null' + " WHERE userid=" + str(message.chat.id) + ";")
@@ -271,7 +268,7 @@ def repeat_all_messages(message):
                   message.text == "пропустить этот пункт 👉") and (
                 len(data) != 0):
         k = 0
-        if (message.text == "фактические"):
+        if message.text == "фактические":
             markup = types.ReplyKeyboardHide()
             k = "фактический"
             bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
@@ -281,7 +278,7 @@ def repeat_all_messages(message):
             connection.commit()
             connection.close()
 
-        if (message.text == "плановые" or message.text == "пропустить этот пункт 👉"):
+        if message.text == "плановые" or message.text == "пропустить этот пункт 👉":
             markup = types.ReplyKeyboardHide()
             if message.text == "плановые":
                 k = "плановый"
