@@ -46,7 +46,7 @@ MSG_BEFORE_TYPE_PROFIT = 'Выберите тип:'
 MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет его обработка!?'
 MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ🙌\n и отправим его вам😊"
 
-API_TOKEN = '242536845:AAELC6ay-SVnaw0nIZHCZpsqw_KN8yiaD1U'
+API_TOKEN = TELEGRAM_API_TOKEN_FINAL
 bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
