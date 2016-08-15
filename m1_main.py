@@ -35,49 +35,6 @@ def represents_int(s):
         return False
 
 
-# остановка ввода запроса
-@bot.message_handler(commands=['stopfin'])
-def repeat_all_messages(message):
-    connection = sqlite3.connect('users.db')
-    cursor = connection.cursor()
-    cursor.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
-    data = cursor.fetchall()
-    if len(data) != 0:
-        cursor.execute(
-            "DELETE FROM users WHERE userid = " + str(message.chat.id))  # удаление ранее введенной юзером информации
-        connection.commit()
-        connection.close()
-        bot.send_message(message.chat.id,
-                         "Мы забыли про ваш предыдущий вопрос. "
-                         "Можете начать снова с командой /findata")
-
-
-'''
-# строковый ввод вопроса
-@bot.message_handler(commands=['custom'])
-def send_welcome(message):
-    # подключение к бд
-    connection = sqlite3.connect('users.db')
-    cursor = connection.cursor()
-    cursor.execute("SELECT rowid FROM users WHERE userid = " + str(message.chat.id))
-    data = cursor.fetchall()
-    # защита от предварительного ввода пользователем запроса во время обработки предыдущего
-    if len(data) != 0:
-        bot.send_message(message.chat.id,
-                         "Вы уже задали нам вопрос. Сейчас мы ответим на него и вы сможете задать следующий")
-    else:
-        s = message.text[8:]
-        s1 = main_func(s)
-        # заполнение строки запроса к бд
-        s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual) VALUES(NULL, {0}, \"{1}\", \"{2}\", \"{3}\", \"{4}\", \"{5}\")".format(
-            str(message.chat.id), str(s1[0]), str(s1[1]), str(s1[2]), str(s1[3]), str(s1[4]))
-        cursor.execute(s_main)
-        connection.commit()
-        connection.close()
-        bot.send_message(message.chat.id, "Мы получили ваш запрос и скоро на него ответим")
-'''
-
-
 # команда выбора региона (choose region)
 @bot.message_handler(commands=['cr'])
 def send_welcome(message):
@@ -412,6 +369,35 @@ def repeat_all_messages(message):
                                               '/cr *название региона* (например, /cr Московская область):')
 
 
+@bot.inline_handler(lambda query: len(query.query) > 0)
+def query_text(query):
+    text = query.query
+    input_message_content = text
+    s1 = main_func(text)
+    s_mod2 = ""
+    s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    result = M2Retrieving.get_data(s_mod2)
+    filename1, filename2 = 'f1', 'f2'
+    if result.status is False:
+        pass
+    else:
+        print(result.response)
+
+        m3_result = M3Visualizing.create_response(query.id, result.response, filename1, filename2)
+        try:
+            result_array = []
+            msg = types.InlineQueryResultArticle(id='1',
+                                                 title=input_message_content,
+                                                 input_message_content=types.InputTextMessageContent(
+                                                     message_text=input_message_content + ':\n' + str(
+                                                         m3_result.number)),
+                                                 )
+            result_array.append(msg)
+
+        finally:
+            bot.answer_inline_query(query.id, result_array)
+            
+    
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     if call.message:
