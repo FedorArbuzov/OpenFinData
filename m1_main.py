@@ -275,8 +275,12 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, MSG_BEFORE_TYPE_EXPENDITURES, reply_markup=markup)
         elif k == "дефицит/профицит" or k == "налоговые" or k == "неналоговые":
             markup = types.ReplyKeyboardMarkup()
-            markup.row('плановые')
-            markup.row('текущие')
+            if k == "дефицит/профицит":
+                markup.row('плановый')
+                markup.row('текущий')
+            else:
+                markup.row('плановые')
+                markup.row('текущие')
             markup.row("пропустить этот пункт 👉")
             bot.send_message(message.chat.id, MSG_BEFORE_TYPE_PROFIT, reply_markup=markup)
         elif k == "доходы":
@@ -286,11 +290,10 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, MSG_BEFORE_NALOG_NENALOG, reply_markup=markup)
 
     elif (message.text == "фактические" or
-                  message.text == "плановые" or
-                  message.text == "текущие" or
+                  message.text == "плановые" or message.text == "плановый" or
+                  message.text == "текущие" or message.text == "текущий" or
                   message.text == "запланированные" or
-                  message.text == "пропустить этот пункт 👉") and (
-                len(data) != 0):
+                  message.text == "пропустить этот пункт 👉") and (len(data) != 0):
         k = 0
         if message.text == "фактические":
             markup = types.ReplyKeyboardHide()
@@ -302,10 +305,12 @@ def repeat_all_messages(message):
             connection.commit()
             connection.close()
 
-        if message.text == "плановые" or message.text == "пропустить этот пункт 👉":
+        if message.text == "плановые" or message.text == "плановый" or message.text == "пропустить этот пункт 👉":
             markup = types.ReplyKeyboardHide()
             if message.text == "плановые":
                 k = "плановый"
+            elif message.text == "плановый":
+                k = message.text
             else:
                 k = "null"
             bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
@@ -317,7 +322,7 @@ def repeat_all_messages(message):
 
             markup = types.ReplyKeyboardHide()
 
-        if message.text == "текущие":
+        if message.text == "текущие" or message.text == "текущий":
             markup = types.ReplyKeyboardHide()
             k = "текущий"
             cursor.execute(
