@@ -6,7 +6,7 @@ import sqlite3
 key_words = ['год', 'налоговые', 'неналоговые'
              'текущий', 'прошлый',
              'доход', 'расход', 'дефицит', 'доля', 'долг',
-             'образование', 'среднее', 'начальное', 'высшее',
+             'среднее', 'начальное', 'высшее',
              'объем', 'общий', 'общем',
              'плановый', 'запланированный', 'фактический', 'бюждет', 'этот',
              'Российская Федерация', 'Россия', 'РФ',
@@ -207,7 +207,7 @@ def main_place(s):
     for _ in list1:
         result = check_the_territories(list1[i])
         i += 1
-        for s in key_words[20:-8]:
+        for s in key_words[19:-8]:
             if (s == key_words[result]):
                 return s
 
@@ -272,7 +272,7 @@ def main_func(s):
         if key_words[result] == 'прошлый':
             user_req.year = now_date.year - 1
 
-        for s in key_words[22:-11]:
+        for s in key_words[21:-11]:
             if (s == key_words[result]):
                 user_req.place = s
 
