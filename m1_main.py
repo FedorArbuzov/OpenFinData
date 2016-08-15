@@ -522,22 +522,21 @@ def voice_processing(message):
 
 def file_naming(request_string):
     request_string = tr(request_string, 'ru', reversed=True)
-    filename_svg = request_string.replace('null', '')
-    filename_svg = filename_svg.replace(',', '_')
-    filename_svg = filename_svg.replace('__', '_') + '.svg'
-    filename_pdf = filename_svg.replace('.svg', '.pdf')
+    filename = request_string.replace('null', '').replace(',', '_').replace('__', '_')
+    filename_svg = filename + '.svg'
+    filename_pdf = filename + '.pdf'
     names = [filename_svg, filename_pdf]
     return names
 
 
 def querying_and_visualizing(message, s_mod2):
+    print(s_mod2)
     names = file_naming(s_mod2)
     result = M2Retrieving.get_data(s_mod2)
     if result.status is False:
         bot.send_message(message.chat.id, result.message)
     else:
         bot.send_message(message.chat.id, "Все хорошо")
-        print(result.response)
         bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
