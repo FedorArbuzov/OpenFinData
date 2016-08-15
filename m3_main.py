@@ -30,7 +30,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string, filename1, filename2):
+    def create_response(user_id, json_string, filename_svg, filename_pdf):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет
@@ -204,7 +204,7 @@ class M3Visualizing:
                 pie_chart.add(diagramttl[i], itogznach[i])
                 i += 1
 
-            pie_chart.render_to_file(path + "\\" + filename1)
+            pie_chart.render_to_file(path + "\\" + filename_svg)
 
             # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
             # cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
@@ -294,7 +294,7 @@ class M3Visualizing:
             ]))
 
             # Создаем страницу с таблицей
-            c = canvas.Canvas(path + "\\" + filename2, pagesize=A4)
+            c = canvas.Canvas(path + "\\" + filename_pdf, pagesize=A4)
             c.setFont('Arial', 14)
 
             # Функция для позиционирования таблицы

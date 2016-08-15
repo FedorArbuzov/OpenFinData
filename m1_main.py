@@ -9,12 +9,12 @@ from m1_req import main_place
 from m1_req import main_sector
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
+from m1_speechkit import speech_to_text
 from config import TELEGRAM_API_TOKEN1
 from config import TELEGRAM_API_TOKEN2
 
 API_TOKEN = TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
-
 
 # первое подключение к бд
 connection_first = sqlite3.connect('subscribe.db')
@@ -91,7 +91,7 @@ def send_welcome(message):
             cursor.execute("UPDATE users SET place=\"" + "null" + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            #bot.send_message(message.chat.id, 'Спасибо!')
+            # bot.send_message(message.chat.id, 'Спасибо!')
         else:
             print(s)
             s = main_place(s)
@@ -100,7 +100,7 @@ def send_welcome(message):
                 cursor.execute("UPDATE users SET place=\"" + s + "\" WHERE userid=" + str(message.chat.id) + ";")
                 connection.commit()
                 connection.close()
-                #bot.send_message(message.chat.id, 'Спасибо!')
+                # bot.send_message(message.chat.id, 'Спасибо!')
             else:
                 bot.send_message(message.chat.id, "Боюсь, что мы вас не поняли 😰")
     else:
@@ -124,7 +124,7 @@ def send_welcome(message):
     else:
         connection = sqlite3.connect('users.db')
         cursor = connection.cursor()
-        #bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
+        # bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
         s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, " + \
                  str(message.chat.id) + ", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(
             0) + "\", \"" + str(0) + "\", \"" + str(0) + "\")"
@@ -144,38 +144,16 @@ def send_welcome(message):
     for n, i in enumerate(new_data):
         if i == 0 or i == '0' or i == None:
             new_data[n] = 'null'
-        if i=="дефицит/профицит":
-            new_data[n]="дефицит"
+        if i == "дефицит/профицит":
+            new_data[n] = "дефицит"
 
     new_data[3] = new_data[3].lower()
     s_mod2, filename1, filename2 = '', '', ''
-    s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(new_data[4]) + ',' + str(new_data[7]) + ',' + str(new_data[3])
-    result = M2Retrieving.get_data(s_mod2)
-    s_mod2 = tr(s_mod2, 'ru', reversed=True)
-    filename1 = s_mod2.replace('null', '')
-    filename1 = filename1.replace(',', '_')
-    filename1 = filename1.replace('__', '_') + '.svg'
-    filename2 = filename1.replace('.svg', '.pdf')
-    print('filename1 = ' + filename1 +'\n' + 'filename2 = ' + filename2)
-    if result.status is False:
-        bot.send_message(message.chat.id, result.message)
-    else:
-        bot.send_message(message.chat.id, "Все хорошо")
-        print(result.response)
-        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
+    s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(new_data[4]) + ',' + str(
+        new_data[7]) + ',' + str(new_data[3])
 
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1, filename2)
-        if m3_result.is_file is False:
-            bot.send_message(message.chat.id, m3_result.number)
-        else:
-            path = m3_result.path + "\\"
-            bot.send_message(message.chat.id, m3_result.number)
-            file1 = open(path + filename1, 'rb')
-            file2 = open(path + filename2, 'rb')
-            # file3 = open(path + 'pattern.pdf', 'rb')
-            bot.send_document(message.chat.id, file1)
-            # bot.send_document(message.chat.id, file3)
-            bot.send_document(message.chat.id, file2)
+    querying_and_visualizing(message, s_mod2)
+
 
 # команда старта
 @bot.message_handler(commands=['start'])
@@ -267,55 +245,7 @@ def repeat_all_messages(message):
         s1 = main_func(s)
         s_mod2 = ""
         s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-        result = M2Retrieving.get_data(s_mod2)
-        s_mod2 = tr(s_mod2, 'ru', reversed=True)
-        filename1 = s_mod2.replace('null', '')
-        filename1 = filename1.replace(',', '_')
-        filename1 = filename1.replace('__', '_') + '.svg'
-        filename2 = filename1.replace('.svg', '.pdf')
-        print('filename1 = ' + filename1 + '\n' + 'filename2 = ' + filename2)
-        if result.status is False:
-            bot.send_message(message.chat.id, result.message)
-        else:
-            bot.send_message(message.chat.id, "Все хорошо")
-            print(result.response)
-            bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-
-            m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1, filename2)
-            if m3_result.is_file is False:
-                bot.send_message(message.chat.id, m3_result.number)
-            else:
-                path = m3_result.path + "\\"
-                bot.send_message(message.chat.id, m3_result.number)
-                file1 = open(path + filename1, 'rb')
-                file2 = open(path + filename2, 'rb')
-                # file3 = open(path + 'pattern.pdf', 'rb')
-                bot.send_document(message.chat.id, file1)
-                # bot.send_document(message.chat.id, file3)
-                bot.send_document(message.chat.id, file2)
-
-        print(s_mod2)
-        result = M2Retrieving.get_data(s_mod2)
-        if result.status is False:
-            bot.send_message(message.chat.id, result.message)
-        else:
-            bot.send_message(message.chat.id, "Все хорошо")
-            print(result.response)
-            bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
-            filename11 = "1.svg"
-            filename12 = "2.pdf"
-            m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename11, filename12)
-            if m3_result.is_file is False:
-                bot.send_message(message.chat.id, m3_result.number)
-            else:
-                path = m3_result.path + "\\"
-                bot.send_message(message.chat.id, m3_result.number)
-                file1 = open(path + filename11, 'rb')
-                file2 = open(path + filename12, 'rb')
-                # file3 = open(path + 'pattern.pdf', 'rb')
-                bot.send_document(message.chat.id, file1)
-                # bot.send_document(message.chat.id, file3)
-                bot.send_document(message.chat.id, file2)
+        querying_and_visualizing(message, s_mod2)
 
 
 @bot.message_handler(content_types=["text"])
@@ -344,7 +274,8 @@ def repeat_all_messages(message):
             cursor.execute("UPDATE users SET year=" + str(i) + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, 'Если вы хотите узнать информацию о Российской Федерации в целом, введите /cr. '
+            bot.send_message(message.chat.id,
+                             'Если вы хотите узнать информацию о Российской Федерации в целом, введите /cr. '
                              'Если вас интересует конкретный регион, введите /cr *название региона* '
                              '(например, /cr Московская область):')
 
@@ -430,7 +361,8 @@ def repeat_all_messages(message):
             markup = types.ReplyKeyboardHide()
             k = message.text
             bot.send_message(message.chat.id,
-                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010) или введите -, чтобы не указывать год:", reply_markup=markup)
+                             "Введите год с 2007 по текущий в формате ГГГГ (например, 2010) или введите -, чтобы не указывать год:",
+                             reply_markup=markup)
 
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
@@ -571,21 +503,36 @@ def voice_processing(message):
         "DELETE FROM users WHERE userid = " + str(message.chat.id))  # удаление ранее введенной юзером информации
     connection.commit()
     connection.close()
-    from m1_speechkit import speech_to_text
 
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN1, file_info.file_path))
     text = speech_to_text(bytes=file.content)
-    s1 = main_func(text)
-    s_mod2 = ""
-    s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+
+    if text is not None:
+        msg = 'Ваш запрос: "' + text + '". Подождите чуть-чуть, идет его обработка!'
+        bot.send_message(message.chat.id, msg)
+        s1 = main_func(text)
+        s_mod2 = ""
+        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        querying_and_visualizing(message, s_mod2)
+    else:
+        msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
+        bot.send_message(message.chat.id, msg)
+
+
+def file_naming(request_string):
+    request_string = tr(request_string, 'ru', reversed=True)
+    filename_svg = request_string.replace('null', '')
+    filename_svg = filename_svg.replace(',', '_')
+    filename_svg = filename_svg.replace('__', '_') + '.svg'
+    filename_pdf = filename_svg.replace('.svg', '.pdf')
+    names = [filename_svg, filename_pdf]
+    return names
+
+
+def querying_and_visualizing(message, s_mod2):
+    names = file_naming(s_mod2)
     result = M2Retrieving.get_data(s_mod2)
-    s_mod2 = tr(s_mod2, 'ru', reversed=True)
-    filename1 = s_mod2.replace('null', '')
-    filename1 = filename1.replace(',', '_')
-    filename1 = filename1.replace('__', '_') + '.svg'
-    filename2 = filename1.replace('.svg', '.pdf')
-    print('filename1 = ' + filename1 + '\n' + 'filename2 = ' + filename2)
     if result.status is False:
         bot.send_message(message.chat.id, result.message)
     else:
@@ -593,24 +540,16 @@ def voice_processing(message):
         print(result.response)
         bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ и отправим его вам.")
 
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename1, filename2)
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
         if m3_result.is_file is False:
             bot.send_message(message.chat.id, m3_result.number)
         else:
             path = m3_result.path + "\\"
             bot.send_message(message.chat.id, m3_result.number)
-            file1 = open(path + filename1, 'rb')
-            file2 = open(path + filename2, 'rb')
-            # file3 = open(path + 'pattern.pdf', 'rb')
+            file1 = open(path + names[0], 'rb')
+            file2 = open(path + names[1], 'rb')
             bot.send_document(message.chat.id, file1)
-            # bot.send_document(message.chat.id, file3)
             bot.send_document(message.chat.id, file2)
-
-    msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
-    if text is not None:
-        msg = 'Ваш запрос: "' + text + '". Подождите чуть-чуть, идет его обработка!'
-
-    bot.send_message(message.chat.id, msg)
 
 
 if __name__ == '__main__':
