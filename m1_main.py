@@ -167,7 +167,12 @@ def repeat_all_messages(message):
     else:
         s1 = main_func(s)
         s_mod2 = ""
-        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        
+        if(s1[0] == "расходы"):
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
+        elif(s1[0] == "доходы"):
+            s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        
         querying_and_visualizing(message, s_mod2)
 
 
@@ -450,7 +455,12 @@ def voice_processing(message):
         bot.send_message(message.chat.id, msg)
         s1 = main_func(text)
         s_mod2 = ""
-        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        
+        if(s1[0] == "расходы"):
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
+        elif(s1[0] == "доходы"):
+            s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        
         querying_and_visualizing(message, s_mod2)
     else:
         msg = "Не удалось распознать текст сообщения😥 Попробуйте еще раз!"
