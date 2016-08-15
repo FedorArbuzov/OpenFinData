@@ -298,21 +298,20 @@ def repeat_all_messages(message):
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, TERRITORY_MSG)
+            bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
 
         if (message.text == "запланированный"):
             markup = types.ReplyKeyboardHide()
             k = message.text
-            bot.send_message(message.chat.id, "Вы выбрали " + str(now_date.year), reply_markup=markup)
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             cursor.execute(
                 "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, TERRITORY_MSG)
+            bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
     else:
-        bot.send_message(message.chat.id, 'хмм... Проверьте правильность ввода')
+        bot.send_message(message.chat.id, 'Хмм... Проверьте правильность ввода🔎')
 
 
 @bot.inline_handler(lambda query: len(query.query) > 0)
@@ -421,7 +420,7 @@ def callback_inline(call):
                 cursor.execute("UPDATE users SET thm=\"" + 'null' + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали "Хмм. Меня интересуют расходы в целом"')
+                                      text='Вы выбрали "Вообще-то меня интересуют расходы в целом"')
         connection.commit()
         connection.close()
 

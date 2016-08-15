@@ -67,7 +67,7 @@ class M2Retrieving:
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
         else:
-            response.message = 'Неверно выбрана предметная область.'
+            response.message = 'Неверно выбрана предметная область. Попробуйте еще раз /search'
             return response
 
         # Processing param1
@@ -76,7 +76,7 @@ class M2Retrieving:
         elif parameters[1] in codes[1]:
             mapper += str(codes[1].get(parameters[1])) + '.'
         else:
-            response.message = 'Неверно выбрана 1я характеристика предметной области'
+            response.message = 'Неверно выбрана 1я характеристика предметной области. Попробуйте еще раз /search'
             return response
 
         # Processing param2
@@ -103,7 +103,7 @@ class M2Retrieving:
         elif parameters[4] in sphere:
             mapper += '1.'
         else:
-            response.message = 'Неверно указана сфера. Попробуйте еще раз'
+            response.message = 'Неверно указана сфера. Попробуйте еще раз /search'
             return response
 
         # Processing territory
@@ -112,7 +112,7 @@ class M2Retrieving:
         elif parameters[5] in places:
             mapper += '1'
         else:
-            response.message = 'Неверно указана территория. Попробуйте еще раз'
+            response.message = 'Неверно указана территория. Попробуйте еще раз /search'
             return response
 
         return mapper
@@ -139,7 +139,7 @@ class M2Retrieving:
             if index == 1:
                 message = 'В запросе неверно несколько параметров. Попробуйте изменить запрос.   '
 
-            response.message = message[:-2]
+            response.message = message[:-2] + ' /search'
 
         return mdx_skeleton
 
