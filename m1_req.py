@@ -3,7 +3,7 @@ from m1_work_class import quest
 import datetime
 import sqlite3
 
-key_words = ['год',
+key_words = ['год', 'налоговые', 'неналоговые'
              'текущий', 'прошлый',
              'доход', 'расход', 'дефицит', 'доля', 'долг',
              'образование', 'среднее', 'начальное', 'высшее',
@@ -105,14 +105,17 @@ key_words = ['год',
              'Крым',
              'Севастополь',
              'Байконур',  # sections of rev and cons
+             'общегосударственные',
+             'оборона',
              'безопасность',
-             'образование',
-             'охрана',
+             'экономика',
              'жкх',
+             'окружающей',
+             'образование',
              'культура',
              'здравоохранение',
-             'спорт',
-             'экология']
+             'социальная',
+             'спорт']
 useless_pile_of_crap = [
     'в', 'без', 'до', 'из', 'к', 'на', 'по', 'о', 'от', 'перед', 'при', 'через', 'с', 'у', 'за', 'над', 'об', 'под',
     'про', 'для',
@@ -129,6 +132,7 @@ useless_pile_of_crap = [
     'федеральный', 'федерального', 'федеральному', 'федеральным', 'федеральном', 'федерален', 'федеральных',
     'федеральным', 'федеральными',
     'край', 'края', 'краю', 'краем', 'крае', 'краев', 'краям', 'краями', 'краях']
+sphere = ['налоговые', 'неналоговые']
 list_of_int = []
 useless_word_in_sen = []
 
@@ -169,6 +173,20 @@ def check_the_territories(str_user):
     i = 0
     for _ in key_words:
         distance_between_input_and_table_data = distance(str_user, key_words[i])
+        if distance_between_input_and_table_data < minimum_value:
+            minimum_value = distance_between_input_and_table_data
+            index_of_the_most_likely_variant = i
+        i += 1
+
+    return index_of_the_most_likely_variant
+
+# Основная функция
+def check_the_sphere(str_user):
+    minimum_value = 123
+    index_of_the_most_likely_variant = 0
+    i = 0
+    for _ in sphere:
+        distance_between_input_and_table_data = distance(str_user, sphere[i])
         if distance_between_input_and_table_data < minimum_value:
             minimum_value = distance_between_input_and_table_data
             index_of_the_most_likely_variant = i
@@ -231,6 +249,7 @@ def main_func(s):
     now_date = datetime.date.today()
     for _ in list1:
         result = check_the_territories(list1[i])
+        result_sphere = check_the_sphere(list1[i])
 
         if key_words[result] == 'плановый':
             user_req.planned_or_actual = 'плановый'
@@ -249,16 +268,23 @@ def main_func(s):
             user_req.subject = "дефицит"
         if key_words[result] == 'текущий':
             user_req.year = now_date.year
+            user_req.planned_or_actual = 'текущий'
         if key_words[result] == 'прошлый':
             user_req.year = now_date.year - 1
 
-        for s in key_words[20:-8]:
+        for s in key_words[22:-11]:
             if (s == key_words[result]):
                 user_req.place = s
 
-        for s in key_words[-8:]:
+        if key_words[result] == 'налоговые':
+            user_req.sector = 'налоговый'
+        if key_words[result] == 'неналоговые':
+            user_req.sector = 'неналоговый'
+
+        for s in key_words[-11:]:
             if (s == key_words[result]):
-                user_req.sector = s
+                # print(result)
+                user_req.sector = str(result - 121)
 
         i += 1
     if user_req.sector == "":
@@ -280,3 +306,4 @@ def main_func(s):
     print(user_req.sector)
     user_r = [user_req.subject, user_req.place.lower(), user_req.year, user_req.sector, user_req.planned_or_actual]
     return user_r
+

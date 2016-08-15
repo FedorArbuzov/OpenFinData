@@ -30,7 +30,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string, filename1, filename2):
+    def create_response(user_id, json_string, filename_svg, filename_pdf):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет
@@ -109,8 +109,6 @@ class M3Visualizing:
                     dopoln_chis = minznach[i]
                 i += 1
 
-            print(dopoln_chis)
-
             # создание папки и возвращение пути к ней
             path = M3Visualizing.__create_folder(str(user_id))
             # записывание пути в возвращаемый объект
@@ -169,8 +167,6 @@ class M3Visualizing:
                         itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
                         i += 1
 
-                print(dopoln_chis)
-
                 i = 0
                 sum = 0
                 while i < k - 1:
@@ -204,7 +200,7 @@ class M3Visualizing:
                 pie_chart.add(diagramttl[i], itogznach[i])
                 i += 1
 
-            pie_chart.render_to_file(path + "\\" + filename1)
+            pie_chart.render_to_file(path + "\\" + filename_svg)
 
             # Пока тестовый вариант без библиотеки cairosvg (!!!ПОТОМ ИСПРАВИТЬ)
             # cairosvg.svg2pdf(file_obj=open("chart.svg", "rb"), write_to="chart.pdf")
@@ -294,7 +290,7 @@ class M3Visualizing:
             ]))
 
             # Создаем страницу с таблицей
-            c = canvas.Canvas(path + "\\" + filename2, pagesize=A4)
+            c = canvas.Canvas(path + "\\" + filename_pdf, pagesize=A4)
             c.setFont('Arial', 14)
 
             # Функция для позиционирования таблицы
@@ -363,19 +359,20 @@ class M3Visualizing:
 
                 if length1 > 3:
                     chislo /= 10 ** smallestpower
-                    stri = str(round(chislo)) + " " + s + " рублей"
+                    stri = str(round(chislo,2)) + s + " рублей"
                 else:
-                    stri = str(round(chislo)) + " рублей"
+                    stri = str(round(chislo,2)) + " рублей"
                 return stri
 
             some_number = par["cells"][0][0]["value"]
+            if some_number is None:
+                some_number=0
             some_number = round(float(some_number))
-            print(some_number)
 
             if some_number > 0:
                 result.number = __vyvod_chisla(some_number)
             else:
-                result.number = str(some_number) + " рублей"
+                result.number = __vyvod_chisla(some_number)
 
         return result
 
@@ -404,3 +401,5 @@ class Result:
         self.is_file = is_file
         self.number = number
         self.path = path
+
+#Хочется серфить по морям
