@@ -185,7 +185,8 @@ def repeat_all_messages(message):
             s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
         elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-
+        elif s1[0] == "дефицит":
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2])  + "," + "null" + "," + s1[1]
         querying_and_visualizing(message, s_mod2)
 
 
@@ -472,6 +473,8 @@ def voice_processing(message):
             s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
         elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        elif s1[0] == "дефицит":
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2])  + "," + "null" + "," + s1[1]
 
         querying_and_visualizing(message, s_mod2)
     else:
