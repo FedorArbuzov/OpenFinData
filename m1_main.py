@@ -32,8 +32,9 @@ ERROR_NO_UNDERSTANDING = 'Боюсь, что мы вас не поняли 😰'
 ERROR_NOT_FULL_INFO = 'Похоже, вы передали нам не всю информацию🙃 Попробуйте начать сначала /findata'
 ERROR_NO_DATA_THIS_YEAR = 'Упс, данных за такой год, к сожалению, нет🙈 Попробуйте еще раз!'
 ERROR_CHECK_INPUT = 'Хмм... Проверьте правильность ввода🔎'
-
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
+ERROR_NULL_DATA_FOR_SUCH_REQUEST = 'К сожалению, этих данных в системе нет🤕 Не отчаивайтесь! Есть много ' \
+                                  'других цифр😉 Жми /search'
 
 MSG_BEFORE_THEMES = 'Жмакните на одну из кнопок!'
 MSG_BEFORE_SPHERE = 'Какая сфера расходов вас интересует?'
@@ -41,6 +42,7 @@ MSG_BEFORE_NALOG_NENALOG = 'Налоговые или неналоговые?'
 MSG_BEFORE_TYPE_EXPENDITURES = 'После укажите тип расходов:'
 MSG_BEFORE_TYPE_PROFIT = 'Выберите тип доходов:'
 MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет его обработка!?'
+MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ🙌 и отправим его вам😊"
 
 
 API_TOKEN = TELEGRAM_API_TOKEN1
@@ -186,7 +188,7 @@ def repeat_all_messages(message):
         elif s1[0] == "доходы":
             s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
         elif s1[0] == "дефицит":
-            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2])  + "," + "null" + "," + s1[1]
+            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
         querying_and_visualizing(message, s_mod2)
 
 
@@ -498,11 +500,14 @@ def querying_and_visualizing(message, s_mod2):
     if result.status is False:
         bot.send_message(message.chat.id, result.message)
     else:
-        bot.send_message(message.chat.id, "Спасибо! Сейчас мы сформируем ответ🙌 и отправим его вам😊")
+        bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
         if m3_result.is_file is False:
-            bot.send_message(message.chat.id, m3_result.number)
+            if m3_result.number[0] == "0":
+                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST)
+            else:
+                bot.send_message(message.chat.id, m3_result.number)
         else:
             path = m3_result.path + "\\"
             bot.send_message(message.chat.id, m3_result.number)

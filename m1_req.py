@@ -118,7 +118,7 @@ key_words = ['год', 'налоговые', 'неналоговые'
              'спорт']
 useless_pile_of_crap = [
     'в', 'без', 'до', 'из', 'к', 'на', 'по', 'о', 'от', 'перед', 'при', 'через', 'с', 'у', 'за', 'над', 'об', 'под',
-    'про', 'для',
+    'про', 'для', 'не'
     'республика', 'республики',
     'республики', 'республик',
     'республике', 'республикам',
@@ -293,11 +293,12 @@ def main_func(s):
         user_req.planned_or_actual = "null"
     if user_req.place == "":
         user_req.place = "null"
-    if user_req.year == 0 or user_req.year == now_date.year or user_req.year == now_date.year - 1:
+    if user_req.year == 0 or user_req.year == now_date.year:
         if len(list_of_int) != 0:
             user_req.year = int(list_of_int[0])
         else:
             user_req.year = "null"
+            user_req.planned_or_actual = "текущий"
 
     print(user_req.planned_or_actual)
     print(user_req.subject)
