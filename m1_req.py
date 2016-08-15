@@ -296,8 +296,8 @@ def main_func(s):
     if user_req.year == 0 or user_req.year == now_date.year or user_req.year == now_date.year - 1:
         if len(list_of_int) != 0:
             user_req.year = int(list_of_int[0])
-    else:
-        user_req.year = "null"
+        else:
+            user_req.year = "null"
 
     print(user_req.planned_or_actual)
     print(user_req.subject)
