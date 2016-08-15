@@ -141,7 +141,7 @@ class M2Retrieving:
             if index == 1:
                 message = 'В запросе неверно несколько параметров. Попробуйте изменить запрос.   '
 
-            response.message = message[:-2] + ' /search'
+            response.message = message[:-2] + '\n /search'
 
         return mdx_skeleton
 
