@@ -11,6 +11,7 @@ from m3_main import M3Visualizing
 from m1_speechkit import speech_to_text
 from config import TELEGRAM_API_TOKEN1
 from config import TELEGRAM_API_TOKEN2
+from config import TELEGRAM_API_TOKEN_FINAL
 
 # Constants for text and messages
 START_MSG = 'Я — экспертная система OpenFinData. Я могу представить вам ' \
@@ -45,7 +46,7 @@ MSG_BEFORE_TYPE_PROFIT = 'Выберите тип:'
 MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет его обработка!?'
 MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ🙌\n и отправим его вам😊"
 
-API_TOKEN = TELEGRAM_API_TOKEN1
+API_TOKEN = TELEGRAM_API_TOKEN_FINAL
 bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
