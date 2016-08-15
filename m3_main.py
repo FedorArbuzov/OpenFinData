@@ -363,19 +363,21 @@ class M3Visualizing:
 
                 if length1 > 3:
                     chislo /= 10 ** smallestpower
-                    stri = str(round(chislo)) + " " + s + " рублей"
+                    stri = str(round(chislo,2)) + s + " рублей"
                 else:
-                    stri = str(round(chislo)) + " рублей"
+                    stri = str(round(chislo,2)) + " рублей"
                 return stri
 
             some_number = par["cells"][0][0]["value"]
+            if some_number is None:
+                some_number=0
             some_number = round(float(some_number))
             print(some_number)
 
             if some_number > 0:
                 result.number = __vyvod_chisla(some_number)
             else:
-                result.number = str(some_number) + " рублей"
+                result.number = __vyvod_chisla(some_number)
 
         return result
 
@@ -404,3 +406,5 @@ class Result:
         self.is_file = is_file
         self.number = number
         self.path = path
+
+#Хочется серфить по морям
