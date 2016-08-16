@@ -7,6 +7,7 @@ from telebot import types
 from m1_req import main_func
 from m1_req import main_place
 from m2_main import M2Retrieving
+from m2_lib import feedback
 from m3_main import M3Visualizing
 from m1_speechkit import speech_to_text
 from config import TELEGRAM_API_TOKEN1

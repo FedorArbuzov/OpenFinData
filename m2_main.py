@@ -23,6 +23,7 @@ class M2Retrieving:
 
         # Creating mapper based on list of parameters
         mapper = M2Retrieving.__list_to_mapper(params, response)
+        print(mapper)
 
         if response.message != "":
             return response
@@ -144,7 +145,7 @@ class M2Retrieving:
             if index == 1:
                 message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
 
-            response.message = feedback(params) + message[:-2] + '\n Жмите /search'
+            response.message = feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
 
         return mdx_skeleton
 

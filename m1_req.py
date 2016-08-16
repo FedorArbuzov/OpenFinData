@@ -2,7 +2,6 @@ import re
 from m1_work_class import quest
 import datetime
 import sqlite3
-# TODO: подправить нейронку под новую реальность (убрать запланированные)
 key_words = ['год', 'налоговые', 'неналоговые',
              'текущий', 'прошлый',
              'доход', 'расход', 'дефицит', 'доля', 'долг',
@@ -253,11 +252,8 @@ def main_func(s):
 
         if key_words[result] == 'плановый':
             user_req.planned_or_actual = 'плановый'
-        if key_words[result] == 'запланированный':
-            user_req.planned_or_actual = 'запланированный'
         if key_words[result] == 'фактический':
             user_req.planned_or_actual = "фактический"
-
         if key_words[result] == 'бюджет':
             user_req.sector = 'бюджет'
         if key_words[result] == "доход":

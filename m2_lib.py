@@ -322,7 +322,6 @@ places_cld = {
 }
 
 
-# TODO: Refactor code
 def feedback(params):
     """Forming response how we have understood user's request"""
 
@@ -427,6 +426,15 @@ def feedback(params):
         'Российская Федерация',
         'Россия')
 
+    # TODO: Refactor code
+    # TODO: Make this method unbreakable
+
+    if type(params) is not list:
+        params = params.split(',')
+
+    if len(params) < 6:
+        return "Неверный запрос!"
+
     if params[0] == "дефицит":
         theme = " дефицит/профицит"
         if params[1] == "null":
@@ -486,4 +494,4 @@ def feedback(params):
             territory = " по территории " + list(filter(lambda x: params[5][1:] in x, full_places))[0]
         response = param_1 + param_2 + theme + year_3 + sphere_4 + territory
 
-    return 'Мы вас поняли следующим образом: "' + response + '".\n\n'
+    return 'Мы вас поняли следующим образом: "' + response + '".'
