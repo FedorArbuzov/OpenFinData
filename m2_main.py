@@ -1,11 +1,12 @@
 import requests
 import datetime
 from m1_req import distance
-from m2_dict import mappers
-from m2_dict import param2
-from m2_dict import sphere
-from m2_dict import places
-from m2_dict import places_cld
+from m2_lib import mappers
+from m2_lib import param2
+from m2_lib import sphere
+from m2_lib import places
+from m2_lib import places_cld
+from m2_lib import feedback
 
 
 # Module, which is responsible for getting required from user data
@@ -143,7 +144,7 @@ class M2Retrieving:
             if index == 1:
                 message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
 
-            response.message = message[:-2] + '\n Жмите /search'
+            response.message = feedback(params) + message[:-2] + '\n Жмите /search'
 
         return mdx_skeleton
 
