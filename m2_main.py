@@ -213,7 +213,6 @@ class M2Retrieving:
 
         # Updating params of resulting object
         response.status = True
-        response.message = 'OK'
         response.response = r.text
 
     @staticmethod
@@ -236,7 +235,7 @@ class M2Retrieving:
             'налоговый/неналоговый',
             'год',
             'сферу',
-            'территорию'
+            'конкретный регион'
         )
 
         items1, items2 = true_mapper.split('.'), false_mapper.split('.')
