@@ -156,11 +156,12 @@ class M3Visualizing:
                 return s
 
             dop_chis = __formation(dopoln_chis)
-            #метод преобразования чисел, который нормально работает и мне лень его переписывать
+
+            # метод преобразования чисел, который нормально работает и мне лень его переписывать
             def __vyvod_chisla(chislo):
                 chislo_str = str(chislo)
                 length1 = len(chislo_str)
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                mas = [' тыс.', ' млн', ' млрд', ' трлн']
                 k = length1
                 smallestpower = 0
                 stri = ''
@@ -183,8 +184,8 @@ class M3Visualizing:
 
                 if length1 > 3:
                     chislo /= 10 ** smallestpower
-                    chi=str(round(chislo,2))
-                    chi=chi.replace(".",",")
+                    chi = str(round(chislo, 2))
+                    chi = chi.replace(".", ",")
                     stri = chi + s + " рублей"
 
                 else:
@@ -212,7 +213,7 @@ class M3Visualizing:
 
                 sum = sum * (10 ** (dopoln_chis - 1))
 
-                stre=__vyvod_chisla(sum)
+                stre = __vyvod_chisla(sum)
 
                 a.setFillColorRGB(0.72, 0.85, 0.98)
                 a.rect(0 * inch, 9.85 * inch, 8.27 * inch, 0.5 * inch, stroke=0, fill=1)
@@ -223,7 +224,7 @@ class M3Visualizing:
 
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(0, 0, 0)
-                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " +stre)
+                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + stre)
 
             # Применяем все функции к нашему документу и сохраняем его
             __top_line(doc)
@@ -386,13 +387,12 @@ class M3Visualizing:
                 output.write(f)
             '''
 
-
             # os.rename("chart.svg",filename1)
             # os.rename("page2.pdf",filename2)
             sum = sum * (10 ** (dopoln_chis - 1))
 
             stre = __vyvod_chisla(sum)
-            result.number =stre
+            result.number = stre
             result.is_file = True
         else:
 

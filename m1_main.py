@@ -27,7 +27,7 @@ TERRITORY_MSG = 'Чтобы узнать информацию о Российс�
                 '(например, /cr Московская область)'
 YEAR_MSG = 'Введите год цифрами с 2007 по ' + \
            str(datetime.datetime.now().year - 1) + \
-           ' или поставьте "-", чтобы пропустить данный шаг'
+           ' или поставьте "-" для получения данных за нынешний год'
 
 ERROR_CR_MSG = 'Рановато вы перешли на области😏 Начните лучше с команды /search'
 ERROR_NO_UNDERSTANDING = 'Боюсь, что мы вас не поняли 😰'
@@ -229,15 +229,17 @@ def repeat_all_messages(message):
         bot.send_message(message.chat.id, TERRITORY_MSG)
 
     elif (message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит"
-          or message.text == "налоговые" or message.text == "неналоговые") and (
+          or message.text == "налоговые" or message.text == "неналоговые" or message.text == "все") and (
                 len(data) != 0):
         k = message.text
         if message.text == "доходы" or message.text == "расходы" or message.text == "дефицит/профицит":
             cursor.execute("UPDATE users SET subject=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             connection.commit()
             connection.close()
-        if message.text == "налоговые" or message.text == "неналоговые":
-            if message.text == "налоговые":
+        if message.text == "налоговые" or message.text == "неналоговые" or message.text == "все":
+            if message.text == "все":
+                k_clone = "null"
+            elif message.text == "налоговые":
                 k_clone = "налоговый"
             else:
                 k_clone = "неналоговый"
@@ -257,7 +259,7 @@ def repeat_all_messages(message):
             health_care_button = types.InlineKeyboardButton('Здравоохранение', callback_data='10')
             social_policy_button = types.InlineKeyboardButton('Соц. политика', callback_data='11')
             physical_culture_and_sport = types.InlineKeyboardButton('Спорт', callback_data='12')
-            none_button = types.InlineKeyboardButton('Хмм...', callback_data='13')
+            none_button = types.InlineKeyboardButton('Расходы в целом', callback_data='13')
 
             keyboard = types.InlineKeyboardMarkup()
             keyboard.add(national_issues_button)
@@ -270,35 +272,34 @@ def repeat_all_messages(message):
 
             bot.send_message(message.chat.id, MSG_BEFORE_SPHERE, reply_markup=keyboard)
             markup = types.ReplyKeyboardMarkup()
-            markup.row('фактические')
             markup.row('плановые')
             markup.row('текущие')
-            markup.row('запланированные')
+            markup.row('фактические')
             bot.send_message(message.chat.id, MSG_BEFORE_TYPE_EXPENDITURES, reply_markup=markup)
-        elif k == "дефицит/профицит" or k == "налоговые" or k == "неналоговые":
+        elif k == "дефицит/профицит" or k == "налоговые" or k == "неналоговые" or k == "все":
             markup = types.ReplyKeyboardMarkup()
             if k == "дефицит/профицит":
                 markup.row('плановый')
                 markup.row('текущий')
+                markup.row('фактический')
             else:
                 markup.row('плановые')
                 markup.row('текущие')
-            markup.row("пропустить этот пункт 👉")
+                markup.row("фактические")
             bot.send_message(message.chat.id, MSG_BEFORE_TYPE_PROFIT, reply_markup=markup)
         elif k == "доходы":
             markup = types.ReplyKeyboardMarkup()
             markup.row('налоговые')
             markup.row('неналоговые')
-            markup.row("пропустить этот пункт 👉")
+            markup.row('все')
             bot.send_message(message.chat.id, MSG_BEFORE_NALOG_NENALOG, reply_markup=markup)
 
-    elif (message.text == "фактические" or
+    elif (message.text == "фактические" or message.text == "фактический" or
                   message.text == "плановые" or message.text == "плановый" or
                   message.text == "текущие" or message.text == "текущий" or
-                  message.text == "запланированные" or
-                  message.text == "пропустить этот пункт 👉") and (len(data) != 0):
+                  message.text == "все") and (len(data) != 0):
         k = 0
-        if message.text == "фактические":
+        if message.text == "фактические" or message.text == "фактический":
             markup = types.ReplyKeyboardHide()
             k = "фактический"
             bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
@@ -308,14 +309,12 @@ def repeat_all_messages(message):
             connection.commit()
             connection.close()
 
-        if message.text == "плановые" or message.text == "плановый" or message.text == "пропустить этот пункт 👉":
+        if message.text == "плановые" or message.text == "плановый":
             markup = types.ReplyKeyboardHide()
             if message.text == "плановые":
                 k = "плановый"
             elif message.text == "плановый":
                 k = message.text
-            else:
-                k = "null"
             bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
@@ -328,17 +327,6 @@ def repeat_all_messages(message):
         if message.text == "текущие" or message.text == "текущий":
             markup = types.ReplyKeyboardHide()
             k = "текущий"
-            cursor.execute(
-                "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
-            cursor.execute(
-                "UPDATE users SET year=" + "null" + " WHERE userid=" + str(message.chat.id) + ";")
-            connection.commit()
-            connection.close()
-            bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
-
-        if message.text == "запланированные":
-            markup = types.ReplyKeyboardHide()
-            k = "запланированный"
             cursor.execute(
                 "UPDATE users SET sector=\"" + str(k) + "\" WHERE userid=" + str(message.chat.id) + ";")
             cursor.execute(
@@ -461,7 +449,7 @@ def callback_inline(call):
                 cursor.execute("UPDATE users SET thm=\"" + 'null' + "\" WHERE userid=" + str(
                     call.message.chat.id) + ";")
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                      text='Вы выбрали "Вообще-то меня интересуют расходы в целом"')
+                                      text='Вы выбрали "Расходы в целом"')
         connection.commit()
         connection.close()
 

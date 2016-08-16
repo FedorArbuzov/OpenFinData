@@ -1,4 +1,5 @@
 import requests
+import datetime
 from m1_req import distance
 from m2_dict import mappers
 from m2_dict import param2
@@ -53,10 +54,10 @@ class M2Retrieving:
             },
 
             {
+                'null': 3,  # By default is "фактический"
                 'плановый': 2,
                 'фактический': 3,
-                'текущий': 4,
-                'запланированный': 5
+                'текущий': 4
             }
         )
 
@@ -64,16 +65,17 @@ class M2Retrieving:
 
         # TODO: refactor processing of mapper
         # Processing theme
+        exp_differ = False
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
+            if mapper == '2.':
+                exp_differ = True
         else:
             response.message = 'Неверно выбрана предметная область😂😏 Попробуйте еще раз /search'
             return response
 
         # Processing param1
-        if parameters[1] == 'null':
-            mapper += '0.'
-        elif parameters[1] in codes[1]:
+        if parameters[1] in codes[1]:
             mapper += str(codes[1].get(parameters[1])) + '.'
         else:
             response.message = 'Неверно выбрана 1я характеристика предметной области (' + \
@@ -87,8 +89,8 @@ class M2Retrieving:
             mapper += '1.'
         else:
             message = 'Параметр "' + parameters[2] + '" не верен. ' \
-                                                     'Допустимы: отсутствие этого параметра, ' \
-                                                     'значение "налоговый" и "неналоговый"'
+                                                     'Допустимые значения: "все", ' \
+                                                     '"налоговый" и "неналоговый"'
             response.message = message
             return response
 
@@ -99,13 +101,14 @@ class M2Retrieving:
             mapper += '1.'
 
         # Processing sphere
-        if parameters[4] == 'null':
-            mapper += '0.'
-        elif parameters[4] in sphere:
+        if exp_differ is True:
             mapper += '1.'
         else:
-            response.message = 'Неверно указана сфера ("' + parameters[4] + '"). Попробуйте еще раз /search'
-            return response
+            if exp_differ is False and parameters[4] in sphere:
+                mapper += '0.'
+            else:
+                response.message = 'Неверно указана сфера ("' + parameters[4] + '"). Попробуйте еще раз /search'
+                return response
 
         # Processing territory
         if parameters[5] == 'null':
@@ -229,12 +232,11 @@ class M2Retrieving:
             {
                 2: 'плановый',
                 3: 'фактический',
-                4: 'текущий',
-                5: 'запланированный'
+                4: 'текущий'
             },
-            'налоговый/неналоговый',
-            'год',
-            'сферу',
+            'налоговые/неналоговые',
+            'год (по умолчанию данные ' + str(datetime.datetime.now().year) + " г.)",
+            'конкретную сферу',
             'конкретный регион'
         )
 
@@ -265,7 +267,7 @@ class M2Retrieving:
 
                         # If error is in param2
                         if count == 2:
-                            error_message = 'Не указывайте параметр "' + params[count] + '"\r\n'
+                            error_message = 'Не указывайте параметр "' + params[count][:-2] + '"ые\r\n'
 
                 # If parameter exist but should be another or error is in param1
                 else:
