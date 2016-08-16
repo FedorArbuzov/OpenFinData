@@ -67,7 +67,7 @@ class M2Retrieving:
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
         else:
-            response.message = '😂😂😂😏\nНеверно выбрана предметная область!\n Попробуйте еще раз /search'
+            response.message = 'Неверно выбрана предметная область😂😏 Попробуйте еще раз /search'
             return response
 
         # Processing param1

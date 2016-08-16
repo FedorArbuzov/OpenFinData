@@ -14,10 +14,10 @@ from config import TELEGRAM_API_TOKEN2
 from config import TELEGRAM_API_TOKEN_FINAL
 
 # Constants for text and messages
-START_MSG = 'Я — экспертная система OpenFinData. Я могу представить вам ' \
-            'финансовый отчет о любой области за определенный год.\n' \
+START_MSG = 'Я — экспертная система Datatron. С помощью меня можно быстро получить' \
+            'доступ к финансовым данным по любой области.\n' \
             'Чтобы получить список команд, нажмите /help\n' \
-            'Чтобы сразу приступить к формированию отчета, введите /search'
+            'Чтобы сразу приступить к работе, введите /search'
 COMMANDS_MSG = '<b>Список команд:</b>\n' \
                '/start — начать работу с ботом\n' \
                '/help — список команд\n' \
@@ -44,7 +44,7 @@ MSG_BEFORE_NALOG_NENALOG = 'Налоговые или неналоговые?'
 MSG_BEFORE_TYPE_EXPENDITURES = 'После укажите тип расходов:'
 MSG_BEFORE_TYPE_PROFIT = 'Выберите тип:'
 MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет его обработка!?'
-MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ🙌\n и отправим его вам😊"
+MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ🙌 и отправим его вам😊"
 
 API_TOKEN = TELEGRAM_API_TOKEN_FINAL
 bot = telebot.TeleBot(API_TOKEN)
@@ -77,7 +77,7 @@ def send_welcome(message):
     data = cursor.fetchall()
     if len(data) != 0:
         s = str(message.text)[4:]
-        if s == "" or main_place(s) != None:
+        if s == "" or main_place(s) is not None:
             if s == '':
                 cursor.execute("UPDATE users SET place=\"" + "null" + "\" WHERE userid=" + str(message.chat.id) + ";")
                 connection.commit()
@@ -105,7 +105,6 @@ def send_welcome(message):
             else:
                 connection = sqlite3.connect('users.db')
                 cursor = connection.cursor()
-                # bot.send_message(message.chat.id, "Сейчас мы сформируем ответ и отправим его вам.")
                 s_main = "INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, " + \
                          str(message.chat.id) + ", \"" + str(0) + "\", \"" + str(0) + "\", \"" + str(
                     0) + "\", \"" + str(
@@ -138,6 +137,7 @@ def send_welcome(message):
             bot.send_message(message.chat.id, ERROR_NO_UNDERSTANDING)
     else:
         bot.send_message(message.chat.id, ERROR_CR_MSG)
+
 
 # команда старта
 @bot.message_handler(commands=['start'])
@@ -476,7 +476,8 @@ def voice_processing(message):
     connection.close()
 
     file_info = bot.get_file(message.voice.file_id)
-    file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN1, file_info.file_path))
+    file = requests.get(
+        'https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN_FINAL, file_info.file_path))
     text = speech_to_text(bytes=file.content)
 
     if text is not None:
