@@ -401,7 +401,7 @@ class M3Visualizing:
             def __vyvod_chisla(chislo):
                 chislo_str = str(chislo)
                 length1 = len(chislo_str)
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                mas = [' тыс.', ' млн', ' млрд', ' трлн']
                 k = length1
                 smallestpower = 0
                 stri = ''

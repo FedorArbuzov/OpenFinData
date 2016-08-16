@@ -524,12 +524,15 @@ def querying_and_visualizing(message, s_mod2):
             else:
                 bot.send_message(message.chat.id, m3_result.number)
         else:
-            path = m3_result.path + "\\"
-            bot.send_message(message.chat.id, m3_result.number)
-            file1 = open(path + names[0], 'rb')
-            file2 = open(path + names[1], 'rb')
-            bot.send_document(message.chat.id, file1)
-            bot.send_document(message.chat.id, file2)
+            if m3_result.number[0] == "0":
+                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST)
+            else:
+                path = m3_result.path + "\\"
+                bot.send_message(message.chat.id, m3_result.number)
+                file1 = open(path + names[0], 'rb')
+                file2 = open(path + names[1], 'rb')
+                bot.send_document(message.chat.id, file1)
+                bot.send_document(message.chat.id, file2)
 
 
 if __name__ == '__main__':
