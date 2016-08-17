@@ -30,7 +30,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string, filename_svg, filename_pdf, visualization=True):
+    def create_response(user_id, json_string, filename_svg=None, filename_pdf=None, visualization=True):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет

@@ -341,11 +341,10 @@ def query_text(query):
     print(s_mod2)
 
     result = M2Retrieving.get_data(s_mod2)
-    filename1, filename2 = 'f1', 'f2'
     if result.status is False:
         pass
     else:
-        m3_result = M3Visualizing.create_response(query.id, result.response, filename1, filename2, visualization=False)
+        m3_result = M3Visualizing.create_response(query.id, result.response, visualization=False)
         try:
             if m3_result.data is False:
                 msg_append_text = ': ' + ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
@@ -501,7 +500,7 @@ def querying_and_visualizing(message, s_mod2):
     else:
         bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
 
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename_svg=names[0], filename_pdf=names[1])
         if m3_result.data is False:
             bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
         else:
