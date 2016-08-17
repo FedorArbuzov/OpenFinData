@@ -502,16 +502,11 @@ def querying_and_visualizing(message, s_mod2):
         bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
-        if m3_result.is_file is False:
-            # If there is no data for such request
-            if m3_result.data is False:
-                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
-            else:
-                bot.send_message(message.chat.id, m3_result.number)
+        if m3_result.data is False:
+            bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
         else:
-            # If there is no data for such request
-            if m3_result.data is False:
-                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
+            if m3_result.is_file is False:
+                bot.send_message(message.chat.id, m3_result.number)
             else:
                 path = m3_result.path + "\\"
                 bot.send_message(message.chat.id, m3_result.number)

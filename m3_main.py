@@ -442,7 +442,7 @@ class M3Visualizing:
             some_number = par["cells"][0][0]["value"]
             if some_number is None:
                 some_number = 0
-                
+
                 # Shows for 1st module, that there is no data for such request
                 result.data = False
 
