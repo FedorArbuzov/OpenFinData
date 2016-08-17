@@ -2,6 +2,7 @@ import re
 from m1_work_class import quest
 import datetime
 import sqlite3
+
 key_words = ['год', 'налоговые', 'неналоговые',
              'текущий', 'прошлый',
              'доход', 'расход', 'дефицит', 'доля', 'долг',
@@ -11,18 +12,20 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'Российская Федерация', 'Россия', 'РФ',
              'Северо-Кавказский федеральный',
              'Ставропольский',
+             'Ставрополье',
              'Ингушетия',
              'Дагестан',
              'Кабардино-Балкарская',
              'Осетия',
              'Карачаево-Черкесская',
              'Чеченская',
+             'Чечня',
              'Южный',
              'Краснодарский',
              'астраханская',
              'Волгоградская',
              'Ростовская',
-             'адыгея', 'адыгея',
+             'Адыгея',
              'Калмыкия',
              'Приволжский',
              'Нижегородская',
@@ -52,7 +55,7 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'Карелия',
              'Коми',
              'Сибирский',
-             'алтайский',
+             'Алтайский',
              'Красноярский',
              'Кемеровская',
              'Иркутская',
@@ -61,8 +64,9 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'Томская',
              'Забайкальский',
              'Бурятия',
-             'алтай',
+             'Aлтай',
              'Тыва',
+             'Тува',
              'Хакасия',
              'Уральский',
              'Курганская',
@@ -135,6 +139,8 @@ sphere = ['налоговые', 'неналоговые']
 list_of_int = []
 useless_word_in_sen = []
 
+key_words_quantity = len(key_words)
+
 
 def RepresentsInt(s):
     try:
@@ -167,7 +173,7 @@ def distance(a: object, b: object) -> object:
 
 # Основная функция
 def check_the_territories(str_user):
-    minimum_value = 123
+    minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
     i = 0
     for _ in key_words:
@@ -182,7 +188,7 @@ def check_the_territories(str_user):
 
 # Основная функция
 def check_the_sphere(str_user):
-    minimum_value = 123
+    minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
     i = 0
     for _ in sphere:
@@ -280,7 +286,7 @@ def main_func(s):
         for s in key_words[-11:]:
             if s == key_words[result]:
                 # print(result)
-                user_req.sector = str(result - 121)
+                user_req.sector = str(result - (key_words_quantity-13))
 
         i += 1
     if user_req.sector == "":
