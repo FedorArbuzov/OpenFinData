@@ -345,10 +345,17 @@ def query_text(query):
     s1 = main_func(text)
     s_mod2 = forming_string_from_neural(s1)
     print(s_mod2)
-
+    result_array = []
     result = M2Retrieving.get_data(s_mod2)
     if result.status is False:
-        pass
+        msg = types.InlineQueryResultArticle(id='0',
+                                             title='Продолжайте ввод запроса',
+                                             input_message_content=types.InputTextMessageContent(
+                                                 message_text=input_message_content + '\nЗапрос не удался😢'
+                                             ))
+        result_array.append(msg)
+        bot.answer_inline_query(query.id, result_array)
+
     else:
         m3_result = M3Visualizing.create_response(query.id, result.response, visualization=False)
         try:
@@ -356,9 +363,9 @@ def query_text(query):
                 msg_append_text = ': ' + ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
             else:
                 msg_append_text = ':\n' + str(m3_result.number)
-            result_array = []
+
             msg = types.InlineQueryResultArticle(id='1',
-                                                 title=input_message_content,
+                                                 title=str(m3_result.number),
                                                  input_message_content=types.InputTextMessageContent(
                                                      message_text=input_message_content + msg_append_text),
                                                  )
