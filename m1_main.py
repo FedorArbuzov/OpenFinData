@@ -36,8 +36,9 @@ ERROR_NOT_FULL_INFO = 'Похоже, вы передали нам не всю и
 ERROR_NO_DATA_THIS_YEAR = 'Упс, данных за такой год, к сожалению, нет🙈 Попробуйте еще раз!'
 ERROR_CHECK_INPUT = 'Хмм... Проверьте правильность ввода🔎'
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
-ERROR_NULL_DATA_FOR_SUCH_REQUEST = 'К сожалению, этих данных в системе нет🤕 Не отчаивайтесь! Есть много ' \
+ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG = 'К сожалению, этих данных в системе нет🤕 Не отчаивайтесь! Есть много ' \
                                    'других цифр😉 Жми /search'
+ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT = 'К сожалению, этих данных в системе нет🤕'
 
 MSG_BEFORE_THEMES = 'Жмакните на одну из кнопок!'
 MSG_BEFORE_SPHERE = 'Какая сфера расходов вас интересует?'
@@ -346,12 +347,15 @@ def query_text(query):
     else:
         m3_result = M3Visualizing.create_response(query.id, result.response, filename1, filename2, visualization=False)
         try:
+            if m3_result.data is False:
+                msg_append_text = ': ' + ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
+            else:
+                msg_append_text = ':\n' + str(m3_result.number)
             result_array = []
             msg = types.InlineQueryResultArticle(id='1',
                                                  title=input_message_content,
                                                  input_message_content=types.InputTextMessageContent(
-                                                     message_text=input_message_content + ':\n' + str(
-                                                         m3_result.number)),
+                                                     message_text=input_message_content + msg_append_text),
                                                  )
             result_array.append(msg)
 
@@ -499,13 +503,15 @@ def querying_and_visualizing(message, s_mod2):
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, names[0], names[1])
         if m3_result.is_file is False:
-            if m3_result.number[0] == "0":
-                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST)
+            # If there is no data for such request
+            if m3_result.data is False:
+                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
             else:
                 bot.send_message(message.chat.id, m3_result.number)
         else:
-            if m3_result.number[0] == "0":
-                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST)
+            # If there is no data for such request
+            if m3_result.data is False:
+                bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
             else:
                 path = m3_result.path + "\\"
                 bot.send_message(message.chat.id, m3_result.number)

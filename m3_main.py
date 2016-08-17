@@ -393,6 +393,11 @@ class M3Visualizing:
             sum = sum * (10 ** (dopoln_chis - 1))
 
             stre = __vyvod_chisla(sum)
+
+            # Shows for 1st module, that there is no data for such request
+            if stre[0] == '0':
+                result.data = False
+
             result.number = stre
             result.is_file = True
         else:
@@ -437,6 +442,10 @@ class M3Visualizing:
             some_number = par["cells"][0][0]["value"]
             if some_number is None:
                 some_number = 0
+                
+                # Shows for 1st module, that there is no data for such request
+                result.data = False
+
             some_number = round(float(some_number))
 
             if some_number > 0:
@@ -467,9 +476,10 @@ class M3Visualizing:
 
 
 class Result:
-    def __init__(self, is_file=False, number='', path=''):
+    def __init__(self, is_file=False, number='', path='', data=True):
         self.is_file = is_file
         self.number = number
         self.path = path
+        self.data = data
 
         # Хочется серфить по морям
