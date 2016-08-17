@@ -184,15 +184,7 @@ def repeat_all_messages(message):
 
     else:
         s1 = main_func(s)
-
-        s_mod2 = ""
-        if s1[0] == "расходы":
-            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
-        elif s1[0] == "доходы":
-            s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-        elif s1[0] == "дефицит":
-            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-
+        s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
 
 
@@ -344,14 +336,9 @@ def query_text(query):
     text = query.query
     input_message_content = text
     s1 = main_func(text)
-    s_mod2 = ""
-    if s1[0] == "расходы":
-        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
-    elif s1[0] == "доходы":
-        s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-    elif s1[0] == "дефицит":
-        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    s_mod2 = forming_string_from_neural(s1)
     print(s_mod2)
+
     result = M2Retrieving.get_data(s_mod2)
     filename1, filename2 = 'f1', 'f2'
     if result.status is False:
@@ -473,14 +460,7 @@ def voice_processing(message):
         msg = 'Ваш запрос: "' + text + '". '
         bot.send_message(message.chat.id, msg)
         s1 = main_func(text)
-        s_mod2 = ""
-
-        if s1[0] == "расходы":
-            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
-        elif s1[0] == "доходы":
-            s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
-        elif s1[0] == "дефицит":
-            s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+        s_mod2 = forming_string_from_neural(s1)
 
         querying_and_visualizing(message, s_mod2)
     else:
@@ -495,6 +475,17 @@ def file_naming(request_string):
     filename_pdf = filename + '.pdf'
     names = [filename_svg, filename_pdf]
     return names
+
+
+def forming_string_from_neural(s1):
+    s_mod2 = ""
+    if s1[0] == "расходы":
+        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + str(s1[3]) + "," + s1[1]
+    elif s1[0] == "доходы":
+        s_mod2 += s1[0] + "," + s1[4] + "," + str(s1[3]) + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    elif s1[0] == "дефицит":
+        s_mod2 += s1[0] + "," + s1[4] + "," + "null" + "," + str(s1[2]) + "," + "null" + "," + s1[1]
+    return s_mod2
 
 
 def querying_and_visualizing(message, s_mod2):
