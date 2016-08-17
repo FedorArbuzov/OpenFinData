@@ -44,7 +44,7 @@ ERROR_CHECK_INPUT = 'Кажется, данные введены не корре
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
 ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG = 'К сожалению, этих данных в системе нет🤕 Не отчаивайтесь! Есть много ' \
                                    'других цифр😉 Жми /search'
-ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT = 'К сожалению, этих данных в системе нет🤕'
+ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT = 'К сожалению, этих данных в системе нет🤕 (0 рублей)'
 
 MSG_BEFORE_THEMES = 'Нажмите на одну из кнопок!'
 MSG_BEFORE_SPHERE = 'Какая сфера расходов вас интересует?'
@@ -477,7 +477,6 @@ def voice_processing(message):
         bot.send_message(message.chat.id, msg)
         s1 = main_func(text)
         s_mod2 = forming_string_from_neural(s1)
-
         querying_and_visualizing(message, s_mod2)
     else:
         msg = ERROR_CANNOT_UNDERSTAND_VOICE
