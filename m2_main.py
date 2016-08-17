@@ -7,7 +7,6 @@ from m2_lib import sphere
 from m2_lib import places
 from m2_lib import places_cld
 from m2_lib import feedback
-from m1_main import ERROR_NO_DATA_THIS_YEAR
 
 
 # Module, which is responsible for getting required from user data
@@ -24,8 +23,6 @@ class M2Retrieving:
 
         # Creating mapper based on list of parameters
         mapper = M2Retrieving.__list_to_mapper(params, response)
-        print(mapper)
-        print(params)
 
         if response.message != "":
             return response
@@ -111,7 +108,7 @@ class M2Retrieving:
             if 2006 < int(parameters[3]) < now_year:
                 mapper += '1.'
             else:
-                response.message = ERROR_NO_DATA_THIS_YEAR
+                response.message = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year - 1) + '🙈'
                 return response
 
         # Processing sphere
