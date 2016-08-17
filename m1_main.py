@@ -344,7 +344,7 @@ def query_text(query):
     if result.status is False:
         pass
     else:
-        m3_result = M3Visualizing.create_response(query.id, result.response, filename1, filename2)
+        m3_result = M3Visualizing.create_response(query.id, result.response, filename1, filename2, visualization=False)
         try:
             result_array = []
             msg = types.InlineQueryResultArticle(id='1',

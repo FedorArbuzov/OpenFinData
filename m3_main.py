@@ -30,11 +30,12 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string, filename_svg, filename_pdf):
+    def create_response(user_id, json_string, filename_svg, filename_pdf, visualization=True):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет
-        if len(par["axes"]) > 1:
+        # parameter visualization for not creating pdf and svg files if request was given from inline
+        if len(par["axes"]) > 1 and visualization is True:
 
             # парсим парсим
             k = len(par["axes"][1]["positions"])
