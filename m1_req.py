@@ -12,18 +12,20 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'Российская Федерация', 'Россия', 'РФ',
              'Северо-Кавказский федеральный',
              'Ставропольский',
+             'Ставрополье',
              'Ингушетия',
              'Дагестан',
              'Кабардино-Балкарская',
              'Осетия',
              'Карачаево-Черкесская',
              'Чеченская',
+             'Чечня',
              'Южный',
              'Краснодарский',
              'астраханская',
              'Волгоградская',
              'Ростовская',
-             'адыгея', 'адыгея',
+             'Адыгея',
              'Калмыкия',
              'Приволжский',
              'Нижегородская',
@@ -53,7 +55,7 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'Карелия',
              'Коми',
              'Сибирский',
-             'алтайский',
+             'Алтайский',
              'Красноярский',
              'Кемеровская',
              'Иркутская',
@@ -62,8 +64,9 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'Томская',
              'Забайкальский',
              'Бурятия',
-             'алтай',
+             'Aлтай',
              'Тыва',
+             'Тува',
              'Хакасия',
              'Уральский',
              'Курганская',
@@ -136,6 +139,8 @@ sphere = ['налоговые', 'неналоговые']
 list_of_int = []
 useless_word_in_sen = []
 
+key_words_quantity = len(key_words)
+
 
 def RepresentsInt(s):
     try:
@@ -168,7 +173,7 @@ def distance(a: object, b: object) -> object:
 
 # Основная функция
 def check_the_territories(str_user):
-    minimum_value = 123
+    minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
     i = 0
     for _ in key_words:
@@ -183,7 +188,7 @@ def check_the_territories(str_user):
 
 # Основная функция
 def check_the_sphere(str_user):
-    minimum_value = 123
+    minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
     i = 0
     for _ in sphere:
@@ -253,11 +258,8 @@ def main_func(s):
 
         if key_words[result] == 'плановый':
             user_req.planned_or_actual = 'плановый'
-        if key_words[result] == 'запланированный':
-            user_req.planned_or_actual = 'запланированный'
         if key_words[result] == 'фактический':
             user_req.planned_or_actual = "фактический"
-
         if key_words[result] == 'бюджет':
             user_req.sector = 'бюджет'
         if key_words[result] == "доход":
@@ -284,7 +286,7 @@ def main_func(s):
         for s in key_words[-11:]:
             if s == key_words[result]:
                 # print(result)
-                user_req.sector = str(result - 120)
+                user_req.sector = str(result - (key_words_quantity-13))
 
         i += 1
     if user_req.sector == "":
@@ -299,10 +301,5 @@ def main_func(s):
         else:
             user_req.year = "null"
 
-    print(user_req.planned_or_actual)
-    print(user_req.subject)
-    print(user_req.year)
-    print(user_req.place)
-    print(user_req.sector)
     user_r = [user_req.subject, user_req.place.lower(), user_req.year, user_req.sector, user_req.planned_or_actual]
     return user_r

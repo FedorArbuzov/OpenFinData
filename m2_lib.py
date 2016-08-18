@@ -1,28 +1,26 @@
 # Mappers for requests
 mappers = {
     # Expenditures' mappers
-    '2.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-4])',
     '2.2.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-3])',
     '2.3.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[MARKS].[03-4])',
-    '2.5.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-3])',
+    '2.2.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-3])',
     '2.4.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-4])',
 
-    '2.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-4])',
-    '2.2.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-3])',
     '2.3.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-4])',
-    '2.5.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-3])',
+    '2.2.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-3])',
+    '2.2.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-3])',
     '2.4.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-4])',
 
     # Profits' mappers
-    '3.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
+    '3.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
     '3.2.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',
-    '3.0.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
+    '3.3.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
     '3.2.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',
     '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
     '3.2.1.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',
     '3.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
     '3.4.1.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',
-    '3.0.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-2],[Territories].[*5])',
+    '3.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-2],[Territories].[*5])',
     '3.2.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-1],[Territories].[*5])',
     '3.2.0.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
     '3.2.1.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
@@ -32,8 +30,8 @@ mappers = {
     # Deficit/surplus's mappers
     '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
     '4.2.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
-    '4.0.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1], [Marks].[03-6],[Years].[*3])',
-    '4.0.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
+    '4.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1], [Marks].[03-6],[Years].[*3])',
+    '4.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
     '4.2.0.0.0.1': 'SELECT {[Measures].[PLAN_ONYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Marks].[03-6],[Territories].[*5])',
     '4.4.0.0.0.1': 'SELECT {[Measures].[FACT_BGYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Marks].[03-6],[Territories].[*5])'
 }
@@ -192,12 +190,14 @@ places = {
     'сибирский': '12097',
     'смоленская': '67718',
     'ставропольский': '67654',
+    'ставрополье': '67654',  # Another version of 'ставропольский'
     'тамбовская': '67725',
     'татарстан': '67661',
     'тверская': '67717',
     'томская': '67692',
     'тульская': '67715',
     'тыва': '67683',
+    'тува': '67683',  # Another version of 'тыва'
     'тюменская': '67697',
     'удмуртская': '67668',
     'ульяновская': '67660',
@@ -208,6 +208,7 @@ places = {
     'центральный': '19099',
     'челябинская': '67700',
     'чеченская': '67650',
+    'чечня': '67650',  # Another version of 'чеченская'
     'чувашия': '67664',
     'чувашская': '67664',
     'чукотский': '67640',
@@ -323,3 +324,180 @@ places_cld = {
     'ярославская': '20670'
 }
 
+
+def feedback(params):
+    """Forming response how we have understood user's request"""
+
+    full_places = (
+        'г. Байконур',
+        'Амурская область',
+        'Еврейская автономная область',
+        'Камчатский край',
+        'Магаданская область',
+        'Приморский край',
+        'Республика Саха',
+        'Якутия',
+        'Сахалинская область',
+        'Хабаровский край',
+        'Чукотский автономный округ',
+        'Дальневосточный федеральный округ',
+        'г. Севастополь',
+        'Республика Крым',
+        'Крымский федеральный округ',
+        'Кировская область',
+        'Нижегородская область',
+        'Оренбургская область',
+        'Пензенская область',
+        'Пермский край',
+        'Республика Башкортостан',
+        'Республика Марий Эл',
+        'Республика Мордовия',
+        'Республика Татарстан',
+        'Самарская область',
+        'Саратовская область',
+        'Удмуртская республика',
+        'Ульяновская область',
+        'Чувашская Республика - Чувашия',
+        'Приволжский федеральный округ',
+        'Архангельская область',
+        'Вологодская область',
+        'г. Санкт-Петербург',
+        'Калининградская область',
+        'Ленинградская область',
+        'Мурманская область',
+        'Ненецкий автономный округ',
+        'Новгородская область',
+        'Псковская область',
+        'Республика Карелия',
+        'Республика Коми',
+        'Северо-Западный федеральный округ',
+        'Кабардино-Балкарская Республика',
+        'Карачаево-Черкесская Республика',
+        'Республика Дагестан',
+        'Республика Ингушетия',
+        'Республика Северная Осетия - Алания',
+        'Ставропольский край',
+        'Ставрополье',
+        'Чеченская республика',
+        'Чечня',
+        'Северо-Кавказский федеральный округ',
+        'Алтайский крайабайкальский край',
+        'Иркутская область',
+        'Кемеровская область',
+        'Красноярский край',
+        'Новосибирская область',
+        'Омская область',
+        'Республика Алтай',
+        'Республика Бурятия',
+        'Республика Тыва',
+        'Тува',
+        'Республика Хакасия',
+        'Томская область',
+        'Сибирский федеральный округ',
+        'Курганская область',
+        'Свердловская область',
+        'Тюменская область',
+        'Ханты-Мансийский автономный округ',
+        'Югра',
+        'Челябинская область',
+        'Ямало-Ненецкий автономный округ',
+        'Уральский федеральный округ',
+        'Белгородская область',
+        'Брянская область',
+        'Владимирская область',
+        'Воронежская область',
+        'г. Москва',
+        'Ивановская область',
+        'Калужская область',
+        'Костромская область',
+        'Курская область',
+        'Липецкая область',
+        'Московская область',
+        'Орловская область',
+        'Рязанская область',
+        'Смоленская область',
+        'Тамбовская область',
+        'Тверская область',
+        'Тульская область',
+        'Ярославская область',
+        'Центральный федеральный округ',
+        'Астраханская область',
+        'Волгоградская область',
+        'Краснодарский край',
+        'Республика Адыгея',
+        'Адыгея',
+        'Республика Калмыкия',
+        'Ростовская область',
+        'Южный федеральный округ',
+        'Российская Федерация',
+        'Россия')
+
+    # TODO: Refactor code
+    # TODO: Make this method unbreakable
+
+    if type(params) is not list:
+        params = params.split(',')
+
+    if len(params) < 6:
+        return "Неверный запрос!"
+
+    if params[0] == "дефицит":
+        theme = " дефицит/профицит"
+        if params[1] == "null":
+            param_1 = "Фактический"
+        else:
+            param_1 = params[1][0].upper() + params[1][1:]
+        if params[3] == "null":
+            year_3 = ""
+        else:
+            year_3 = " " + params[3] + " годам"
+        if params[5] == "null":
+            territory = ""
+        else:
+            territory = ' по территории ' + list(filter(lambda x: params[5][1:] in x, full_places))[0]
+        response = param_1 + theme + year_3 + territory
+    else:
+        theme = " " + params[0]
+
+        if params[1] == "null":
+            param_1 = "Фактические"
+        else:
+            param_1 = params[1][0].upper() + params[1][1:-1] + "е"
+
+        if params[2] == "null":
+            param_2 = ""
+        else:
+            param_2 = " " + params[2][:-1] + "е"
+
+        if params[3] == "null":
+            year_3 = ""
+        else:
+            year_3 = " " + params[3] + " годам"
+
+        if params[4] == "null" and params[0] == "расходы":
+            sphere_4 = " в целом"
+        elif params[4] == "null" and params[0] == "доходы":
+            sphere_4 = ""
+        else:
+            spheres = {
+                '2': 'общегосударственные вопросы',
+                '3': 'национальную оборону',
+                '4': 'национальную безопасность',
+                '5': 'национальную экономику',
+                '6': 'жкх',
+                '7': 'охрану окружающей среды',
+                '8': 'образование',
+                '9': 'культуру',
+                '10': 'здравоохранение',
+                '11': 'социальную политику',
+                '12': 'спорт'
+            }
+            sphere_4 = " на " + spheres.get(params[4])
+
+        if params[5] == "null":
+            territory = ""
+        else:
+            territory = " по территории " + list(filter(lambda x: params[5][1:] in x, full_places))[0]
+        response = param_1 + param_2 + theme + year_3 + sphere_4 + territory
+
+    return 'Мы вас поняли следующим образом: "' + response + '".'

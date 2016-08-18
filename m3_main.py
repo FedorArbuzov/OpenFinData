@@ -30,11 +30,12 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 class M3Visualizing:
     @staticmethod
-    def create_response(user_id, json_string, filename_svg, filename_pdf):
+    def create_response(user_id, json_string, theme, filename_svg=None, filename_pdf=None, visualization=True):
         result = Result()
         par = json.loads(json_string)
         # проверка на то, детализировать или нет
-        if len(par["axes"]) > 1:
+        # parameter visualization for not creating pdf and svg files if request was given from inline
+        if len(par["axes"]) > 1 and visualization is True:
 
             # парсим парсим
             k = len(par["axes"][1]["positions"])
@@ -157,6 +158,44 @@ class M3Visualizing:
 
             dop_chis = __formation(dopoln_chis)
 
+            # метод преобразования чисел, который нормально работает и мне лень его переписывать
+            def __vyvod_chisla(chislo):
+                chislo_str = str(chislo)
+                length1 = len(chislo_str)
+                mas = [' тыс.', ' млн', ' млрд', ' трлн']
+                k = length1
+                smallestpower = 0
+                stri = ''
+                s = ''
+                if (k > 12) and (k < 15):
+                    smallestpower = 12
+                    s = mas[3]
+
+                if (k > 9) and (k < 13):
+                    smallestpower = 9
+                    s = mas[2]
+
+                if (k > 6) and (k < 10):
+                    smallestpower = 6
+                    s = mas[1]
+
+                if (k > 3) and (k < 7):
+                    smallestpower = 3
+                    s = mas[0]
+
+                if length1 > 3:
+                    chislo /= 10 ** smallestpower
+                    chi = str(round(chislo, 2))
+                    chi = chi.replace(".", ",")
+                    stri = chi + s + " рублей"
+
+                else:
+                    chi = str(round(chislo, 2))
+                    chi = chi.replace(".", ",")
+                    stri = chi + s + " рублей"
+
+                return stri
+
             # Общая цифра
             def __info(a):
                 # Высчитываем итоговую сумму
@@ -165,13 +204,17 @@ class M3Visualizing:
                 while i < k - 1:
                     if dopoln_chis > 3:
                         itogznach[i] = round(itogznach[i] / (10 ** (dopoln_chis - 1)))
-                        i += 1
+                    i += 1
 
                 i = 0
                 sum = 0
                 while i < k - 1:
                     sum = sum + itogznach[i]
                     i += 1
+
+                sum = sum * (10 ** (dopoln_chis - 1))
+
+                stre = __vyvod_chisla(sum)
 
                 a.setFillColorRGB(0.72, 0.85, 0.98)
                 a.rect(0 * inch, 9.85 * inch, 8.27 * inch, 0.5 * inch, stroke=0, fill=1)
@@ -182,7 +225,7 @@ class M3Visualizing:
 
                 a.setFont('Arial', 12)
                 a.setFillColorRGB(0, 0, 0)
-                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + str(sum) + ' ' + dop_chis + ' ' + " рублей")
+                a.drawString(0.5 * inch, 10.04 * inch, "Всего: " + stre)
 
             # Применяем все функции к нашему документу и сохраняем его
             __top_line(doc)
@@ -344,9 +387,18 @@ class M3Visualizing:
             with open('result.pdf', 'wb') as f:
                 output.write(f)
             '''
+
             # os.rename("chart.svg",filename1)
             # os.rename("page2.pdf",filename2)
-            result.number = str(sum) + " " + dop_chis + " рублей"
+            sum = sum * (10 ** (dopoln_chis - 1))
+
+            stre = __vyvod_chisla(sum)
+
+            # Shows for 1st module, that there is no data for such request
+            if stre[0] == '0':
+                result.data = False
+
+            result.number = stre
             result.is_file = True
         else:
 
@@ -355,7 +407,7 @@ class M3Visualizing:
             def __vyvod_chisla(chislo):
                 chislo_str = str(chislo)
                 length1 = len(chislo_str)
-                mas = [' тыс.', ' млн.', ' млрд.', ' трлн.']
+                mas = [' тыс.', ' млн', ' млрд', ' трлн']
                 k = length1
                 smallestpower = 0
                 stri = ''
@@ -378,14 +430,22 @@ class M3Visualizing:
 
                 if length1 > 3:
                     chislo /= 10 ** smallestpower
-                    stri = str(round(chislo, 2)) + s + " рублей"
+                    chi = str(round(chislo, 2))
+                    chi = chi.replace(".", ",")
+                    stri = chi + s + " рублей"
                 else:
-                    stri = str(round(chislo, 2)) + " рублей"
+                    chi = str(round(chislo, 2))
+                    chi = chi.replace(".", ",")
+                    stri = chi + s + " рублей"
                 return stri
 
             some_number = par["cells"][0][0]["value"]
             if some_number is None:
                 some_number = 0
+
+                # Shows for 1st module, that there is no data for such request
+                result.data = False
+
             some_number = round(float(some_number))
 
             if some_number > 0:
@@ -416,9 +476,10 @@ class M3Visualizing:
 
 
 class Result:
-    def __init__(self, is_file=False, number='', path=''):
+    def __init__(self, is_file=False, number='', path='', data=True):
         self.is_file = is_file
         self.number = number
         self.path = path
+        self.data = data
 
         # Хочется серфить по морям

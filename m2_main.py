@@ -1,10 +1,12 @@
 import requests
+import datetime
 from m1_req import distance
-from m2_dict import mappers
-from m2_dict import param2
-from m2_dict import sphere
-from m2_dict import places
-from m2_dict import places_cld
+from m2_lib import mappers
+from m2_lib import param2
+from m2_lib import sphere
+from m2_lib import places
+from m2_lib import places_cld
+from m2_lib import feedback
 
 
 # Module, which is responsible for getting required from user data
@@ -53,10 +55,10 @@ class M2Retrieving:
             },
 
             {
+                'null': 3,  # By default is "фактический"
                 'плановый': 2,
                 'фактический': 3,
-                'текущий': 4,
-                'запланированный': 5
+                'текущий': 4
             }
         )
 
@@ -64,16 +66,18 @@ class M2Retrieving:
 
         # TODO: refactor processing of mapper
         # Processing theme
+        exp_differ = False
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
+            response.theme = parameters[0]
+            if mapper == '2.':
+                exp_differ = True
         else:
-            response.message = '😂😂😂😏\nНеверно выбрана предметная область!\n Попробуйте еще раз /search'
+            response.message = 'Неверно выбрана предметная область😏 Попробуйте еще раз /search'
             return response
 
         # Processing param1
-        if parameters[1] == 'null':
-            mapper += '0.'
-        elif parameters[1] in codes[1]:
+        if parameters[1] in codes[1]:
             mapper += str(codes[1].get(parameters[1])) + '.'
         else:
             response.message = 'Неверно выбрана 1я характеристика предметной области (' + \
@@ -87,25 +91,36 @@ class M2Retrieving:
             mapper += '1.'
         else:
             message = 'Параметр "' + parameters[2] + '" не верен. ' \
-                                                     'Допустимы: отсутствие этого параметра, ' \
-                                                     'значение "налоговый" и "неналоговый"'
+                                                     'Допустимые значения: "все", ' \
+                                                     '"налоговый" и "неналоговый"'
             response.message = message
             return response
 
         # Processing year
+        now_year = datetime.datetime.now().year
         if parameters[3] == 'null':
             mapper += '0.'
         else:
-            mapper += '1.'
+            # Refactoring input year parameter if year is defined only by 1 or 2 last numbers
+            year_len = len(parameters[3])
+            if year_len == 1 or year_len == 2:
+                parameters[3] = '2' + '0'*(3-year_len) + parameters[3]
+
+            if 2006 < int(parameters[3]) < now_year:
+                mapper += '1.'
+            else:
+                response.message = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year - 1) + '🙈'
+                return response
 
         # Processing sphere
-        if parameters[4] == 'null':
-            mapper += '0.'
-        elif parameters[4] in sphere:
+        if exp_differ is True:
             mapper += '1.'
         else:
-            response.message = 'Неверно указана сфера ("' + parameters[4] + '"). Попробуйте еще раз /search'
-            return response
+            if exp_differ is False and parameters[4] in sphere:
+                mapper += '0.'
+            else:
+                response.message = 'Неверно указана сфера ("' + parameters[4] + '"). Попробуйте еще раз /search'
+                return response
 
         # Processing territory
         if parameters[5] == 'null':
@@ -140,7 +155,7 @@ class M2Retrieving:
             if index == 1:
                 message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
 
-            response.message = message[:-2] + '\n Жмите /search'
+            response.message = feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
 
         return mdx_skeleton
 
@@ -213,7 +228,6 @@ class M2Retrieving:
 
         # Updating params of resulting object
         response.status = True
-        response.message = 'OK'
         response.response = r.text
 
     @staticmethod
@@ -230,13 +244,12 @@ class M2Retrieving:
             {
                 2: 'плановый',
                 3: 'фактический',
-                4: 'текущий',
-                5: 'запланированный'
+                4: 'текущий'
             },
-            'налоговый/неналоговый',
-            'год',
-            'сферу',
-            'территорию'
+            'налоговые/неналоговые',
+            'год (по умолчанию данные ' + str(datetime.datetime.now().year) + " г.)",
+            'конкретную сферу',
+            'конкретный регион'
         )
 
         items1, items2 = true_mapper.split('.'), false_mapper.split('.')
@@ -266,7 +279,7 @@ class M2Retrieving:
 
                         # If error is in param2
                         if count == 2:
-                            error_message = 'Не указывайте параметр "' + params[count] + '"\r\n'
+                            error_message = 'Не указывайте параметр "' + params[count][:-2] + '"ые\r\n'
 
                 # If parameter exist but should be another or error is in param1
                 else:
@@ -286,7 +299,8 @@ class M2Retrieving:
 
 
 class Result:
-    def __init__(self, status=False, message='', response=''):
+    def __init__(self, status=False, message='', response='', theme=''):
         self.status = status
         self.message = message
         self.response = response
+        self.theme = theme
