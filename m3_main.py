@@ -35,12 +35,13 @@ class M3Visualizing:
         print(json_string)
         par = json.loads(json_string)
 
+        # Processing case then there is no data for such request
         if par["cells"][0][0]["value"] is None:
-            result.data=False
+            # Informing 1st module that there is no data
+            result.data = False
         else:
-
-        # проверка на то, детализировать или нет
-        # parameter visualization for not creating pdf and svg files if request was given from inline
+            # проверка на то, детализировать или нет
+            # parameter visualization for not creating pdf and svg files if request was given from inline
             if len(par["axes"]) > 1 and visualization is True:
 
                 # парсим парсим
@@ -306,7 +307,8 @@ class M3Visualizing:
                 if sum != 0:
                     while i < k - 1:
                         # Тут мы высчитываем проценты, чтобы вставить их в табличку
-                        qu = [Paragraph((diagramttl[i]) + "    (" + str(round(itogznach[i] / sum * 100, 2)) + "%)", styleN),
+                        qu = [Paragraph((diagramttl[i]) + "    (" + str(round(itogznach[i] / sum * 100, 2)) + "%)",
+                                        styleN),
                               str(itogznach[i]) + dop_chis]
                         tablemas.append(qu)
                         i += 1
@@ -400,14 +402,11 @@ class M3Visualizing:
 
                 stre = __vyvod_chisla(sum)
 
-                # Shows for 1st module, that there is no data for such request
-                if stre[0] == '0':
-                    result.data = False
-
                 result.number = stre
                 result.is_file = True
             else:
-                some_number=0
+                some_number = 0
+
                 # использовать метод уже после проверки на то, есть 0 или нет
                 # метод по анализу числа на миллионы миллиарды (РАБОЧИЙ ФИНАЛЬНАЯ ВЕРСИЯ)
                 def __vyvod_chisla(chislo):
@@ -446,21 +445,13 @@ class M3Visualizing:
                     return stri
 
                 some_number = par["cells"][0][0]["value"]
-                if some_number is None:
-                    some_number = 0
-
-                    # Shows for 1st module, that there is no data for such request
-                    result.data = False
 
                 some_number = round(float(some_number))
 
-
-                if (theme=="дефицит"):
+                if theme == "дефицит":
                     if some_number > 0:
                         result1 = __vyvod_chisla(some_number)
                         result.number = "Профицит " + result1
-
-
                     else:
                         result1 = __vyvod_chisla(some_number)
                         result1 = result1.replace("-", "")
