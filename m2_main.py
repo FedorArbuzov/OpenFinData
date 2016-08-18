@@ -69,6 +69,7 @@ class M2Retrieving:
         exp_differ = False
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
+            response.theme = parameters[0]
             if mapper == '2.':
                 exp_differ = True
         else:
@@ -298,7 +299,8 @@ class M2Retrieving:
 
 
 class Result:
-    def __init__(self, status=False, message='', response=''):
+    def __init__(self, status=False, message='', response='', theme=''):
         self.status = status
         self.message = message
         self.response = response
+        self.theme = theme

@@ -357,7 +357,7 @@ def query_text(query):
         bot.answer_inline_query(query.id, result_array)
 
     else:
-        m3_result = M3Visualizing.create_response(query.id, result.response, visualization=False)
+        m3_result = M3Visualizing.create_response(query.id, result.response, result.theme, visualization=False)
         try:
             if m3_result.data is False:
                 msg_append_text = ': ' + ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
@@ -512,7 +512,8 @@ def querying_and_visualizing(message, s_mod2):
     else:
         bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
 
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, filename_svg=names[0], filename_pdf=names[1])
+        m3_result = M3Visualizing.create_response(message.chat.id, result.response, result.theme,
+                                                  filename_svg=names[0], filename_pdf=names[1])
         if m3_result.data is False:
             bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
         else:
