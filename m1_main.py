@@ -504,8 +504,8 @@ def cr_markup(message):
 def file_naming(request_string):
     request_string = tr(request_string, 'ru', reversed=True)
     filename = request_string.replace('null', '').replace(',', '_').replace('__', '_')
-    filename_svg = filename + '.svg'
-    filename_pdf = filename + '.pdf'
+    filename_svg = 'diagram_' + filename + '.svg'
+    filename_pdf = 'table_' + filename + '.pdf'
     names = [filename_svg, filename_pdf]
     return names
 
