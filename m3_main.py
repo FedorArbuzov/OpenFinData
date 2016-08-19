@@ -32,7 +32,6 @@ class M3Visualizing:
     @staticmethod
     def create_response(user_id, json_string, theme, filename_svg=None, filename_pdf=None, visualization=True):
         result = Result()
-        print(json_string)
         par = json.loads(json_string)
 
         # Processing case then there is no data for such request
@@ -304,6 +303,7 @@ class M3Visualizing:
                 i = 0
                 qu = []
                 tablemas = [["Параметр", "Значение"]]  # Тут сразу и заголовки таблицы
+                # TODO: проверить, может ли быть теперь sum равным 0
                 if sum != 0:
                     while i < k - 1:
                         # Тут мы высчитываем проценты, чтобы вставить их в табличку
