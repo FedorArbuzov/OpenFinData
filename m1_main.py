@@ -219,7 +219,7 @@ def repeat_all_messages(message):
             cursor.execute('UPDATE users SET year=' + str(i) + ' WHERE userid=' + str(message.chat.id) + ';')
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
+            cr_markup(message)
 
         else:
             bot.send_message(message.chat.id, ERROR_NO_DATA_THIS_YEAR, reply_markup=markup)
@@ -328,7 +328,24 @@ def repeat_all_messages(message):
                 'UPDATE users SET year=' + 'null' + ' WHERE userid=' + str(message.chat.id) + ';')
             connection.commit()
             connection.close()
-            bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
+            cr_markup(message)
+            
+    elif (message.text == 'РФ'
+          or message.text == 'Москва'
+          or message.text == 'Московская область'):
+        s = main_place(message.text)
+        cursor.execute('UPDATE users SET place=\'' + s + '\' WHERE userid=' + str(message.chat.id) + ';')
+        connection.commit()
+        connection.close()
+
+    elif message.text == 'null':
+        cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
+        connection.commit()
+        connection.close()
+
+    elif message.text == 'Другие':
+        markup = types.ReplyKeyboardHide()
+        bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
     else:
         bot.send_message(message.chat.id, ERROR_CHECK_INPUT)
 
@@ -495,6 +512,19 @@ def year_markup(message):
     markup.row(y2013, y2014, y2015)
     markup.row(y2016)
     bot.send_message(message.chat.id, YEAR_MSG, reply_markup=markup)
+
+
+def cr_markup(message):
+    markup = types.ReplyKeyboardMarkup()
+    rf_b = types.KeyboardButton('РФ')
+    moscow_b = types.KeyboardButton('Москва')
+    m_region_b = types.KeyboardButton('Московская область')
+    other_b = types.KeyboardButton('Другие')
+    null_b = types.KeyboardButton('null')
+    markup.row(rf_b, moscow_b)
+    markup.row(null_b, m_region_b)
+    markup.row(other_b)
+    bot.send_message(message.chat.id, 'Выберите территорию:', reply_markup=markup)
 
 
 def file_naming(request_string):
