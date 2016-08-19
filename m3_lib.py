@@ -34,4 +34,3 @@ schedule.every().day.at("01:05").do(delete_unnecessary_folders24)
 while True:
     schedule.run_pending()
     time.sleep(1)
-

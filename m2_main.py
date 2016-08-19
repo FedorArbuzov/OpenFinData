@@ -1,10 +1,12 @@
 import requests
+import datetime
 from m1_req import distance
-from m2_dict import mappers
-from m2_dict import param2
-from m2_dict import sphere
-from m2_dict import places
-from m2_dict import places_cld
+from m2_lib import mappers
+from m2_lib import param2
+from m2_lib import sphere
+from m2_lib import places
+from m2_lib import places_cld
+from m2_lib import feedback
 
 
 # Module, which is responsible for getting required from user data
@@ -21,6 +23,7 @@ class M2Retrieving:
 
         # Creating mapper based on list of parameters
         mapper = M2Retrieving.__list_to_mapper(params, response)
+        print(mapper)
 
         if response.message != "":
             return response
@@ -53,10 +56,10 @@ class M2Retrieving:
             },
 
             {
+                'null': 3,  # By default is "фактический"
                 'плановый': 2,
                 'фактический': 3,
-                'текущий': 4,
-                'запланированный': 5
+                'текущий': 4
             }
         )
 
@@ -64,19 +67,21 @@ class M2Retrieving:
 
         # TODO: refactor processing of mapper
         # Processing theme
+        exp_differ = False
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
+            if mapper == '2.':
+                exp_differ = True
         else:
-            response.message = 'Неверно выбрана предметная область.'
+            response.message = 'Неверно выбрана предметная область😂😏 Попробуйте еще раз /search'
             return response
 
         # Processing param1
-        if parameters[1] == 'null':
-            mapper += '0.'
-        elif parameters[1] in codes[1]:
+        if parameters[1] in codes[1]:
             mapper += str(codes[1].get(parameters[1])) + '.'
         else:
-            response.message = 'Неверно выбрана 1я характеристика предметной области'
+            response.message = 'Неверно выбрана 1я характеристика предметной области (' + \
+                               parameters[1] + '). Попробуйте еще раз /search'
             return response
 
         # Processing param2
@@ -86,8 +91,8 @@ class M2Retrieving:
             mapper += '1.'
         else:
             message = 'Параметр "' + parameters[2] + '" не верен. ' \
-                                                     'Допустимы: отсутствие этого параметра, ' \
-                                                     'значение "налоговый" и "неналоговый"'
+                                                     'Допустимые значения: "все", ' \
+                                                     '"налоговый" и "неналоговый"'
             response.message = message
             return response
 
@@ -98,13 +103,14 @@ class M2Retrieving:
             mapper += '1.'
 
         # Processing sphere
-        if parameters[4] == 'null':
-            mapper += '0.'
-        elif parameters[4] in sphere:
+        if exp_differ is True:
             mapper += '1.'
         else:
-            response.message = 'Неверно указана сфера. Попробуйте еще раз'
-            return response
+            if exp_differ is False and parameters[4] in sphere:
+                mapper += '0.'
+            else:
+                response.message = 'Неверно указана сфера ("' + parameters[4] + '"). Попробуйте еще раз /search'
+                return response
 
         # Processing territory
         if parameters[5] == 'null':
@@ -112,7 +118,7 @@ class M2Retrieving:
         elif parameters[5] in places:
             mapper += '1'
         else:
-            response.message = 'Неверно указана территория. Попробуйте еще раз'
+            response.message = 'Неверно указана территория ("' + parameters[4] + '"). Попробуйте еще раз /search'
             return response
 
         return mapper
@@ -129,7 +135,7 @@ class M2Retrieving:
 
         # Finding the nearest mapper to given and forming response
         if mdx_skeleton == 0:
-            message = 'Запрос чуть-чуть некорректен. Пожалуйста, подправьте его, выбрав ' \
+            message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
                       'один из предложенных вариантов:\r\n'
             index = 1
             for i in list(mappers.keys()):
@@ -137,9 +143,9 @@ class M2Retrieving:
                     message += '- ' + M2Retrieving.__hint(i, mapper, params)
                     index += 1
             if index == 1:
-                message = 'В запросе неверно несколько параметров. Попробуйте изменить запрос.   '
+                message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
 
-            response.message = message[:-2]
+            response.message = feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
 
         return mdx_skeleton
 
@@ -212,7 +218,6 @@ class M2Retrieving:
 
         # Updating params of resulting object
         response.status = True
-        response.message = 'OK'
         response.response = r.text
 
     @staticmethod
@@ -229,13 +234,12 @@ class M2Retrieving:
             {
                 2: 'плановый',
                 3: 'фактический',
-                4: 'текущий',
-                5: 'запланированный'
+                4: 'текущий'
             },
-            'налоговый/неналоговый',
-            'год',
-            'сферу',
-            'территорию'
+            'налоговые/неналоговые',
+            'год (по умолчанию данные ' + str(datetime.datetime.now().year) + " г.)",
+            'конкретную сферу',
+            'конкретный регион'
         )
 
         items1, items2 = true_mapper.split('.'), false_mapper.split('.')
@@ -265,7 +269,7 @@ class M2Retrieving:
 
                         # If error is in param2
                         if count == 2:
-                            error_message = 'Не указывайте параметр "' + params[count] + '"\r\n'
+                            error_message = 'Не указывайте параметр "' + params[count][:-2] + '"ые\r\n'
 
                 # If parameter exist but should be another or error is in param1
                 else:
