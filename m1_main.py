@@ -100,45 +100,7 @@ def send_welcome(message):
             cursor.execute('SELECT * FROM users WHERE userid = ' + str(message.chat.id))
             data = cursor.fetchall()
             con.close()
-            k = 0
-            for i in data:
-                for i1 in i:
-                    # print(i1)
-                    if i1 == '0':
-                        k += 1
-            if k > 2:
-                bot.send_message(message.chat.id, ERROR_NOT_FULL_INFO)
-            else:
-                connection = sqlite3.connect('users.db')
-                cursor = connection.cursor()
-                s_main = 'INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, ' + \
-                         str(message.chat.id) + ', \'' + str(0) + '\', \'' + str(0) + '\', \'' + str(
-                    0) + '\', \'' + str(
-                    0) + '\', \'' + str(0) + '\', \'' + str(0) + '\')'
-                cursor.execute(s_main)
-                connection.commit()
-                connection.close()
-
-                new_data = []
-                count = 0
-                while count <= 7:
-                    for item in data:
-                        new_data.append(item[count])
-                        count += 1
-
-                for n, i in enumerate(new_data):
-                    if i == 0 or i == '0' or i is None:
-                        new_data[n] = 'null'
-                    if i == 'дефицит/профицит':
-                        new_data[n] = 'дефицит'
-
-                new_data[3] = new_data[3].lower()
-                s_mod2, filename1, filename2 = '', '', ''
-                s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(
-                    new_data[4]) + ',' + str(
-                    new_data[7]) + ',' + str(new_data[3])
-
-                querying_and_visualizing(message, s_mod2)
+            final_result_formatting(data, message)
         else:
             bot.send_message(message.chat.id, ERROR_NO_UNDERSTANDING)
     else:
@@ -329,14 +291,25 @@ def repeat_all_messages(message):
             connection.commit()
             connection.close()
             cr_markup(message)
-            
+
     elif (message.text == 'РФ'
           or message.text == 'Москва'
-          or message.text == 'Московская область'):
-        s = main_place(message.text)
-        cursor.execute('UPDATE users SET place=\'' + s + '\' WHERE userid=' + str(message.chat.id) + ';')
-        connection.commit()
-        connection.close()
+          or message.text == 'Московская область'
+          or message.text == 'Федеральный бюджет'):
+        if message.text == 'Федеральный бюджет':
+            cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
+            connection.commit()
+            connection.close()
+        elif (message.text == 'РФ'
+              or message.text == 'Москва'
+              or message.text == 'Московская область'):
+            s = main_place(message.text)
+            cursor.execute('UPDATE users SET place=\'' + s + '\' WHERE userid=' + str(message.chat.id) + ';')
+            connection.commit()
+            connection.close()
+
+        final_result_formatting(data, message)
+
 
     elif message.text == 'null':
         cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
@@ -346,6 +319,7 @@ def repeat_all_messages(message):
     elif message.text == 'Другие':
         markup = types.ReplyKeyboardHide()
         bot.send_message(message.chat.id, TERRITORY_MSG, reply_markup=markup)
+
     else:
         bot.send_message(message.chat.id, ERROR_CHECK_INPUT)
 
@@ -520,7 +494,7 @@ def cr_markup(message):
     moscow_b = types.KeyboardButton('Москва')
     m_region_b = types.KeyboardButton('Московская область')
     other_b = types.KeyboardButton('Другие')
-    null_b = types.KeyboardButton('null')
+    null_b = types.KeyboardButton('Федеральный бюджет')
     markup.row(rf_b, moscow_b)
     markup.row(null_b, m_region_b)
     markup.row(other_b)
@@ -548,13 +522,14 @@ def forming_string_from_neural(s1):
 
 
 def querying_and_visualizing(message, s_mod2):
+    markup = types.ReplyKeyboardHide()
     print(s_mod2)
     names = file_naming(s_mod2)
     result = M2Retrieving.get_data(s_mod2)
     if result.status is False:
-        bot.send_message(message.chat.id, result.message)
+        bot.send_message(message.chat.id, result.message, reply_markup=markup)
     else:
-        bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
+        bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU, reply_markup=markup)
 
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, result.theme,
                                                   filename_svg=names[0], filename_pdf=names[1])
@@ -571,6 +546,47 @@ def querying_and_visualizing(message, s_mod2):
                 bot.send_document(message.chat.id, file1)
                 bot.send_document(message.chat.id, file2)
 
+
+def final_result_formatting(data, message):
+    k = 0
+    for i in data:
+        for i1 in i:
+            # print(i1)
+            if i1 == '0':
+                k += 1
+    if k > 2:
+        bot.send_message(message.chat.id, ERROR_NOT_FULL_INFO, reply_markup=types.ReplyKeyboardHide())
+    else:
+        connection = sqlite3.connect('users.db')
+        cursor = connection.cursor()
+        s_main = 'INSERT INTO users (id, userid, subject, place, year, sector, planned_or_actual, thm) VALUES(NULL, ' + \
+                 str(message.chat.id) + ', \'' + str(0) + '\', \'' + str(0) + '\', \'' + str(
+            0) + '\', \'' + str(
+            0) + '\', \'' + str(0) + '\', \'' + str(0) + '\')'
+        cursor.execute(s_main)
+        connection.commit()
+        connection.close()
+
+        new_data = []
+        count = 0
+        while count <= 7:
+            for item in data:
+                new_data.append(item[count])
+                count += 1
+
+        for n, i in enumerate(new_data):
+            if i == 0 or i == '0' or i is None:
+                new_data[n] = 'null'
+            if i == 'дефицит/профицит':
+                new_data[n] = 'дефицит'
+
+        new_data[3] = new_data[3].lower()
+        s_mod2, filename1, filename2 = '', '', ''
+        s_mod2 += str(new_data[2]) + ',' + str(new_data[5]) + ',' + str(new_data[6]) + ',' + str(
+            new_data[4]) + ',' + str(
+            new_data[7]) + ',' + str(new_data[3])
+
+        querying_and_visualizing(message, s_mod2)
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
