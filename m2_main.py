@@ -90,10 +90,7 @@ class M2Retrieving:
         elif parameters[2] in param2:
             mapper += '1.'
         else:
-            message = 'Параметр "' + parameters[2] + '" не верен. ' \
-                                                     'Допустимые значения: "все", ' \
-                                                     '"налоговый" и "неналоговый"'
-            response.message = message
+            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
             return response
 
         # Processing year
@@ -113,14 +110,13 @@ class M2Retrieving:
                 return response
 
         # Processing sphere
-        if exp_differ is True:
+        if exp_differ is True and parameters[4] in sphere:
             mapper += '1.'
+        elif exp_differ is False and parameters[4] in sphere:
+            mapper += '0.'
         else:
-            if exp_differ is False and parameters[4] in sphere:
-                mapper += '0.'
-            else:
-                response.message = 'Неверно указана сфера ("' + parameters[4] + '"). Попробуйте еще раз /search'
-                return response
+            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
+            return response
 
         # Processing territory
         if parameters[5] == 'null':
@@ -140,8 +136,8 @@ class M2Retrieving:
         mdx_skeleton = mappers.get(mapper, 0)
 
         # Processing error message for which MDX-query is not ready yet
-        if mdx_skeleton is None:
-            response.message = 'Данный запрос еще в стадии разработки'
+        # if mdx_skeleton is None:
+        #     response.message = 'Данный запрос еще в стадии разработки'
 
         # Finding the nearest mapper to given and forming response
         if mdx_skeleton == 0:
@@ -279,7 +275,7 @@ class M2Retrieving:
 
                         # If error is in param2
                         if count == 2:
-                            error_message = 'Не указывайте параметр "' + params[count][:-2] + '"ые\r\n'
+                            error_message = 'Не указывайте параметр "' + params[count][:-2] + 'ые"\r\n'
 
                 # If parameter exist but should be another or error is in param1
                 else:
