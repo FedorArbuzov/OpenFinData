@@ -41,7 +41,7 @@ ERROR_NO_DATA_THIS_YEAR = 'Введите год из промежутка c 200
 ERROR_CHECK_INPUT = 'Кажется, данные введены некорректно🔎'
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
 ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG = 'К сожалению, этих данных в системе нет🤕 Не отчаивайтесь! Есть много ' \
-                                   'других цифр😉 Нажмите /search'
+                                        'других цифр😉 Нажмите /search'
 ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT = 'К сожалению, этих данных в системе нет🤕 (0 рублей)'
 
 MSG_BEFORE_THEMES = 'Нажмите на одну из кнопок!'
@@ -132,7 +132,7 @@ def repeat_all_messages(message):
         connection.commit()
         connection.close()
 
-    s = message.text[9:]
+    s = message.text[8:]
     if s == '':
         markup = types.ReplyKeyboardMarkup()
         markup.row('доходы')
@@ -503,7 +503,14 @@ def cr_markup(message):
 
 def file_naming(request_string):
     request_string = tr(request_string, 'ru', reversed=True)
-    filename = request_string.replace('null', '').replace(',', '_').replace('__', '_')
+    filename = request_string.replace('null', '')
+    filename = filename.replace(',', '_')
+    filename = filename.replace('__', '_')
+    filename = filename.replace('__', '_')
+
+    if filename[len(filename) - 1] == '_':
+        filename = filename[:len(filename) - 1]
+
     filename_svg = 'diagram_' + filename + '.svg'
     filename_pdf = 'table_' + filename + '.pdf'
     names = [filename_svg, filename_pdf]
@@ -524,13 +531,12 @@ def forming_string_from_neural(s1):
 def querying_and_visualizing(message, s_mod2):
     markup = types.ReplyKeyboardHide()
     print(s_mod2)
-    names = file_naming(s_mod2)
     result = M2Retrieving.get_data(s_mod2)
     if result.status is False:
         bot.send_message(message.chat.id, result.message, reply_markup=markup)
     else:
         bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU, reply_markup=markup)
-
+        names = file_naming(s_mod2)
         m3_result = M3Visualizing.create_response(message.chat.id, result.response, result.theme,
                                                   filename_svg=names[0], filename_pdf=names[1])
         if m3_result.data is False:
@@ -587,6 +593,7 @@ def final_result_formatting(data, message):
             new_data[7]) + ',' + str(new_data[3])
 
         querying_and_visualizing(message, s_mod2)
+
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
