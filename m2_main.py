@@ -27,6 +27,7 @@ class M2Retrieving:
         if response.message != "":
             return response
 
+        print(mapper)
         # Find MDX-sampler for formed mapper
         mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, params, response)
 
@@ -38,7 +39,7 @@ class M2Retrieving:
         mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, mapper)
 
         # Sending request
-        M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response)
+        M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response, params)
 
         return response
 
@@ -103,10 +104,15 @@ class M2Retrieving:
             if year_len == 1 or year_len == 2:
                 parameters[3] = '2' + '0'*(3-year_len) + parameters[3]
 
-            if 2006 < int(parameters[3]) < now_year:
-                mapper += '1.'
+            if 2006 < int(parameters[3]) <= now_year:
+
+                # Processing 2016 year
+                if parameters[3] == '2016':
+                    mapper += '0.'
+                else:
+                    mapper += '1.'
             else:
-                response.message = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year - 1) + '🙈'
+                response.message = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year) + '🙈'
                 return response
 
         # Processing sphere
@@ -210,7 +216,7 @@ class M2Retrieving:
         return mdx_cube_and_query
 
     @staticmethod
-    def __send_mdx_request(data_mart_code, mdx_query, response):
+    def __send_mdx_request(data_mart_code, mdx_query, response, params):
         """Sending POST request to remote server"""
 
         data = {'dataMartCode': data_mart_code, 'mdxQuery': mdx_query}
@@ -224,6 +230,7 @@ class M2Retrieving:
 
         # Updating params of resulting object
         response.status = True
+        response.message = feedback(params)
         response.response = r.text
 
     @staticmethod

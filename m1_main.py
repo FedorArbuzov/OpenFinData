@@ -309,7 +309,6 @@ def repeat_all_messages(message):
 
         final_result_formatting(data, message)
 
-
     elif message.text == 'null':
         cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
         connection.commit()
@@ -460,8 +459,8 @@ def voice_processing(message):
     text = speech_to_text(bytes=file.content)
 
     if text is not None:
-        msg = 'Ваш запрос: '' + text + ''. '
-        bot.send_message(message.chat.id, msg)
+        # msg = 'Ваш запрос: '' + text + ''. '
+        # bot.send_message(message.chat.id, msg)
         s1 = main_func(text)
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
@@ -531,20 +530,24 @@ def forming_string_from_neural(s1):
     return s_mod2
 
 
-def querying_and_visualizing(message, s_mod2):
+def querying_and_visualizing(message, s_mod2, notify_user=True):
     markup = types.ReplyKeyboardHide()
     print(s_mod2)
-    result = M2Retrieving.get_data(s_mod2)
-    if result.status is False:
-        bot.send_message(message.chat.id, result.message, reply_markup=markup)
+    m2_result = M2Retrieving.get_data(s_mod2)
+    if m2_result.status is False:
+        bot.send_message(message.chat.id, m2_result.message, reply_markup=markup)
     else:
         bot.send_message(message.chat.id, MSG_WE_WILL_FORM_DATA_AND_SEND_YOU, reply_markup=markup)
         names = file_naming(s_mod2)
-        m3_result = M3Visualizing.create_response(message.chat.id, result.response, result.theme,
+        m3_result = M3Visualizing.create_response(message.chat.id, m2_result.response, m2_result.theme,
                                                   filename_svg=names[0], filename_pdf=names[1])
         if m3_result.data is False:
             bot.send_message(message.chat.id, ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
         else:
+            # Informing user how system understood him in case of voice and text processing
+            if notify_user is True:
+                bot.send_message(message.chat.id, m2_result.message)
+
             if m3_result.is_file is False:
                 bot.send_message(message.chat.id, m3_result.number)
             else:
@@ -560,7 +563,6 @@ def final_result_formatting(data, message):
     k = 0
     for i in data:
         for i1 in i:
-            # print(i1)
             if i1 == '0':
                 k += 1
     if k > 2:
@@ -595,7 +597,7 @@ def final_result_formatting(data, message):
             new_data[4]) + ',' + str(
             new_data[7]) + ',' + str(new_data[3])
 
-        querying_and_visualizing(message, s_mod2)
+        querying_and_visualizing(message, s_mod2, notify_user=False)
 
 
 if __name__ == '__main__':

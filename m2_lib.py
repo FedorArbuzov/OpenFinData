@@ -450,9 +450,9 @@ def feedback(params):
         if params[3] == "null":
             year_3 = ""
         else:
-            year_3 = " " + params[3] + " годам"
+            year_3 = " " + params[3] + " года"
         if params[5] == "null":
-            territory = ""
+            territory = " федерального бюджета"
         else:
             territory = ' по территории ' + list(filter(lambda x: params[5][1:] in x, full_places))[0]
         response = param_1 + theme + year_3 + territory
@@ -472,7 +472,7 @@ def feedback(params):
         if params[3] == "null":
             year_3 = ""
         else:
-            year_3 = " " + params[3] + " годам"
+            year_3 = " " + params[3] + " года"
 
         if params[4] == "null" and params[0] == "расходы":
             sphere_4 = " в целом"
@@ -495,9 +495,9 @@ def feedback(params):
             sphere_4 = " на " + spheres.get(params[4])
 
         if params[5] == "null":
-            territory = ""
+            territory = " федерального бюджета"
         else:
             territory = " по территории " + list(filter(lambda x: params[5][1:] in x, full_places))[0]
         response = param_1 + param_2 + theme + year_3 + sphere_4 + territory
 
-    return 'Мы вас поняли следующим образом: "' + response + '".'
+    return 'Я понял ваш запрос как: "' + response + '".'
