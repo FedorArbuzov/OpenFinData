@@ -298,6 +298,7 @@ def repeat_all_messages(message):
           or message.text == 'Федеральный бюджет'):
         if message.text == 'Федеральный бюджет':
             cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
+            cursor.execute('SELECT * FROM users WHERE userid = ' + str(message.chat.id))
             data = cursor.fetchall()
             connection.commit()
             connection.close()
@@ -306,6 +307,7 @@ def repeat_all_messages(message):
               or message.text == 'Московская область'):
             s = main_place(message.text)
             cursor.execute('UPDATE users SET place=\'' + s + '\' WHERE userid=' + str(message.chat.id) + ';')
+            cursor.execute('SELECT * FROM users WHERE userid = ' + str(message.chat.id))
             data = cursor.fetchall()
             connection.commit()
             connection.close()
