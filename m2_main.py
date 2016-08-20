@@ -201,7 +201,7 @@ class M2Retrieving:
                     if 'CLDO02' in mdx_skeleton:
                         data = '08-' + places_cld[params[param_id]]
                     else:
-                        data = '08-' + places[params[param_id]]
+                        data = '08-' + places[params[param_id]][0]
 
                 # Replacing mark by parameter
                 mdx_skeleton = mdx_skeleton.replace(star, data)
