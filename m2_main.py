@@ -81,8 +81,7 @@ class M2Retrieving:
         if parameters[1] in codes[1]:
             mapper += str(codes[1].get(parameters[1])) + '.'
         else:
-            response.message = 'Неверно выбрана 1я характеристика предметной области (' + \
-                               parameters[1] + '). Попробуйте еще раз /search'
+            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
             return response
 
         # Processing param2
@@ -130,7 +129,7 @@ class M2Retrieving:
         elif parameters[5] in places:
             mapper += '1'
         else:
-            response.message = 'Неверно указана территория ("' + parameters[4] + '"). Попробуйте еще раз /search'
+            response.message = 'Неверно указана территория ("' + parameters[5] + '"). Попробуйте еще раз /search'
             return response
 
         return mapper

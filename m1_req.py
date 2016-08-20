@@ -10,7 +10,7 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'объем', 'общий', 'общем',
              'плановый', 'запланированный', 'фактический', 'бюждет', 'этот',
              'Российская Федерация', 'Россия', 'Алания',
-             'Северо-Кавказский федеральный', 'Югра',
+             'Северо-Кавказский', 'Югра',
              'Ставропольский',
              'Ставрополье',
              'Ингушетия',
@@ -37,7 +37,7 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'Саратовская',
              'Ульяновская',
              'Башкортостан',
-             'Марий Эл',
+             'Марий',  # Meant 'Марий Эл'
              'Мордовия',
              'Татарстан',
              'Удмуртская', 'Удмуртия',
@@ -150,6 +150,23 @@ def RepresentsInt(s):
         return False
 
 
+# Adaptive allowable mistake for distance between user word and key word
+def allowable_error(word):
+    allowable_inaccuracy = {
+        1: 0, 2: 1, 3: 1, 4: 2,
+        5: 2, 6: 3, 7: 3, 8: 3,
+        9: 4, 10: 5, 11: 5, 12: 5,
+        13: 5, 14: 5, 15: 6, 16: 6,
+        17: 6, 18: 6, 19: 6, 20: 6
+    }
+
+    length = len(word)
+    if length > 20:
+        return 6
+
+    return allowable_inaccuracy[length]
+
+
 # the Levenstein distance algorithm
 def distance(a: object, b: object) -> object:
     """Calculates the Levenshtein distance between a and b."""
@@ -178,7 +195,8 @@ def check_the_territories(str_user):
     i = 0
     for _ in key_words:
         distance_between_input_and_table_data = distance(str_user, key_words[i])
-        if distance_between_input_and_table_data < minimum_value and distance_between_input_and_table_data < 4:
+        if (distance_between_input_and_table_data < minimum_value and
+                    distance_between_input_and_table_data <= allowable_error(str_user)):
             minimum_value = distance_between_input_and_table_data
             index_of_the_most_likely_variant = i
         i += 1
@@ -286,7 +304,7 @@ def main_func(s):
         for s in key_words[-11:]:
             if s == key_words[result]:
                 # print(result)
-                user_req.sector = str(result - (key_words_quantity-13))
+                user_req.sector = str(result - (key_words_quantity - 13))
 
         i += 1
     if user_req.sector == "":

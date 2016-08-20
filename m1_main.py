@@ -29,17 +29,17 @@ COMMANDS_MSG = '<b>Список команд:</b>\n' \
                '/start — начало работы с ботом\n' \
                '/help — список команд\n' \
                '/search — формирование запроса'
-TERRITORY_MSG = 'Чтобы узнать информацию о других субъектах России введите /cr *название региона* ' \
+TERRITORY_MSG = 'Чтобы узнать информацию о других субъектах России введите, /cr *название региона* ' \
                 '(например, /cr Рязанская область)'
 YEAR_MSG = 'Данные какого года вас интересуют?'
 
-ERROR_CR_MSG = 'Рановато вы перешли на области😏 Начните лучше с команды /search'
+ERROR_CR_MSG = 'Начните лучше с команды /search'
 ERROR_NO_UNDERSTANDING = 'Боюсь, что я вас не понял 😰'
 ERROR_NOT_FULL_INFO = 'Похоже, вы передали не всю информацию🙃 Начните сначала, нажав /search'
 ERROR_NO_DATA_THIS_YEAR = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year) + '🙈'
 ERROR_CHECK_INPUT = 'Кажется, данные введены некорректно🔎'
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
-ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG = 'К сожалению, этих данных в системе нет🤕 Не отчаивайтесь! Есть много ' \
+ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG = 'К сожалению, этих данных у меня нет🤕 Не отчаивайтесь! Есть много ' \
                                         'других цифр😉 Нажмите /search'
 ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT = 'К сожалению, этих данных в системе нет🤕 (0 рублей)'
 
@@ -49,7 +49,7 @@ MSG_BEFORE_NALOG_NENALOG = 'Налоговые или неналоговые?'
 MSG_BEFORE_TYPE_EXPENDITURES = 'После укажите тип расходов:'
 MSG_BEFORE_TYPE_PROFIT = 'Выберите тип:'
 MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет обработка!'
-MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас мы сформируем ответ и отправим его вам🙌"
+MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас я сформирую ответ и отправлю его вам🙌"
 
 API_TOKEN = TELEGRAM_API_TOKEN_FINAL
 bot = telebot.TeleBot(API_TOKEN)
@@ -291,7 +291,7 @@ def repeat_all_messages(message):
             connection.close()
             cr_markup(message)
 
-    elif (message.text == 'РФ'
+    elif (message.text == 'Россия'
           or message.text == 'Москва'
           or message.text == 'Московская область'
           or message.text == 'Федеральный бюджет'):
@@ -301,7 +301,7 @@ def repeat_all_messages(message):
             data = cursor.fetchall()
             connection.commit()
             connection.close()
-        elif (message.text == 'РФ'
+        elif (message.text == 'Россия'
               or message.text == 'Москва'
               or message.text == 'Московская область'):
             s = main_place(message.text)
@@ -494,13 +494,13 @@ def year_markup(message):
 
 def cr_markup(message):
     markup = types.ReplyKeyboardMarkup()
-    rf_b = types.KeyboardButton('РФ')
+    null_b = types.KeyboardButton('Федеральный бюджет')
+    russia_b = types.KeyboardButton('Россия')
     moscow_b = types.KeyboardButton('Москва')
     m_region_b = types.KeyboardButton('Московская область')
     other_b = types.KeyboardButton('Другие')
-    null_b = types.KeyboardButton('Федеральный бюджет')
-    markup.row(rf_b, moscow_b)
-    markup.row(null_b, m_region_b)
+    markup.row(null_b, russia_b)
+    markup.row(moscow_b, m_region_b)
     markup.row(other_b)
     bot.send_message(message.chat.id, 'Выберите территорию:', reply_markup=markup)
 
