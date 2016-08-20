@@ -297,6 +297,7 @@ def repeat_all_messages(message):
           or message.text == 'Федеральный бюджет'):
         if message.text == 'Федеральный бюджет':
             cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
+            data = cursor.fetchall()
             connection.commit()
             connection.close()
         elif (message.text == 'РФ'
@@ -304,6 +305,7 @@ def repeat_all_messages(message):
               or message.text == 'Московская область'):
             s = main_place(message.text)
             cursor.execute('UPDATE users SET place=\'' + s + '\' WHERE userid=' + str(message.chat.id) + ';')
+            data = cursor.fetchall()
             connection.commit()
             connection.close()
 
@@ -345,7 +347,7 @@ def query_text(query):
         try:
             if m3_result.data is False:
                 msg_append_text = ': ' + ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
-                title = msg_append_text
+                title = 'Данных нет'
             else:
                 msg_append_text = ':\n' + str(m3_result.number)
                 title = str(m3_result.number)
