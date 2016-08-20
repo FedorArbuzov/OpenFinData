@@ -347,7 +347,7 @@ def query_text(query):
         try:
             if m3_result.data is False:
                 msg_append_text = ': ' + ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
-                title = msg_append_text
+                title = 'Данных нет'
             else:
                 msg_append_text = ':\n' + str(m3_result.number)
                 title = str(m3_result.number)
