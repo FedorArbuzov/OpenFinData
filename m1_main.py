@@ -323,7 +323,7 @@ def repeat_all_messages(message):
         bot.send_message(message.chat.id, ERROR_CHECK_INPUT)
 
 
-@bot.inline_handler(lambda query: len(query.query) > 0)
+@bot.inline_handler(lambda query: len(query.query) >= 0)
 def query_text(query):
     text = query.query
     input_message_content = text
@@ -346,11 +346,13 @@ def query_text(query):
         try:
             if m3_result.data is False:
                 msg_append_text = ': ' + ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
+                title = msg_append_text
             else:
                 msg_append_text = ':\n' + str(m3_result.number)
+                title = str(m3_result.number)
 
             msg = types.InlineQueryResultArticle(id='1',
-                                                 title=str(m3_result.number),
+                                                 title=title,
                                                  input_message_content=types.InputTextMessageContent(
                                                      message_text=input_message_content + msg_append_text),
                                                  )
