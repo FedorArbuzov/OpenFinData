@@ -2,37 +2,36 @@
 mappers = {
     # Expenditures' mappers
     '2.2.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-3])',
-    '2.3.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[MARKS].[03-4])',
     '2.2.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-3])',
-    '2.4.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-4])',
-
-    '2.3.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-4])',
     '2.2.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-3])',
     '2.2.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-3])',
+    '2.3.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[MARKS].[03-4])',
+    '2.3.0.1.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-4])',
     '2.4.0.0.1.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-4])',
+    '2.4.0.0.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXDO01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-4])',
 
     # Profits' mappers
-    '3.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
     '3.2.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',
-    '3.3.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
     '3.2.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',
-    '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
     '3.2.1.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',
-    '3.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
-    '3.4.1.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',
-    '3.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-2],[Territories].[*5])',
     '3.2.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-1],[Territories].[*5])',
     '3.2.0.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
     '3.2.1.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
+    '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
+    '3.3.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
+    '3.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
+    '3.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-2],[Territories].[*5])',
+    '3.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
+    '3.4.1.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',
     '3.4.0.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',
     '3.4.1.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',
 
     # Deficit/surplus's mappers
-    '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
     '4.2.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
+    '4.2.0.0.0.1': 'SELECT {[Measures].[PLAN_ONYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Marks].[03-6],[Territories].[*5])',
     '4.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1], [Marks].[03-6],[Years].[*3])',
     '4.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
-    '4.2.0.0.0.1': 'SELECT {[Measures].[PLAN_ONYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Marks].[03-6],[Territories].[*5])',
+    '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
     '4.4.0.0.0.1': 'SELECT {[Measures].[FACT_BGYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Marks].[03-6],[Territories].[*5])'
 }
 
@@ -378,10 +377,10 @@ def feedback(params):
                 '3': 'национальную оборону',
                 '4': 'национальную безопасность и правоохранительную деятельность',
                 '5': 'национальную экономику',
-                '6': 'жкх',
+                '6': 'жилищно-коммунальное хозяйство',
                 '7': 'охрану окружающей среды',
                 '8': 'образование',
-                '9': 'культуру',
+                '9': 'культуру и кинематографию',
                 '10': 'здравоохранение',
                 '11': 'социальную политику',
                 '12': 'спорт'
