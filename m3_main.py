@@ -470,7 +470,7 @@ class M3Visualizing:
         cur_hour = now_time.hour
 
         # Forming random string
-        random_str = ''.join(random.sample(string.ascii_lowercase, 5))
+        random_str = ''.join(random.sample(string.ascii_lowercase, 7))
 
         # Forming path
         path = 'tmp' + str(cur_hour) + '_' + user_id + random_str
