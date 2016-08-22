@@ -1,7 +1,7 @@
 import re
 from m1_work_class import quest
 import datetime
-import sqlite3
+import random as rng
 
 key_words = ['год', 'налоговые', 'неналоговые',
              'текущий', 'прошлый',
@@ -119,6 +119,22 @@ key_words = ['год', 'налоговые', 'неналоговые',
              'здравоохранение',
              'социальная',
              'спорт']
+             
+hello = ['привет',
+         'здравствуйте',
+         'приветствую',]
+
+hello_answer = ['Привет! Начни работу со мной командой /search или сделай голосовой запрос',
+                'Здравствуйте! Самое время ввести команду /search',
+                'Приветствую!',
+                'Здравствуйте! Пришли за финансовыми данными? Введите /search или запишите голосовое сообщение']
+
+how_are_you = ['дела',
+               'поживаешь']
+
+i_am_fine = ['У меня все отлично, спасибо :-)',
+             'Все хорошо! Дела идут в гору',
+             'Замечательно!',]
 
 useless_pile_of_crap = [
     'в', 'без', 'до', 'из', 'к', 'на', 'по', 'о', 'от', 'перед', 'при', 'через', 'с', 'у', 'за', 'над', 'об', 'под',
@@ -150,6 +166,19 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
+def simple_split(s):
+    s = s.lower()
+    s = re.sub(r'[^\w\s]', '', s)
+    s_splitted = s.split()
+    return s_splitted
+
+
+def hello_back(s):
+    for _ in simple_split(s):
+        if _ in hello:
+            return hello_answer[rng.randint(0,len(hello) - 1)]
+        elif _ in how_are_you:
+            return i_am_fine[rng.randint(0, len(i_am_fine) - 1)]
 
 # Adaptive allowable mistake for distance between user word and key word
 def allowable_error(word):
