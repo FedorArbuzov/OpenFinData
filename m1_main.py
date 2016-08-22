@@ -6,6 +6,7 @@ from transliterate import translit as tr
 from telebot import types
 from m1_req import main_func
 from m1_req import main_place
+from m1_req import hello_back
 from m2_main import M2Retrieving
 from m2_lib import feedback
 from m3_main import M3Visualizing
@@ -168,8 +169,11 @@ def repeat_all_messages(message):
                 k += 1
 
     now_date = datetime.date.today()
+    
+    if hello_back(message.text) is not None:
+        bot.send_message(message.chat.id, hello_back(message.text))
 
-    if represents_int(message.text) and len(data) != 0:
+    elif represents_int(message.text) and len(data) != 0:
         i = int(message.text)
         markup = types.ReplyKeyboardHide()
         if 2006 < i <= now_date.year:
