@@ -27,6 +27,7 @@ class M2Retrieving:
         if response.message != "":
             return response
 
+        print(params)
         print(mapper)
         # Find MDX-sampler for formed mapper
         mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, params, response)
@@ -72,17 +73,17 @@ class M2Retrieving:
             mapper += str(codes[0].get(parameters[0])) + '.'
             response.theme = parameters[0]
             if mapper == '2.':
-                exp_differ = True
+                exp_differ = True  # Marking expenditure request
         else:
             response.message = 'Неверно выбрана предметная область😏 Попробуйте еще раз /search'
-            return response
+            return
 
         # Processing param1
         if parameters[1] in codes[1]:
             mapper += str(codes[1].get(parameters[1])) + '.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
-            return response
+            return
 
         # Processing param2
         if parameters[2] == 'null':
@@ -91,28 +92,39 @@ class M2Retrieving:
             mapper += '1.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
-            return response
+            return
 
         # Processing year
         now_year = datetime.datetime.now().year
         if parameters[3] == 'null':
             mapper += '0.'
+
+            # Refactoring 'Фактические' in 'текущие'
+            if mapper[2] == '3':
+                mapper = mapper[:2] + '4.' + mapper[4:]
+                parameters[1] = 'текущий'
         else:
             # Refactoring input year parameter if year is defined only by 1 or 2 last numbers
             year_len = len(parameters[3])
             if year_len == 1 or year_len == 2:
-                parameters[3] = '2' + '0'*(3-year_len) + parameters[3]
+                parameters[3] = '2' + '0' * (3 - year_len) + parameters[3]
 
             if 2006 < int(parameters[3]) <= now_year:
 
                 # Processing 2016 year
                 if parameters[3] == '2016':
                     mapper += '0.'
+
+                    # Refactoring 'Фактические' in 'текущие'
+                    if mapper[2] == '3':
+                        mapper = mapper[:2] + '4.' + mapper[4:]
+                        parameters[1] = 'текущий'
+
                 else:
                     mapper += '1.'
             else:
                 response.message = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year) + '🙈'
-                return response
+                return
 
         # Processing sphere
         if exp_differ is True and parameters[4] in sphere:
@@ -121,7 +133,7 @@ class M2Retrieving:
             mapper += '0.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
-            return response
+            return
 
         # Processing territory
         if parameters[5] == 'null':
@@ -129,8 +141,8 @@ class M2Retrieving:
         elif parameters[5] in places:
             mapper += '1'
         else:
-            response.message = 'Неверно указана территория ("' + parameters[5] + '"). Попробуйте еще раз /search'
-            return response
+            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
+            return
 
         return mapper
 

@@ -38,7 +38,7 @@ ERROR_CR_MSG = 'Начните лучше с команды /search😏'
 ERROR_NO_UNDERSTANDING = 'Боюсь, что я вас не понял😰'
 ERROR_NOT_FULL_INFO = 'Похоже, вы передали не всю информацию🙃 Начните сначала, нажав /search'
 ERROR_NO_DATA_THIS_YEAR = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year) + '🙈'
-ERROR_CHECK_INPUT = 'Кажется, данные введены некорректно🔎'
+ERROR_CHECK_INPUT = 'Боюсь, я вас не понимаю:( Нажмите /search'
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
 ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG = 'К сожалению, этих данных у меня нет🤕 Не отчаивайтесь! Есть много ' \
                                         'других цифр😉 Нажмите /search'
@@ -52,7 +52,7 @@ MSG_BEFORE_TYPE_PROFIT = 'Выберите тип:'
 MSG_AFTER_VOICE_INPUT = 'Подождите совсем чуть-чуть, идет обработка!'
 MSG_WE_WILL_FORM_DATA_AND_SEND_YOU = "Спасибо! Сейчас я сформирую ответ и отправлю его вам🙌"
 
-API_TOKEN = TELEGRAM_API_TOKEN_FINAL
+API_TOKEN = TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
@@ -171,7 +171,7 @@ def repeat_all_messages(message):
                 k += 1
 
     now_date = datetime.date.today()
-    
+
     if hello_back(message.text) is not None:
         bot.send_message(message.chat.id, hello_back(message.text))
 
@@ -465,7 +465,7 @@ def voice_processing(message):
 
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get(
-        'https://api.telegram.org/file/bot{0}/{1}'.format(TELEGRAM_API_TOKEN_FINAL, file_info.file_path))
+        'https://api.telegram.org/file/bot{0}/{1}'.format(API_TOKEN, file_info.file_path))
     text = speech_to_text(bytes=file.content)
 
     if text is not None:

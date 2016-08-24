@@ -87,7 +87,6 @@ class M3Visualizing:
 
                     i += 1
                 i = 0
-                print(normznach)
                 itogznach = []
 
                 # считаем итоговое значение(на самом деле нет)
