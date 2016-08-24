@@ -11,7 +11,7 @@ from m2_main import M2Retrieving
 from m2_lib import feedback
 from m3_main import M3Visualizing
 from m1_speechkit import speech_to_text
-from config import TELEGRAM_API_TOKEN1
+from config import TELEGRAM_API_TOKEN_FINAL
 from config import TELEGRAM_API_TOKEN2
 from config import TELEGRAM_API_TOKEN_FINAL
 
@@ -117,6 +117,8 @@ def send_welcome(message):
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
     bot.send_message(message.chat.id, COMMANDS_MSG, parse_mode='HTML')
+    file1 = open('Guide.pdf', 'rb')
+    bot.send_document(message.chat.id, file1, caption='Инструкция для быстрого старта')
 
 
 @bot.message_handler(commands=['search'])
@@ -233,20 +235,20 @@ def repeat_all_messages(message):
 
             bot.send_message(message.chat.id, MSG_BEFORE_SPHERE, reply_markup=keyboard)
             markup = types.ReplyKeyboardMarkup()
-            markup.row('плановые')
             markup.row('текущие')
             markup.row('фактические')
+            markup.row('плановые')
             bot.send_message(message.chat.id, MSG_BEFORE_TYPE_EXPENDITURES, reply_markup=markup)
         elif k == 'дефицит/профицит' or k == 'налоговые' or k == 'неналоговые' or k == 'все':
             markup = types.ReplyKeyboardMarkup()
             if k == 'дефицит/профицит':
-                markup.row('плановый')
                 markup.row('текущий')
                 markup.row('фактический')
+                markup.row('плановый')
             else:
-                markup.row('плановые')
                 markup.row('текущие')
                 markup.row('фактические')
+                markup.row('плановые')
             bot.send_message(message.chat.id, MSG_BEFORE_TYPE_PROFIT, reply_markup=markup)
         elif k == 'доходы':
             markup = types.ReplyKeyboardMarkup()
