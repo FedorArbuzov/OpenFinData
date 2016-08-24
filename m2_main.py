@@ -83,7 +83,7 @@ class M2Retrieving:
         # Processing param2
         if parameters[2] == 'null':
             mapper += '0.'
-        elif parameters[2] in constants.param2:
+        elif parameters[2] in constants.PARAM2:
             mapper += '1.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
@@ -120,9 +120,9 @@ class M2Retrieving:
                 return
 
         # Processing sphere
-        if exp_differ is True and parameters[4] in constants.spheres:
+        if exp_differ is True and parameters[4] in constants.SPHERES:
             mapper += '1.'
-        elif exp_differ is False and parameters[4] in constants.spheres:
+        elif exp_differ is False and parameters[4] in constants.SPHERES:
             mapper += '0.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
@@ -131,7 +131,7 @@ class M2Retrieving:
         # Processing territory
         if parameters[5] == 'null':
             mapper += '0'
-        elif parameters[5] in constants.places:
+        elif parameters[5] in constants.PLACES:
             mapper += '1'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
@@ -143,7 +143,7 @@ class M2Retrieving:
     def __get_mdx_skeleton_for_mapper(mapper, params, response):
         """Finding MDX sampler for mapper"""
 
-        mdx_skeleton = constants.mappers.get(mapper, 0)
+        mdx_skeleton = constants.MAPPERS.get(mapper, 0)
 
         # Processing error message for which MDX-query is not ready yet
         # if mdx_skeleton is None:
@@ -154,7 +154,7 @@ class M2Retrieving:
             message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
                       'один из предложенных вариантов:\r\n'
             index = 1
-            for i in list(constants.mappers.keys()):
+            for i in list(constants.MAPPERS.keys()):
                 if distance(i, mapper) == 1:
                     message += '- ' + M2Retrieving.__hint(i, mapper, params)
                     index += 1
@@ -188,9 +188,9 @@ class M2Retrieving:
                 # Replacing property2
                 if param_id == 2:
                     if mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
-                        data = constants.param2[params[param_id]][1]
+                        data = constants.PARAM2[params[param_id]][1]
                     else:
-                        data = constants.param2[params[param_id]][0]
+                        data = constants.PARAM2[params[param_id]][0]
 
                 # Replacing year
                 if param_id == 3:
@@ -198,14 +198,14 @@ class M2Retrieving:
 
                 # Replacing sphere
                 if param_id == 4:
-                    data = constants.spheres[params[param_id]]
+                    data = constants.SPHERES[params[param_id]]
 
                 # Replacing territory
                 if param_id == 5:
                     if 'CLDO02' in mdx_skeleton:
-                        data = '08-' + constants.places_cld[params[param_id]]
+                        data = '08-' + constants.PLACES_FOR_CLDO02[params[param_id]]
                     else:
-                        data = '08-' + constants.places[params[param_id]][0]
+                        data = '08-' + constants.PLACES[params[param_id]][0]
 
                 # Replacing mark by parameter
                 mdx_skeleton = mdx_skeleton.replace(star, data)
@@ -324,7 +324,7 @@ class M2Retrieving:
             if params[5] == "null":
                 territory = " федерального бюджета"
             else:
-                territory = ' ' + constants.places[params[5]][1]
+                territory = ' ' + constants.PLACES[params[5]][1]
 
             response = param_1 + theme + territory + year
         else:
@@ -366,7 +366,7 @@ class M2Retrieving:
             if params[5] == "null":
                 territory = " федерального бюджета"
             else:
-                territory = ' ' + constants.places[params[5]][1]
+                territory = ' ' + constants.PLACES[params[5]][1]
 
             response = param_1 + param_2 + theme + territory + sphere_4 + year_3
 

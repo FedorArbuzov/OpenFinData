@@ -7,7 +7,7 @@ from m1_work_class import quest
 list_of_int = []
 useless_word_in_sen = []
 
-key_words_quantity = len(constants.key_words)
+key_words_quantity = len(constants.KEY_WORDS)
 
 
 def represents_int(s):
@@ -27,10 +27,10 @@ def simple_split(s):
 
 def hello_back(s):
     for _ in simple_split(s):
-        if _ in constants.hello:
-            return constants.hello_answer[rng.randint(0, len(constants.hello) - 1)]
-        elif _ in constants.how_are_you:
-            return constants.i_am_fine[rng.randint(0, len(constants.i_am_fine) - 1)]
+        if _ in constants.HELLO:
+            return constants.HELLO_ANSWER[rng.randint(0, len(constants.HELLO) - 1)]
+        elif _ in constants.HOW_ARE_YOU:
+            return constants.HOW_ARE_YOU_ANSWER[rng.randint(0, len(constants.HOW_ARE_YOU_ANSWER) - 1)]
 
 
 # Adaptive allowable mistake for distance between user word and key word
@@ -76,8 +76,8 @@ def check_the_territories(str_user):
     minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
     i = 0
-    for _ in constants.key_words:
-        distance_between_input_and_table_data = distance(str_user, constants.key_words[i])
+    for _ in constants.KEY_WORDS:
+        distance_between_input_and_table_data = distance(str_user, constants.KEY_WORDS[i])
         if (distance_between_input_and_table_data < minimum_value and
                     distance_between_input_and_table_data <= allowable_error(str_user)):
             minimum_value = distance_between_input_and_table_data
@@ -92,8 +92,8 @@ def check_the_sphere(str_user):
     minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
     i = 0
-    for _ in constants.sphere:
-        distance_between_input_and_table_data = distance(str_user, constants.sphere[i])
+    for _ in constants.SPHERE:
+        distance_between_input_and_table_data = distance(str_user, constants.SPHERE[i])
         if distance_between_input_and_table_data < minimum_value:
             minimum_value = distance_between_input_and_table_data
             index_of_the_most_likely_variant = i
@@ -105,7 +105,7 @@ def check_the_sphere(str_user):
 def main_place(s):
     s = re.sub(r'[^\w\s]', '', s)
     list1 = s.split()
-    for s in constants.useless_pile_of_crap:
+    for s in constants.USELESS_PILE_OF_CRAP:
         if s in list1:
             list1.remove(s)
 
@@ -113,23 +113,23 @@ def main_place(s):
     for _ in list1:
         result = check_the_territories(list1[i])
         i += 1
-        for s in constants.key_words[19:-8]:
-            if s == constants.key_words[result]:
+        for s in constants.KEY_WORDS[19:-8]:
+            if s == constants.KEY_WORDS[result]:
                 return s
 
 
 def main_sector(s):
     s = re.sub(r'[^\w\s]', '', s)
     list1 = s.split()
-    for s in constants.useless_pile_of_crap:
+    for s in constants.USELESS_PILE_OF_CRAP:
         if s in list1:
             list1.remove(s)
     i = 0
     for _ in list1:
         result = check_the_territories(list1[i])
         i += 1
-        for s in constants.key_words[-8:]:
-            if s == constants.key_words[result]:
+        for s in constants.KEY_WORDS[-8:]:
+            if s == constants.KEY_WORDS[result]:
                 return s
 
 
@@ -141,7 +141,7 @@ def main_func(s):
         if represents_int(list1[i]):
             list_of_int.append(list1[i])
 
-    for s in constants.useless_pile_of_crap:
+    for s in constants.USELESS_PILE_OF_CRAP:
         if s in list1:
             list1.remove(s)
 
@@ -157,35 +157,35 @@ def main_func(s):
         result = check_the_territories(list1[i])
         result_sphere = check_the_sphere(list1[i])
 
-        if constants.key_words[result] == 'плановый':
+        if constants.KEY_WORDS[result] == 'плановый':
             user_req.planned_or_actual = 'плановый'
-        if constants.key_words[result] == 'фактический':
+        if constants.KEY_WORDS[result] == 'фактический':
             user_req.planned_or_actual = "фактический"
-        if constants.key_words[result] == 'бюджет':
+        if constants.KEY_WORDS[result] == 'бюджет':
             user_req.sector = 'бюджет'
-        if constants.key_words[result] == "доход":
+        if constants.KEY_WORDS[result] == "доход":
             user_req.subject = "доходы"
-        if constants.key_words[result] == "расход":
+        if constants.KEY_WORDS[result] == "расход":
             user_req.subject = "расходы"
-        if constants.key_words[result] == "дефицит":
+        if constants.KEY_WORDS[result] == "дефицит":
             user_req.subject = "дефицит"
-        if constants.key_words[result] == 'текущий':
+        if constants.KEY_WORDS[result] == 'текущий':
             user_req.year = now_date.year
             user_req.planned_or_actual = 'текущий'
-        if constants.key_words[result] == 'прошлый':
+        if constants.KEY_WORDS[result] == 'прошлый':
             user_req.year = now_date.year - 1
 
-        for s in constants.key_words[21:-11]:
-            if s == constants.key_words[result]:
+        for s in constants.KEY_WORDS[21:-11]:
+            if s == constants.KEY_WORDS[result]:
                 user_req.place = s
 
-        if constants.key_words[result] == 'налоговые':
+        if constants.KEY_WORDS[result] == 'налоговые':
             user_req.sector = 'налоговый'
-        if constants.key_words[result] == 'неналоговые':
+        if constants.KEY_WORDS[result] == 'неналоговые':
             user_req.sector = 'неналоговый'
 
-        for s in constants.key_words[-11:]:
-            if s == constants.key_words[result]:
+        for s in constants.KEY_WORDS[-11:]:
+            if s == constants.KEY_WORDS[result]:
                 user_req.sector = str(result - (key_words_quantity - 13))
 
         i += 1
