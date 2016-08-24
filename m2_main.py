@@ -1,12 +1,7 @@
 import requests
 import datetime
 from m1_req import distance
-from m2_lib import mappers
-from m2_lib import param2
-from m2_lib import sphere
-from m2_lib import places
-from m2_lib import places_cld
-from m2_lib import feedback
+import constants
 
 
 # Module, which is responsible for getting required from user data
@@ -88,7 +83,7 @@ class M2Retrieving:
         # Processing param2
         if parameters[2] == 'null':
             mapper += '0.'
-        elif parameters[2] in param2:
+        elif parameters[2] in constants.param2:
             mapper += '1.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
@@ -110,7 +105,6 @@ class M2Retrieving:
                 parameters[3] = '2' + '0' * (3 - year_len) + parameters[3]
 
             if 2006 < int(parameters[3]) <= now_year:
-
                 # Processing 2016 year
                 if parameters[3] == '2016':
                     mapper += '0.'
@@ -119,7 +113,6 @@ class M2Retrieving:
                     if mapper[2] == '3':
                         mapper = mapper[:2] + '4.' + mapper[4:]
                         parameters[1] = 'текущий'
-
                 else:
                     mapper += '1.'
             else:
@@ -127,9 +120,9 @@ class M2Retrieving:
                 return
 
         # Processing sphere
-        if exp_differ is True and parameters[4] in sphere:
+        if exp_differ is True and parameters[4] in constants.spheres:
             mapper += '1.'
-        elif exp_differ is False and parameters[4] in sphere:
+        elif exp_differ is False and parameters[4] in constants.spheres:
             mapper += '0.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
@@ -138,7 +131,7 @@ class M2Retrieving:
         # Processing territory
         if parameters[5] == 'null':
             mapper += '0'
-        elif parameters[5] in places:
+        elif parameters[5] in constants.places:
             mapper += '1'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
@@ -150,7 +143,7 @@ class M2Retrieving:
     def __get_mdx_skeleton_for_mapper(mapper, params, response):
         """Finding MDX sampler for mapper"""
 
-        mdx_skeleton = mappers.get(mapper, 0)
+        mdx_skeleton = constants.mappers.get(mapper, 0)
 
         # Processing error message for which MDX-query is not ready yet
         # if mdx_skeleton is None:
@@ -161,14 +154,14 @@ class M2Retrieving:
             message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
                       'один из предложенных вариантов:\r\n'
             index = 1
-            for i in list(mappers.keys()):
+            for i in list(constants.mappers.keys()):
                 if distance(i, mapper) == 1:
                     message += '- ' + M2Retrieving.__hint(i, mapper, params)
                     index += 1
             if index == 1:
                 message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
 
-            response.message = feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
+            response.message = M2Retrieving.feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
 
         return mdx_skeleton
 
@@ -195,9 +188,9 @@ class M2Retrieving:
                 # Replacing property2
                 if param_id == 2:
                     if mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
-                        data = param2[params[param_id]][1]
+                        data = constants.param2[params[param_id]][1]
                     else:
-                        data = param2[params[param_id]][0]
+                        data = constants.param2[params[param_id]][0]
 
                 # Replacing year
                 if param_id == 3:
@@ -205,14 +198,14 @@ class M2Retrieving:
 
                 # Replacing sphere
                 if param_id == 4:
-                    data = sphere[params[param_id]]
+                    data = constants.spheres[params[param_id]]
 
                 # Replacing territory
                 if param_id == 5:
                     if 'CLDO02' in mdx_skeleton:
-                        data = '08-' + places_cld[params[param_id]]
+                        data = '08-' + constants.places_cld[params[param_id]]
                     else:
-                        data = '08-' + places[params[param_id]][0]
+                        data = '08-' + constants.places[params[param_id]][0]
 
                 # Replacing mark by parameter
                 mdx_skeleton = mdx_skeleton.replace(star, data)
@@ -241,7 +234,7 @@ class M2Retrieving:
 
         # Updating params of resulting object
         response.status = True
-        response.message = feedback(params)
+        response.message = M2Retrieving.feedback(params)
         response.response = r.text
 
     @staticmethod
@@ -270,7 +263,6 @@ class M2Retrieving:
         error_message = ''
         count = 0
 
-        # TODO: Check hint algorithm
         for i1, i2 in zip(items1, items2):
             if i1 != i2:
                 i1 = int(i1)
@@ -310,6 +302,75 @@ class M2Retrieving:
             count += 1
 
         return error_message
+
+    @staticmethod
+    def feedback(params):
+        """Forming response how we have understood user's request"""
+        # TODO: Refactor code
+
+        if params[0] == "дефицит":
+            theme = " дефицит/профицит"
+
+            if params[1] == "null":
+                param_1 = "Фактический"
+            else:
+                param_1 = params[1][0].upper() + params[1][1:]
+
+            if params[3] == "null":
+                year = ""
+            else:
+                year = " в " + params[3] + " году"
+
+            if params[5] == "null":
+                territory = " федерального бюджета"
+            else:
+                territory = ' ' + constants.places[params[5]][1]
+
+            response = param_1 + theme + territory + year
+        else:
+            theme = " " + params[0]
+
+            if params[1] == "null":
+                param_1 = "Фактические"
+            else:
+                param_1 = params[1][0].upper() + params[1][1:-1] + "е"
+
+            if params[2] == "null":
+                param_2 = ""
+            else:
+                param_2 = " " + params[2][:-1] + "е"
+
+            if params[3] == "null":
+                year_3 = ""
+            else:
+                year_3 = " в " + params[3] + " году"
+
+            if params[4] == "null":
+                sphere_4 = ""
+            else:
+                spheres = {
+                    '2': 'общегосударственные вопросы',
+                    '3': 'национальную оборону',
+                    '4': 'национальную безопасность и правоохранительную деятельность',
+                    '5': 'национальную экономику',
+                    '6': 'жилищно-коммунальное хозяйство',
+                    '7': 'охрану окружающей среды',
+                    '8': 'образование',
+                    '9': 'культуру и кинематографию',
+                    '10': 'здравоохранение',
+                    '11': 'социальную политику',
+                    '12': 'спорт'
+                }
+                sphere_4 = " на " + spheres.get(params[4])
+
+            if params[5] == "null":
+                territory = " федерального бюджета"
+            else:
+                territory = ' ' + constants.places[params[5]][1]
+
+            response = param_1 + param_2 + theme + territory + sphere_4 + year_3
+
+        return 'Я понял ваш запрос как: "' + response + '".'
 
 
 class Result:
