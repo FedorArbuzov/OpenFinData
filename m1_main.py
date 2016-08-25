@@ -79,9 +79,19 @@ def send_welcome(message):
 # команды помощи
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
-    bot.send_message(message.chat.id, constants.COMMANDS_MSG, parse_mode='HTML')
-    file1 = open('Guide.pdf', 'rb')
-    bot.send_document(message.chat.id, file1, caption='Инструкция для быстрого старта')
+
+    # file1 = open('Guide.pdf', 'rb')
+    try_inline = types.InlineKeyboardButton(text='Inline-режим',
+                                                                     callback_data='',
+                                                                     switch_inline_query='расходы Ростовской области на социальную политику в прошлом году')
+    rate = types.InlineKeyboardButton(text='Оценить', url='https://telegram.me/storebot?start=datatron_bot')
+    full_documentation = types.InlineKeyboardButton(text='Полная документация',
+                                                    callback_data='full_documentation')
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(try_inline, rate)
+    keyboard.add(full_documentation)
+    bot.send_message(message.chat.id, constants.HELP_MSG, parse_mode='HTML', reply_markup=keyboard, disable_web_page_preview=True)
+    # bot.send_document(message.chat.id, file1, caption='Инструкция для быстрого старта', reply_markup=keyboard)
 
 
 @bot.message_handler(commands=['search'])
@@ -396,6 +406,11 @@ def callback_inline(call):
                     call.message.chat.id) + ';')
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                       text='Вы выбрали "Расходы в целом"')
+        elif call.data == 'full_documentation':
+            file1 = open('Guide.pdf', 'rb')
+            bot.send_document(chat_id=call.message.chat.id,
+                              data=file1,
+                              )
         connection.commit()
         connection.close()
 
