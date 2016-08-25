@@ -190,12 +190,12 @@ class M3Visualizing:
 
                     if length1 > 3:
                         chislo /= 10 ** smallestpower
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
 
                     else:
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
 
@@ -434,7 +434,7 @@ class M3Visualizing:
 
                     if length1 > 3:
                         chislo /= 10 ** smallestpower
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
                     else:
@@ -450,11 +450,11 @@ class M3Visualizing:
                 if theme == "дефицит":
                     if some_number > 0:
                         result1 = __vyvod_chisla(some_number)
-                        result.number = "Профицит " + result1
+                        result.number = "Дефицит " + result1
                     else:
                         result1 = __vyvod_chisla(some_number)
                         result1 = result1.replace("-", "")
-                        result.number = "Дефицит " + result1
+                        result.number = "Профицит " + result1
                 else:
                     result.number = __vyvod_chisla(some_number)
 
