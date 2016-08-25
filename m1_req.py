@@ -1,153 +1,53 @@
 import re
-from m1_work_class import quest
+import constants
 import datetime
-import sqlite3
+import random as rng
+from m1_work_class import quest
 
-key_words = ['год', 'налоговые', 'неналоговые',
-             'текущий', 'прошлый',
-             'доход', 'расход', 'дефицит', 'доля', 'долг',
-             'среднее', 'начальное', 'высшее',
-             'объем', 'общий', 'общем',
-             'плановый', 'запланированный', 'фактический', 'бюждет', 'этот',
-             'Российская Федерация', 'Россия', 'РФ',
-             'Северо-Кавказский федеральный',
-             'Ставропольский',
-             'Ставрополье',
-             'Ингушетия',
-             'Дагестан',
-             'Кабардино-Балкарская',
-             'Осетия',
-             'Карачаево-Черкесская',
-             'Чеченская',
-             'Чечня',
-             'Южный',
-             'Краснодарский',
-             'астраханская',
-             'Волгоградская',
-             'Ростовская',
-             'Адыгея',
-             'Калмыкия',
-             'Приволжский',
-             'Нижегородская',
-             'Кировская',
-             'Самарская',
-             'Оренбургская',
-             'Пензенская',
-             'Пермский',
-             'Саратовская',
-             'Ульяновская',
-             'Башкортостан',
-             'Марий Эл',
-             'Мордовия',
-             'Татарстан',
-             'Удмуртская', 'Удмуртия',
-             'Чувашская', 'Чувашия',
-             'Северо-Западный',
-             'архангельская',
-             'Ненецкий',
-             'Вологодская',
-             'Калининградская',
-             'Санкт-Петербург',
-             'Ленинградская',
-             'Мурманская',
-             'Новгородская',
-             'Псковская',
-             'Карелия',
-             'Коми',
-             'Сибирский',
-             'Алтайский',
-             'Красноярский',
-             'Кемеровская',
-             'Иркутская',
-             'Новосибирская',
-             'Омская',
-             'Томская',
-             'Забайкальский',
-             'Бурятия',
-             'Aлтай',
-             'Тыва',
-             'Тува',
-             'Хакасия',
-             'Уральский',
-             'Курганская',
-             'Свердловская',
-             'Тюменская',
-             'Ханты-Мансийский',
-             'Ямало-Ненецкий',
-             'Челябинская',
-             'Центральный',
-             'Белгородская',
-             'Брянская',
-             'Владимирская',
-             'Воронежская',
-             'Ивановская',
-             'Тверская',
-             'Калужская',
-             'Костромская',
-             'Курская',
-             'Липецкая',
-             'Москва',
-             'Московская',
-             'Орловская',
-             'Рязанская',
-             'Смоленская',
-             'Тамбовская',
-             'Тульская',
-             'Ярославская',
-             'Дальневосточный',
-             'Приморский',
-             'Хабаровский',
-             'амурская',
-             'Камчатский',
-             'Магаданская',
-             'Сахалинская',
-             'Чукотский',
-             'Саха', 'Якутия',
-             'Еврейская',
-             'Крымский',
-             'Крым',
-             'Севастополь',
-             'Байконур',  # sections of rev and cons
-             'общегосударственные',
-             'оборона',
-             'безопасность',
-             'экономика',
-             'жкх',
-             'окружающей',
-             'образование',
-             'культура',
-             'здравоохранение',
-             'социальная',
-             'спорт']
-useless_pile_of_crap = [
-    'в', 'без', 'до', 'из', 'к', 'на', 'по', 'о', 'от', 'перед', 'при', 'через', 'с', 'у', 'за', 'над', 'об', 'под',
-    'про', 'для', 'не'
-                  'республика', 'республики',
-    'республики', 'республик',
-    'республике', 'республикам',
-    'республику', 'республики',
-    'республикой',
-    'республикою', 'республиками',
-    'республике', 'республиках',
-    'область', 'области', 'областью', 'областей', 'областям', 'областями', 'областях',
-    'автономный', 'автономного', 'автономному', 'автономного', 'автономным', 'автономном', 'автномном', 'автономная',
-    'автономной', 'автономную', 'автономною', 'автономна', 'автономные', 'автономных', 'автономными',
-    'федеральный', 'федерального', 'федеральному', 'федеральным', 'федеральном', 'федерален', 'федеральных',
-    'федеральным', 'федеральными',
-    'край', 'края', 'краю', 'краем', 'крае', 'краев', 'краям', 'краями', 'краях']
-sphere = ['налоговые', 'неналоговые']
 list_of_int = []
 useless_word_in_sen = []
 
-key_words_quantity = len(key_words)
+key_words_quantity = len(constants.KEY_WORDS)
 
 
-def RepresentsInt(s):
+def represents_int(s):
     try:
         int(s)
         return True
     except ValueError:
         return False
+
+
+def simple_split(s):
+    s = s.lower()
+    s = re.sub(r'[^\w\s]', '', s)
+    s_splitted = s.split()
+    return s_splitted
+
+
+def hello_back(s):
+    for _ in simple_split(s):
+        if _ in constants.HELLO:
+            return constants.HELLO_ANSWER[rng.randint(0, len(constants.HELLO_ANSWER)-1)]
+        elif _ in constants.HOW_ARE_YOU:
+            return constants.HOW_ARE_YOU_ANSWER[rng.randint(0, len(constants.HOW_ARE_YOU_ANSWER) - 1)]
+
+
+# Adaptive allowable mistake for distance between user word and key word
+def allowable_error(word):
+    allowable_inaccuracy = {
+        1: 0, 2: 0, 3: 1, 4: 2,
+        5: 2, 6: 3, 7: 3, 8: 3,
+        9: 4, 10: 5, 11: 5, 12: 5,
+        13: 5, 14: 5, 15: 6, 16: 6,
+        17: 6, 18: 6, 19: 6, 20: 6
+    }
+
+    length = len(word)
+    if length > 20:
+        return 6
+
+    return allowable_inaccuracy[length]
 
 
 # the Levenstein distance algorithm
@@ -176,24 +76,10 @@ def check_the_territories(str_user):
     minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
     i = 0
-    for _ in key_words:
-        distance_between_input_and_table_data = distance(str_user, key_words[i])
-        if distance_between_input_and_table_data < minimum_value and distance_between_input_and_table_data < 4:
-            minimum_value = distance_between_input_and_table_data
-            index_of_the_most_likely_variant = i
-        i += 1
-
-    return index_of_the_most_likely_variant
-
-
-# Основная функция
-def check_the_sphere(str_user):
-    minimum_value = key_words_quantity
-    index_of_the_most_likely_variant = 0
-    i = 0
-    for _ in sphere:
-        distance_between_input_and_table_data = distance(str_user, sphere[i])
-        if distance_between_input_and_table_data < minimum_value:
+    for _ in constants.KEY_WORDS:
+        distance_between_input_and_table_data = distance(str_user, constants.KEY_WORDS[i])
+        if (distance_between_input_and_table_data < minimum_value and
+                    distance_between_input_and_table_data <= allowable_error(str_user)):
             minimum_value = distance_between_input_and_table_data
             index_of_the_most_likely_variant = i
         i += 1
@@ -204,7 +90,7 @@ def check_the_sphere(str_user):
 def main_place(s):
     s = re.sub(r'[^\w\s]', '', s)
     list1 = s.split()
-    for s in useless_pile_of_crap:
+    for s in constants.USELESS_PILE_OF_CRAP:
         if s in list1:
             list1.remove(s)
 
@@ -212,23 +98,8 @@ def main_place(s):
     for _ in list1:
         result = check_the_territories(list1[i])
         i += 1
-        for s in key_words[19:-8]:
-            if s == key_words[result]:
-                return s
-
-
-def main_sector(s):
-    s = re.sub(r'[^\w\s]', '', s)
-    list1 = s.split()
-    for s in useless_pile_of_crap:
-        if s in list1:
-            list1.remove(s)
-    i = 0
-    for _ in list1:
-        result = check_the_territories(list1[i])
-        i += 1
-        for s in key_words[-8:]:
-            if s == key_words[result]:
+        for s in constants.KEY_WORDS[11:-11]:
+            if s == constants.KEY_WORDS[result]:
                 return s
 
 
@@ -237,10 +108,10 @@ def main_func(s):
     list1 = s.split()
     list_of_int = []
     for i in range(len(list1)):
-        if RepresentsInt(list1[i]):
+        if represents_int(list1[i]):
             list_of_int.append(list1[i])
 
-    for s in useless_pile_of_crap:
+    for s in constants.USELESS_PILE_OF_CRAP:
         if s in list1:
             list1.remove(s)
 
@@ -254,39 +125,37 @@ def main_func(s):
     now_date = datetime.date.today()
     for _ in list1:
         result = check_the_territories(list1[i])
-        result_sphere = check_the_sphere(list1[i])
 
-        if key_words[result] == 'плановый':
+        if constants.KEY_WORDS[result] == 'плановый':
             user_req.planned_or_actual = 'плановый'
-        if key_words[result] == 'фактический':
+        if constants.KEY_WORDS[result] == 'фактический':
             user_req.planned_or_actual = "фактический"
-        if key_words[result] == 'бюджет':
+        if constants.KEY_WORDS[result] == 'бюджет':
             user_req.sector = 'бюджет'
-        if key_words[result] == "доход":
+        if constants.KEY_WORDS[result] == "доход":
             user_req.subject = "доходы"
-        if key_words[result] == "расход":
+        if constants.KEY_WORDS[result] == "расход":
             user_req.subject = "расходы"
-        if key_words[result] == "дефицит":
+        if constants.KEY_WORDS[result] == "дефицит":
             user_req.subject = "дефицит"
-        if key_words[result] == 'текущий':
+        if constants.KEY_WORDS[result] == 'текущий':
             user_req.year = now_date.year
             user_req.planned_or_actual = 'текущий'
-        if key_words[result] == 'прошлый':
+        if constants.KEY_WORDS[result] == 'прошлый':
             user_req.year = now_date.year - 1
 
-        for s in key_words[21:-11]:
-            if s == key_words[result]:
+        for s in constants.KEY_WORDS[21:-11]:
+            if s == constants.KEY_WORDS[result]:
                 user_req.place = s
 
-        if key_words[result] == 'налоговые':
+        if constants.KEY_WORDS[result] == 'налоговые':
             user_req.sector = 'налоговый'
-        if key_words[result] == 'неналоговые':
+        if constants.KEY_WORDS[result] == 'неналоговые':
             user_req.sector = 'неналоговый'
 
-        for s in key_words[-11:]:
-            if s == key_words[result]:
-                # print(result)
-                user_req.sector = str(result - (key_words_quantity-13))
+        for s in constants.KEY_WORDS[-11:]:
+            if s == constants.KEY_WORDS[result]:
+                user_req.sector = str(result - (key_words_quantity - 13))
 
         i += 1
     if user_req.sector == "":

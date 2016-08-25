@@ -87,7 +87,6 @@ class M3Visualizing:
 
                     i += 1
                 i = 0
-                print(normznach)
                 itogznach = []
 
                 # считаем итоговое значение(на самом деле нет)
@@ -191,12 +190,12 @@ class M3Visualizing:
 
                     if length1 > 3:
                         chislo /= 10 ** smallestpower
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
 
                     else:
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
 
@@ -435,11 +434,11 @@ class M3Visualizing:
 
                     if length1 > 3:
                         chislo /= 10 ** smallestpower
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
                     else:
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
                     return stri
@@ -448,7 +447,7 @@ class M3Visualizing:
 
                 some_number = round(float(some_number))
 
-                if theme == "дефицит":
+                if theme == "0дефицит":
                     if some_number > 0:
                         result1 = __vyvod_chisla(some_number)
                         result.number = "Профицит " + result1
@@ -456,6 +455,15 @@ class M3Visualizing:
                         result1 = __vyvod_chisla(some_number)
                         result1 = result1.replace("-", "")
                         result.number = "Дефицит " + result1
+                elif theme == '1дефицит':
+                    if some_number > 0:
+                        result1 = __vyvod_chisla(some_number)
+                        result.number = "Дефицит " + result1
+                    else:
+                        result1 = __vyvod_chisla(some_number)
+                        result1 = result1.replace("-", "")
+                        result.number = "Профицит " + result1
+
                 else:
                     result.number = __vyvod_chisla(some_number)
 
@@ -470,7 +478,7 @@ class M3Visualizing:
         cur_hour = now_time.hour
 
         # Forming random string
-        random_str = ''.join(random.sample(string.ascii_lowercase, 5))
+        random_str = ''.join(random.sample(string.ascii_lowercase, 7))
 
         # Forming path
         path = 'tmp' + str(cur_hour) + '_' + user_id + random_str
