@@ -82,14 +82,16 @@ SPHERE_KEYBOARD = dumps({
 HELP_KEYBOARD = dumps({
     'inline_keyboard': [
         [
-            {'text': 'Inline-режим', 'callback_data': '', 'switch_inline_query':'расходы Ростовской области на социальную политику в прошлом году'},
-            {'text': 'Оценить', 'url':'https://telegram.me/storebot?start=datatron_bot'}
+            {'text': 'Inline-режим', 'callback_data': '',
+             'switch_inline_query': 'расходы Ростовской области на социальную политику в прошлом году'},
+            {'text': 'Оценить', 'url': 'https://telegram.me/storebot?start=datatron_bot'}
         ],
         [
             {'text': 'Полная документация', 'callback_data': 'full_documentation'}
         ]
     ]
 })
+
 # for m1_req neural network
 KEY_WORDS = ('год',
              'налоговые',
