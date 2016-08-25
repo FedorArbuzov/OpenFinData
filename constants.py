@@ -56,7 +56,7 @@ SPHERE_KEYBOARD = dumps({
         ],
         [
             {'text': 'Спорт', 'callback_data': '12'},
-            {'text': 'Культура', 'callback_data': '9'},
+            {'text': 'Культура и кино', 'callback_data': '9'},
             {'text': 'ЖКХ', 'callback_data': '6'}
         ],
         [
