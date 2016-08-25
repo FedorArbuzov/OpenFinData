@@ -23,7 +23,6 @@ class M2Retrieving:
 
         # Creating mapper based on list of parameters
         mapper = M2Retrieving.__list_to_mapper(params, response)
-        print(mapper)
 
         if response.message != "":
             return response
@@ -70,10 +69,11 @@ class M2Retrieving:
         exp_differ = False
         if parameters[0] in codes[0]:
             mapper += str(codes[0].get(parameters[0])) + '.'
+            response.theme = parameters[0]
             if mapper == '2.':
                 exp_differ = True
         else:
-            response.message = 'Неверно выбрана предметная область😂😏 Попробуйте еще раз /search'
+            response.message = 'Неверно выбрана предметная область😏 Попробуйте еще раз /search'
             return response
 
         # Processing param1
@@ -97,10 +97,20 @@ class M2Retrieving:
             return response
 
         # Processing year
+        now_year = datetime.datetime.now().year
         if parameters[3] == 'null':
             mapper += '0.'
         else:
-            mapper += '1.'
+            # Refactoring input year parameter if year is defined only by 1 or 2 last numbers
+            year_len = len(parameters[3])
+            if year_len == 1 or year_len == 2:
+                parameters[3] = '2' + '0'*(3-year_len) + parameters[3]
+
+            if 2006 < int(parameters[3]) < now_year:
+                mapper += '1.'
+            else:
+                response.message = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year - 1) + '🙈'
+                return response
 
         # Processing sphere
         if exp_differ is True:
@@ -237,7 +247,7 @@ class M2Retrieving:
                 4: 'текущий'
             },
             'налоговые/неналоговые',
-            'год (по умолчанию данные ' + str(datetime.datetime.now().year) + " г.)",
+            'год (отличный от ' + str(datetime.datetime.now().year) + " г.)",
             'конкретную сферу',
             'конкретный регион'
         )
@@ -289,7 +299,8 @@ class M2Retrieving:
 
 
 class Result:
-    def __init__(self, status=False, message='', response=''):
+    def __init__(self, status=False, message='', response='', theme=''):
         self.status = status
         self.message = message
         self.response = response
+        self.theme = theme
