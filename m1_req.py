@@ -28,7 +28,7 @@ def simple_split(s):
 def hello_back(s):
     for _ in simple_split(s):
         if _ in constants.HELLO:
-            return constants.HELLO_ANSWER[rng.randint(0, 4)]
+            return constants.HELLO_ANSWER[rng.randint(0, len(constants.HELLO_ANSWER)-1)]
         elif _ in constants.HOW_ARE_YOU:
             return constants.HOW_ARE_YOU_ANSWER[rng.randint(0, len(constants.HOW_ARE_YOU_ANSWER) - 1)]
 

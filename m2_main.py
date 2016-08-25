@@ -32,11 +32,10 @@ class M2Retrieving:
             return response
 
         # Forming POST-data (cube and query) for request
-        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, mapper)
+        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, mapper, response)
 
         # Sending request
         M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response, params)
-
         return response
 
     @staticmethod
@@ -166,7 +165,7 @@ class M2Retrieving:
         return mdx_skeleton
 
     @staticmethod
-    def __refactor_mdx_skeleton(mdx_skeleton, params, mapper):
+    def __refactor_mdx_skeleton(mdx_skeleton, params, mapper, response):
         """Replacing marks in MDX samplers by real data"""
 
         mdx_cube_and_query = []
@@ -175,6 +174,12 @@ class M2Retrieving:
         query_by_elements = mdx_skeleton.split(' ')
         from_element = query_by_elements[query_by_elements.index('FROM') + 1]
         cube = from_element[1:len(from_element) - 4]
+
+        # Creating marker for displaying results about deficit/surplus
+        if cube == 'FSYR01':
+            response.theme = '1' + response.theme
+        else:
+            response.theme = '0' + response.theme
 
         # If there are marks for substitution in MDX-sampler
         if '*' in mdx_skeleton:
