@@ -87,21 +87,6 @@ def check_the_territories(str_user):
     return index_of_the_most_likely_variant
 
 
-# Основная функция
-def check_the_sphere(str_user):
-    minimum_value = key_words_quantity
-    index_of_the_most_likely_variant = 0
-    i = 0
-    for _ in constants.SPHERE:
-        distance_between_input_and_table_data = distance(str_user, constants.SPHERE[i])
-        if distance_between_input_and_table_data < minimum_value:
-            minimum_value = distance_between_input_and_table_data
-            index_of_the_most_likely_variant = i
-        i += 1
-
-    return index_of_the_most_likely_variant
-
-
 def main_place(s):
     s = re.sub(r'[^\w\s]', '', s)
     list1 = s.split()
@@ -113,22 +98,7 @@ def main_place(s):
     for _ in list1:
         result = check_the_territories(list1[i])
         i += 1
-        for s in constants.KEY_WORDS[19:-8]:
-            if s == constants.KEY_WORDS[result]:
-                return s
-
-
-def main_sector(s):
-    s = re.sub(r'[^\w\s]', '', s)
-    list1 = s.split()
-    for s in constants.USELESS_PILE_OF_CRAP:
-        if s in list1:
-            list1.remove(s)
-    i = 0
-    for _ in list1:
-        result = check_the_territories(list1[i])
-        i += 1
-        for s in constants.KEY_WORDS[-8:]:
+        for s in constants.KEY_WORDS[11:-11]:
             if s == constants.KEY_WORDS[result]:
                 return s
 
@@ -155,7 +125,6 @@ def main_func(s):
     now_date = datetime.date.today()
     for _ in list1:
         result = check_the_territories(list1[i])
-        result_sphere = check_the_sphere(list1[i])
 
         if constants.KEY_WORDS[result] == 'плановый':
             user_req.planned_or_actual = 'плановый'

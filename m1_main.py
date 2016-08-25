@@ -15,7 +15,7 @@ from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
 
-API_TOKEN = config.TELEGRAM_API_TOKEN_FINAL
+API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
 
 # первое подключение к бд
@@ -256,7 +256,7 @@ def repeat_all_messages(message):
         elif (message.text == 'Россия'
               or message.text == 'Москва'
               or message.text == 'Московская область'):
-            s = main_place(message.text)
+            s = main_place(message.text.lower())
             cursor.execute('UPDATE users SET place=\'' + s + '\' WHERE userid=' + str(message.chat.id) + ';')
             cursor.execute('SELECT * FROM users WHERE userid = ' + str(message.chat.id))
             data = cursor.fetchall()
@@ -463,6 +463,7 @@ def file_naming(request_string):
     filename = filename.replace(',', '_')
     filename = filename.replace('__', '_')
     filename = filename.replace('__', '_')
+    filename = filename.replace('__', '_')
 
     if filename[len(filename) - 1] == '_':
         filename = filename[:len(filename) - 1]
@@ -490,6 +491,7 @@ def querying_and_visualizing(message, s_mod2, notify_user=True):
     markup = types.ReplyKeyboardHide()
     print(s_mod2)
     m2_result = M2Retrieving.get_data(s_mod2)
+    print(m2_result.response)
     if m2_result.status is False:
         bot.send_message(message.chat.id, m2_result.message, reply_markup=markup)
     else:

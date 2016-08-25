@@ -317,7 +317,10 @@ class M2Retrieving:
                 param_1 = params[1][0].upper() + params[1][1:]
 
             if params[3] == "null":
-                year = ""
+                if param_1 == 'Плановый':
+                    year = ' в 2016 году'
+                else:
+                    year = ''
             else:
                 year = " в " + params[3] + " году"
 
@@ -341,7 +344,10 @@ class M2Retrieving:
                 param_2 = " " + params[2][:-1] + "е"
 
             if params[3] == "null":
-                year_3 = ""
+                if param_1 == 'Плановые':
+                    year_3 = ' в 2016 году'
+                else:
+                    year_3 = ''
             else:
                 year_3 = " в " + params[3] + " году"
 
