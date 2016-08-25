@@ -438,7 +438,7 @@ class M3Visualizing:
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
                     else:
-                        chi = str(round(chislo, 2))
+                        chi = str(round(chislo, 1))
                         chi = chi.replace(".", ",")
                         stri = chi + s + " рублей"
                     return stri
