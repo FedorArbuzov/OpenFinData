@@ -19,9 +19,9 @@ COMMANDS_MSG = '<b>Список команд:</b>\n' \
 
 HELP_MSG = '''<b>Описание:</b>
 Дататрон предоставляет пользователю доступ к открытым финансовым данным России, её округов и регионов.
-Доступны кнопочный ввод, обработка естественного языка, голосовой ввод и <a href="https://telegram.org/blog/inline-bots">inline-режим</a>.\n
+Доступны кнопочный ввод, обработка естественного языка, голосовой ввод и inline-режим.\n
 <b>Дополнительно:</b>
-Использует <a href="https://tech.yandex.ru/speechkit/cloud/">Yandex SpeechKit Cloud</a> и <a href="https://www.ivona.com">Ivona Text-to-Speech</a>.\n
+Использует <a href="https://tech.yandex.ru/speechkit/cloud/">Yandex SpeechKit Cloud</a>.\n
 '''
 
 TERRITORY_MSG = 'Чтобы узнать информацию о других субъектах России введите, /cr *название региона* ' \
