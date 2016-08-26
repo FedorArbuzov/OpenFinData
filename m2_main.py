@@ -233,7 +233,7 @@ class M2Retrieving:
 
         # Processing if MDX-query fails
         if '"success":false' in r.text:
-            response.message = 'Запрос не удался:('
+            response.message = 'Что-то пошло не так🙃 Данные получить не удалось:('
             response.response = r.text
             return
 
