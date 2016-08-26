@@ -24,7 +24,7 @@ HELP_MSG = '''<b>Описание:</b>
 Доступны inline-режим, кнопочный ввод, обработка естественного языка и голосовой ввод.
 
 <b>Разработчики:</b>
-Студенты Высшей школы экономики с факультетов Бизнес-информатики и Программной-инженерии, которые стараются изменить мир к лучшему.
+Студенты Высшей школы экономики с факультетов Бизнес-информатики и Программной инженерии, которые стараются изменить мир к лучшему.
 
 <b>Дополнительно:</b>
 Использует <a href="https://tech.yandex.ru/speechkit/cloud/">Yandex SpeechKit Cloud</a>.'''
@@ -284,10 +284,10 @@ MAPPERS = {
     '3.2.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-1])',
     '3.2.1.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Years].[*3],[Marks].[03-1])',
     '3.2.1.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',
+    '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1]} ON ROWS FROM [CLDO01.DB]',
     '3.2.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-1],[Territories].[*5])',
     '3.2.0.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
     '3.2.1.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-1],[Territories].[*5])',
-    '3.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
     '3.3.1.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
     '3.3.1.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Years].[*3],[Marks].[03-2])',
     '3.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
@@ -379,7 +379,7 @@ SPHERES = {
 
     # физическая культура и спорт
     '12': '[RZPR].[14-1203401],[RZPR].[14-850455],[RZPR].[14-866083],'
-          '[RZPR].[14-850952],[RZPR].[14-413257],[RZPR].[14-413258]',
+          '[RZPR].[14-850952],[RZPR].[14-413257],[RZPR].[14-413258]'
 }
 
 PLACES = {
