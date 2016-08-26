@@ -32,6 +32,7 @@ class M3Visualizing:
     @staticmethod
     def create_response(user_id, json_string, theme, filename_svg=None, filename_pdf=None, visualization=True):
         result = Result()
+
         par = json.loads(json_string)
 
         # Processing case then there is no data for such request
@@ -39,9 +40,10 @@ class M3Visualizing:
             # Informing 1st module that there is no data
             result.data = False
         else:
+            
             # проверка на то, детализировать или нет
             # parameter visualization for not creating pdf and svg files if request was given from inline
-            if len(par["axes"]) > 1 and visualization is True:
+            if len(par["cells"]) > 1 and visualization is True:
 
                 # парсим парсим
                 k = len(par["axes"][1]["positions"])
