@@ -144,7 +144,7 @@ def main_func(s):
         if constants.KEY_WORDS[result] == 'прошлый':
             user_req.year = now_date.year - 1
 
-        for s in constants.KEY_WORDS[21:-11]:
+        for s in constants.KEY_WORDS[11:-11]:
             if s == constants.KEY_WORDS[result]:
                 user_req.place = s
 

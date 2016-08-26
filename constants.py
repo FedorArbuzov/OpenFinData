@@ -19,7 +19,12 @@ COMMANDS_MSG = '<b>Список команд:</b>\n' \
 
 HELP_MSG = '''<b>Описание:</b>
 Дататрон предоставляет пользователю доступ к открытым финансовым данным России, её округов и регионов.
-Доступны кнопочный ввод, обработка естественного языка, голосовой ввод и inline-режим.
+
+<b>Функционал:</b>
+Доступны inline-режим, кнопочный ввод, обработка естественного языка и голосовой ввод.
+
+<b>Разработчики:</b>
+Студенты Высшей школы экономики с факультетов Бизнес-информатики и Программной-инженерии, которые стараются изменить мир к лучшему.
 
 <b>Дополнительно:</b>
 Использует <a href="https://tech.yandex.ru/speechkit/cloud/">Yandex SpeechKit Cloud</a>.'''
@@ -87,7 +92,7 @@ HELP_KEYBOARD = dumps({
             {'text': 'Оценить', 'url': 'https://telegram.me/storebot?start=datatron_bot'}
         ],
         [
-            {'text': 'Полная документация', 'callback_data': 'full_documentation'}
+            {'text': 'Руководство пользователя', 'callback_data': 'full_documentation'}
         ]
     ]
 })
@@ -218,7 +223,6 @@ KEY_WORDS = ('год',
              'социальная',
              'спорт')
 
-# for m1_req neural network
 USELESS_PILE_OF_CRAP = (
     'в', 'без', 'до', 'из', 'к', 'на', 'по', 'о', 'от', 'перед', 'при', 'через', 'с', 'у', 'за', 'над', 'об', 'под',
     'про', 'для', 'не'
@@ -236,10 +240,8 @@ USELESS_PILE_OF_CRAP = (
     'федеральным', 'федеральными',
     'край', 'края', 'краю', 'краем', 'крае', 'краев', 'краям', 'краями', 'краях')
 
-# for m1_req neural network
 SPHERE = ('налоговые', 'неналоговые')
 
-# for m1_req greetings block
 HELLO = ('хай',
          'привет',
          'здравствуйте',
@@ -248,27 +250,24 @@ HELLO = ('хай',
          'дратути',
          'hello')
 
-# for m1_req greetings block
 HELLO_ANSWER = ('Привет! Начни работу со мной командой /search или сделай голосовой запрос',
                 'Здравствуйте! Самое время ввести команду /search',
                 'Приветствую!',
                 'Здравствуйте! Пришли за финансовыми данными? Введите /search или запишите голосовое сообщение',
                 'Доброго времени суток! С вами Datatron😊, и мы начинаем /search')
 
-# for m1_req greetings block
 HOW_ARE_YOU = ('дела',
                'поживаешь',
                'жизнь'
                )
 
-# for m1_req greetings block
 HOW_ARE_YOU_ANSWER = ('У меня все отлично, спасибо :-)',
                       'Все хорошо! Дела идут в гору',
                       'Замечательно!',
                       'Бывало и лучше! Без твоих запросов только и делаю, что прокрастинирую🙈',
                       'Чудесно! Данные расходятся, как горячие пирожки! 😄')
 
-# for m2_main mappers for requests
+# dictionaries for m2_main
 MAPPERS = {
     # Expenditures' mappers
     '2.2.0.1.1.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*4} dimension properties [RZPR].[Tab1],[Tab2],[Tab3] ON ROWS FROM [EXYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-3])',
@@ -293,23 +292,22 @@ MAPPERS = {
     '3.3.1.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Years].[*3],[Marks].[03-2])',
     '3.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-1],[Years].[*3],[Marks].[03-2])',
     '3.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INYR03.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Marks].[03-2],[Territories].[*5])',
-    '3.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS, {[BIFB].[25-1],[BIFB].[25-4],[BIFB].[25-5],[BIFB].[25-6],[BIFB].[25-7]} ON ROWS FROM [CLDO01.DB]',
+    '3.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS, {[BIFB].[25-1]} ON ROWS FROM [CLDO01.DB]',
     '3.4.1.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[*2])',
     '3.4.0.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',
     '3.4.1.0.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS, {*2} dimension properties [KDGROUPS].[Tab1],[Tab2],[Tab3] ON ROWS FROM [INDO01.DB] WHERE ([BGLevels].[09-3],[Marks].[03-2],[Territories].[*5])',
 
     # Deficit/surplus's mappers
-    '4.2.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
+    '4.2.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
     '4.2.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1],[Marks].[03-5],[Years].[*3])',
     '4.2.0.0.0.1': 'SELECT {[Measures].[PLAN_ONYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Marks].[03-6],[Territories].[*5])',
     '4.2.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Territories].[*5],[Marks].[03-5],[Years].[*3])',
     '4.3.0.1.0.0': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-1], [Marks].[03-6],[Years].[*3])',
     '4.3.0.1.0.1': 'SELECT {[Measures].[VALUE]} ON COLUMNS FROM [FSYR01.DB] WHERE ([BGLevels].[09-3],[Years].[*3],[Territories].[*5],[Marks].[03-6])',
-    '4.4.0.0.0.0': 'SELECT {[Measures].[PLANONYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
+    '4.4.0.0.0.0': 'SELECT {[Measures].[FACTBGYEAR]} ON COLUMNS FROM [CLDO01.DB] WHERE ([BIFB].[25-20])',
     '4.4.0.0.0.1': 'SELECT {[Measures].[FACT_BGYEAR]} ON COLUMNS FROM [CLDO02.DB] WHERE ([BGLevels].[09-3],[Marks].[03-6],[Territories].[*5])'
 }
 
-# for m2_main outer codes for substitution in MDX-query
 PARAM2 = {
 
     'налоговый': ('[KDGROUPS].[05-12], [KDGROUPS].[05-19], [KDGROUPS].[05-23], [KDGROUPS].[05-20], '
@@ -320,7 +318,6 @@ PARAM2 = {
                     '[KDGROUPS].[05-32], [KDGROUPS].[05-37]', '25-7')
 }
 
-# for m2_main outer codes for substitution in MDX-query
 SPHERES = {
     'null': '[RZPR], [RZPR].[14-848223],[RZPR].[14-413284],[RZPR].[14-850484],[RZPR].[14-848398],'
             '[RZPR].[14-848260],[RZPR].[14-1203414],[RZPR].[14-848266],[RZPR].[14-848294],'
@@ -382,10 +379,9 @@ SPHERES = {
 
     # физическая культура и спорт
     '12': '[RZPR].[14-1203401],[RZPR].[14-850455],[RZPR].[14-866083],'
-          '[RZPR].[14-850952],[RZPR].[14-413257],[RZPR].[14-413258]'
+          '[RZPR].[14-850952],[RZPR].[14-413257],[RZPR].[14-413258]',
 }
 
-# for m2_main outer codes for substitution in MDX-query
 PLACES = {
     'адыгея': ('67646', 'республики Адыгеи'),
     'алания': ('67652', 'республики Алании'),
@@ -493,7 +489,6 @@ PLACES = {
     'ярославская': ('67713', 'Ярославской области')
 }
 
-# for m2_main outer codes for substitution in MDX-query
 PLACES_FOR_CLDO02 = {
     'адыгея': '1451',
     'алания': '2507',

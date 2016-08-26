@@ -232,7 +232,7 @@ class M2Retrieving:
         r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
 
         # Processing if MDX-query fails
-        if '"success": false' in r.text:
+        if '"success":false' in r.text:
             response.message = 'Запрос не удался:('
             response.response = r.text
             return

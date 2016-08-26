@@ -400,10 +400,9 @@ def callback_inline(call):
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                       text='Вы выбрали "Расходы в целом"')
         elif call.data == 'full_documentation':
-            file1 = open('Guide.pdf', 'rb')
+            file1 = open('User guide for Datatron.pdf', 'rb')
             bot.send_document(chat_id=call.message.chat.id,
-                              data=file1,
-                              )
+                              data=file1)
         connection.commit()
         connection.close()
 
