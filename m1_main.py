@@ -400,9 +400,15 @@ def callback_inline(call):
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                       text='Вы выбрали "Расходы в целом"')
         elif call.data == 'full_documentation':
-            file1 = open('User guide for Datatron.pdf', 'rb')
+            file1 = open('Guide.pdf', 'rb')
             bot.send_document(chat_id=call.message.chat.id,
                               data=file1)
+        elif call.data == 'intro':
+            intro = open('datatron_shakal_edition.mp4', 'rb')
+            try:
+                bot.send_video(call.message.chat.id, intro, timeout=10)
+            except:
+                bot.send_message(call.message.chat.id, 'Не удалось отправить видео:-(')
         connection.commit()
         connection.close()
 
@@ -433,7 +439,7 @@ def voice_processing(message):
 
 
 def year_markup(message):
-    markup = types.ReplyKeyboardMarkup()
+    markup = types.ReplyKeyboardMarkup(row_width=4)
     y2007 = types.KeyboardButton('2007')
     y2008 = types.KeyboardButton('2008')
     y2009 = types.KeyboardButton('2009')
@@ -448,7 +454,7 @@ def year_markup(message):
     markup.row(y2010, y2011, y2012)
     markup.row(y2013, y2014, y2015)
     markup.row(y2016)
-    bot.send_message(message.chat.id, constants.YEAR_MSG, reply_markup=markup)
+    bot.send_message(message.chat.id, constants.YEAR_MSG, reply_markup=markup, )
 
 
 def cr_markup(message):

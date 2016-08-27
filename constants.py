@@ -95,7 +95,10 @@ HELP_KEYBOARD = dumps({
             {'text': 'Оценить', 'url': 'https://telegram.me/storebot?start=datatron_bot'}
         ],
         [
-            {'text': 'Руководство пользователя', 'callback_data': 'full_documentation'}
+            {'text': 'Вступительный ролик', 'callback_data': 'intro'}
+        ],
+        [
+            {'text': 'Руководство пользователя', 'callback_data': 'full_documentation'},
         ]
     ]
 })
