@@ -334,11 +334,11 @@ class M3Visualizing:
                     # ('LEADING', (0, 0), (-1, -1), 5),
                     ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
                     # ('LINEABOVE',(0,1),(1,1), 2, colors.white),
-                    ('BACKGROUND', (0, 0), (1, 0), colors.Color(0.05, 0.27, 0.63)),
+                    ('BACKGROUND', (0, 0), (1, 0), colors.Color(0.18, 0.33, 0.59)),
                     ('TEXTCOLOR', (0, 0), (1, 0), colors.white),
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                    ('BOX', (0, 0), (-1, -1), 0.005, colors.Color(0, 0.15, 0.28)),
-                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.Color(0.82, 0.89, 1)]),
+                    ('BOX', (0, 0), (-1, -1), 0.005, colors.Color(0.18, 0.33, 0.59)),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.Color(0.87, 0.92, 0.96)]),
                 ]))
 
                 # Создаем страницу с таблицей
