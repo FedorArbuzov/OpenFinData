@@ -23,7 +23,7 @@ def convert_to_pcm16b16000r(in_filename=None, in_bytes=None):
             raise Exception('Neither input file name nor input bytes is specified.')
 
         command = [
-            r'C:\Users\User\PycharmProjects\OpenFinData\ffmpeg\bin\ffmpeg.exe',  # or /path/to/ffmpeg
+            r'C:\Users\The Cat Trex\PycharmProjects\OpenFinData\ffmpeg\bin\ffmpeg.exe',  # or /path/to/ffmpeg
             '-i', in_filename,
             '-f', 's16le',
             '-acodec', 'pcm_s16le',
