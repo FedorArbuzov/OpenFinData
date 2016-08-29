@@ -400,15 +400,11 @@ def callback_inline(call):
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                       text='Вы выбрали "Расходы в целом"')
         elif call.data == 'full_documentation':
-            file1 = open('Guide.pdf', 'rb')
+            file1 = open('Datatron User Guide.pdf', 'rb')
             bot.send_document(chat_id=call.message.chat.id,
                               data=file1)
-        elif call.data == 'intro':
-            intro = open('datatron_shakal_edition.mp4', 'rb')
-            try:
-                bot.send_video(call.message.chat.id, intro, timeout=10)
-            except:
-                bot.send_message(call.message.chat.id, 'Не удалось отправить видео:-(')
+        elif call.data == 'intro_video':
+            bot.send_message(call.message.chat.id, 'https://youtu.be/BvJAuh8fuhs')
         connection.commit()
         connection.close()
 
