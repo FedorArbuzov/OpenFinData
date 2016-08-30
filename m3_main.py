@@ -366,7 +366,7 @@ class M3Visualizing:
                 c.save()
 
                 # фирменный шаблон
-                input1 = PdfFileReader(open("my_pattern.pdf", "rb"))
+                input1 = PdfFileReader(open("pattern.pdf", "rb"))
                 page1 = input1.getPage(0)
 
                 # страница с таблицей
