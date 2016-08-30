@@ -3,6 +3,7 @@ import os
 import schedule
 import time
 
+
 def delete_unnecessary_folders23():
     """Deleting all tmp folders which were created between 1 and 24 o'clock"""
     prefixes = ('tmp1', 'tmp2', 'tmp3', 'tmp4', 'tmp5', 'tmp6', 'tmp7',

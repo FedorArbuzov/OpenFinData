@@ -13,6 +13,7 @@ pytz==2016.6.1
 reportlab==3.3.0
 requests==2.11.1
 six==1.10.0
+schedule==0.3.2
 tinycss==0.3
 transliterate==1.8.1
 uuid==1.30
