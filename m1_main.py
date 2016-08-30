@@ -404,7 +404,7 @@ def callback_inline(call):
             bot.send_document(chat_id=call.message.chat.id,
                               data=file1)
         elif call.data == 'intro_video':
-            bot.send_message(call.message.chat.id, 'https://youtu.be/BvJAuh8fuhs')
+            bot.send_message(call.message.chat.id, 'https://youtu.be/swok2pcFtNI')
         connection.commit()
         connection.close()
 
