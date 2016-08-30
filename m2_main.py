@@ -60,7 +60,6 @@ class M2Retrieving:
 
         mapper = ''
 
-        # TODO: refactor processing of mapper
         # Processing theme
         exp_differ = False
         if parameters[0] in codes[0]:
@@ -311,7 +310,6 @@ class M2Retrieving:
     @staticmethod
     def feedback(params):
         """Forming response how we have understood user's request"""
-        # TODO: Refactor code
 
         if params[0] == "дефицит":
             theme = " дефицит/профицит"

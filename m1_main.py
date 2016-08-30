@@ -2,6 +2,7 @@ import telebot
 import datetime
 import sqlite3
 import requests
+import time
 from transliterate import translit as tr
 from telebot import types
 
@@ -14,18 +15,8 @@ from m1_speechkit import speech_to_text
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
-
 API_TOKEN = config.TELEGRAM_API_TOKEN_FINAL
 bot = telebot.TeleBot(API_TOKEN)
-
-# первое подключение к бд
-connection_first = sqlite3.connect('subscribe.db')
-cursor_first = connection_first.cursor()
-k = cursor_first.fetchall()  # считывание строки
-for i in range(len(k)):
-    print(k[i][1])
-connection_first.commit()
-connection_first.close()
 
 
 # проверяет, является ли строка, введенная пользователем, числом
@@ -519,11 +510,14 @@ def querying_and_visualizing(message, s_mod2, notify_user=True):
             else:
                 path = m3_result.path + '\\'
                 bot.send_message(message.chat.id, m3_result.number)
-                file1 = open(path + names[0], 'rb')
-                file2 = open(path + names[1], 'rb')
-                bot.send_document(message.chat.id, file1)
-                bot.send_document(message.chat.id, file2)
-
+                try:
+                    file1 = open(path + names[0], 'rb')
+                    file2 = open(path + names[1], 'rb')
+                    bot.send_document(message.chat.id, file1)
+                    bot.send_document(message.chat.id, file2)
+                finally:
+                    file1.close()
+                    file2.close()
 
 def final_result_formatting(data, message):
     k = 0
@@ -567,4 +561,8 @@ def final_result_formatting(data, message):
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    try:
+        bot.polling(none_stop=True)
+    except requests.exceptions.ConnectionError as e:
+        print('There was requests.exceptions.ConnectionError')
+        time.sleep(15)
