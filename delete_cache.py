@@ -21,15 +21,21 @@ def delete_unnecessary_folders24():
     """Deleting all tmp folders which were created during 24th hour of day"""
     directories = list(filter(lambda elem: os.path.isdir(elem), os.listdir()))
     for folder in directories:
-        if folder.startswith('tmp24'):
+        if folder.startswith('tmp0'):
             shutil.rmtree(folder)
 
 
-# Deleting folders from 1am to 23pm at 24.05 o'clock
-schedule.every().day.at("0:01").do(delete_unnecessary_folders23)
-# Deleting folders from which we created during 24th hour at 1.05 o'clock
-schedule.every().day.at("1:01").do(delete_unnecessary_folders24)
+def delete_cache():
+    try:
+        # Deleting folders from 1am to 23pm at 24.05 o'clock
+        schedule.every().day.at("0:05").do(delete_unnecessary_folders23)
+        # Deleting folders from which we created during 24th hour at 1.05 o'clock
+        schedule.every().day.at("1:05").do(delete_unnecessary_folders24)
 
-while 1:
-    schedule.run_pending()
-    time.sleep(50)
+        while 1:
+            schedule.run_pending()
+            time.sleep(50)
+    except Exception as e:
+        print("Error: {0}".format(e))
+
+delete_cache()

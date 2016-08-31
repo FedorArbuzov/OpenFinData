@@ -519,6 +519,7 @@ def querying_and_visualizing(message, s_mod2, notify_user=True):
                     file1.close()
                     file2.close()
 
+
 def final_result_formatting(data, message):
     k = 0
     for i in data:
