@@ -1,7 +1,7 @@
 import shutil
 import os
 import schedule
-import time
+from time import gmtime, strftime, sleep
 
 
 def delete_unnecessary_folders23():
@@ -25,17 +25,21 @@ def delete_unnecessary_folders24():
             shutil.rmtree(folder)
 
 
-def delete_cache():
+def delete_cache(first_time='0:05', second_time='1:05'):
     try:
         # Deleting folders from 1am to 23pm at 24.05 o'clock
-        schedule.every().day.at("0:05").do(delete_unnecessary_folders23)
+        schedule.every().day.at(first_time).do(delete_unnecessary_folders23)
         # Deleting folders from which we created during 24th hour at 1.05 o'clock
-        schedule.every().day.at("1:05").do(delete_unnecessary_folders24)
+        schedule.every().day.at(second_time).do(delete_unnecessary_folders24)
 
         while 1:
             schedule.run_pending()
-            time.sleep(50)
+            sleep(50)
     except Exception as e:
-        print("Error: {0}".format(e))
+        print("{0} Error: {1}".format(strftime("%Y-%m-%d %H:%M:%S", gmtime()), e))
+        schedule.clear()
+        print('Notification: Timer is reset')
+        delete_cache()
+
 
 delete_cache()

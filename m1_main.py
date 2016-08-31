@@ -15,7 +15,7 @@ from m1_speechkit import speech_to_text
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
-API_TOKEN = config.TELEGRAM_API_TOKEN_FINAL
+API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
 
 
@@ -510,14 +510,10 @@ def querying_and_visualizing(message, s_mod2, notify_user=True):
             else:
                 path = m3_result.path + '\\'
                 bot.send_message(message.chat.id, m3_result.number)
-                try:
-                    file1 = open(path + names[0], 'rb')
-                    file2 = open(path + names[1], 'rb')
-                    bot.send_document(message.chat.id, file1)
-                    bot.send_document(message.chat.id, file2)
-                finally:
-                    file1.close()
-                    file2.close()
+                file1 = open(path + names[0], 'rb')
+                file2 = open(path + names[1], 'rb')
+                bot.send_document(message.chat.id, file1)
+                bot.send_document(message.chat.id, file2)
 
 
 def final_result_formatting(data, message):
