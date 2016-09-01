@@ -558,8 +558,9 @@ def final_result_formatting(data, message):
 
 
 if __name__ == '__main__':
-    try:
-        bot.polling(none_stop=True)
-    except requests.exceptions.ConnectionError as e:
-        print('There was requests.exceptions.ConnectionError')
-        time.sleep(15)
+    while True:
+        try:
+            bot.polling(none_stop=True)
+        except requests.exceptions.ConnectionError as e:
+            print('There was requests.exceptions.ConnectionError')
+            time.sleep(15)
