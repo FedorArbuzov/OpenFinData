@@ -490,30 +490,33 @@ def forming_string_from_neural(s1):
 def querying_and_visualizing(message, s_mod2, notify_user=True):
     markup = types.ReplyKeyboardHide()
     print(s_mod2)
-    m2_result = M2Retrieving.get_data(s_mod2)
-    if m2_result.status is False:
-        bot.send_message(message.chat.id, m2_result.message, reply_markup=markup)
-    else:
-        bot.send_message(message.chat.id, constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU, reply_markup=markup)
-        names = file_naming(s_mod2)
-        m3_result = M3Visualizing.create_response(message.chat.id, m2_result.response, m2_result.theme,
-                                                  filename_svg=names[0], filename_pdf=names[1])
-        if m3_result.data is False:
-            bot.send_message(message.chat.id, constants.ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
+    try:
+        m2_result = M2Retrieving.get_data(s_mod2)
+        if m2_result.status is False:
+            bot.send_message(message.chat.id, m2_result.message, reply_markup=markup)
         else:
-            # Informing user how system understood him in case of voice and text processing
-            if notify_user is True:
-                bot.send_message(message.chat.id, m2_result.message)
-
-            if m3_result.is_file is False:
-                bot.send_message(message.chat.id, m3_result.number)
+            bot.send_message(message.chat.id, constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU, reply_markup=markup)
+            names = file_naming(s_mod2)
+            m3_result = M3Visualizing.create_response(message.chat.id, m2_result.response, m2_result.theme,
+                                                      filename_svg=names[0], filename_pdf=names[1])
+            if m3_result.data is False:
+                bot.send_message(message.chat.id, constants.ERROR_NULL_DATA_FOR_SUCH_REQUEST_LONG)
             else:
-                path = m3_result.path + '\\'
-                bot.send_message(message.chat.id, m3_result.number)
-                file1 = open(path + names[0], 'rb')
-                file2 = open(path + names[1], 'rb')
-                bot.send_document(message.chat.id, file1)
-                bot.send_document(message.chat.id, file2)
+                # Informing user how system understood him in case of voice and text processing
+                if notify_user is True:
+                    bot.send_message(message.chat.id, m2_result.message)
+
+                if m3_result.is_file is False:
+                    bot.send_message(message.chat.id, m3_result.number)
+                else:
+                    path = m3_result.path + '\\'
+                    bot.send_message(message.chat.id, m3_result.number)
+                    file1 = open(path + names[0], 'rb')
+                    file2 = open(path + names[1], 'rb')
+                    bot.send_document(message.chat.id, file1)
+                    bot.send_document(message.chat.id, file2)
+    except:
+        bot.send_message(message.chat.id, constants.ERROR_SERVER_DOES_NOT_RESPONSE)
 
 
 def final_result_formatting(data, message):
@@ -554,12 +557,13 @@ def final_result_formatting(data, message):
             new_data[4]) + ',' + str(
             new_data[7]) + ',' + str(new_data[3])
 
-        querying_and_visualizing(message, s_mod2, notify_user=False)
+        querying_and_visualizing(message, s_mod2)
 
 
 if __name__ == '__main__':
-    try:
-        bot.polling(none_stop=True)
-    except requests.exceptions.ConnectionError as e:
-        print('There was requests.exceptions.ConnectionError')
-        time.sleep(15)
+    while True:
+        try:
+            bot.polling(none_stop=True)
+        except requests.exceptions.ConnectionError as e:
+            print('There was requests.exceptions.ConnectionError')
+            time.sleep(15)
