@@ -564,6 +564,8 @@ if __name__ == '__main__':
     while True:
         try:
             bot.polling(none_stop=True)
+            os.popen("ipconfig /flushdns")
         except requests.exceptions.ConnectionError as e:
             print('There was requests.exceptions.ConnectionError')
+            os.popen("ipconfig /flushdns")
             time.sleep(15)
