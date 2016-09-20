@@ -29,6 +29,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 
 
 class M3Visualizing:
+    #static method responsible for getting the sum of money and creating the docs
     @staticmethod
     def create_response(user_id, json_string, theme, filename_svg=None, filename_pdf=None, visualization=True):
         result = Result()
@@ -45,7 +46,7 @@ class M3Visualizing:
             # parameter visualization for not creating pdf and svg files if request was given from inline
             if len(par["cells"]) > 1 and visualization is True:
 
-                # парсим парсим
+                #parse the given json object
                 k = len(par["axes"][1]["positions"])
                 title = par["axes"][1]["positions"][0]["members"][0]["caption"]
                 i = 1
@@ -56,6 +57,7 @@ class M3Visualizing:
                 normznach = []
                 exponen = []
                 pars = []
+
                 # парсим
                 while i < k:
                     header = par["axes"][1]["positions"][i]["members"][0]["caption"]
@@ -69,7 +71,7 @@ class M3Visualizing:
                     i += 1
                 i = 0
 
-                # парсим число
+                # parse the number as a whole
                 while i < k - 1:
 
                     if diagramznach[i] is not None:
@@ -91,7 +93,7 @@ class M3Visualizing:
                 i = 0
                 itogznach = []
 
-                # считаем итоговое значение(на самом деле нет)
+                # create the final number
                 while i < k - 1:
                     if exponen[i] != 0:
 
@@ -109,23 +111,23 @@ class M3Visualizing:
                     i += 1
 
                 i = 0
-                # находим количество цифр в числе
-                # dopoln_chis - число с минимальным количеством цифр
+                # find out the number of digits in the number
+                # dopoln_chis - the number with the minimum amount of digits
                 dopoln_chis = minznach[0]
                 while i < k - 1:
                     if minznach[i] < dopoln_chis:
                         dopoln_chis = minznach[i]
                     i += 1
 
-                # создание папки и возвращение пути к ней
+                # creation of the folder and returning the path to it
                 path = M3Visualizing.__create_folder(str(user_id))
-                # записывание пути в возвращаемый объект
+                # writing the path to the return object
                 result.path = path
 
                 # setting the Arial font
                 pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
 
-                # Cоздаем pdf
+                # creating pdf
                 doc = canvas.Canvas(path + "\\" + "pattern.pdf")
 
                 # Функция для фирменной полосы сверху
@@ -148,7 +150,7 @@ class M3Visualizing:
                 # метод для превращения 10^n в 10 тысяч млн млрд и тд
                 # метод неочень, я попозже его переправлю
 
-                # вот это хороший метод
+                # method for changing 10^n into thousands millions billions etc
                 def __formation(dopoln_chis):
                     mas = [' тыс.', ' млн', ' млрд', ' трлн']
                     k = dopoln_chis
@@ -165,7 +167,7 @@ class M3Visualizing:
 
                 dop_chis = __formation(dopoln_chis)
 
-                # метод преобразования чисел, который нормально работает и мне лень его переписывать
+                # same method as the one below(owerwritten)
                 def __vyvod_chisla(chislo):
                     chislo_str = str(chislo)
                     length1 = len(chislo_str)
@@ -203,7 +205,7 @@ class M3Visualizing:
 
                     return stri
 
-                # Общая цифра
+                # The final sum
                 def __info(a):
                     # Высчитываем итоговую сумму
                     # переделываем итоговое значение
@@ -286,27 +288,27 @@ class M3Visualizing:
                 i=i+1
                 '''
 
-                # Общая сумма (для вычисления процентов нужна)
+                # Another total sum
                 i = 0
                 sum = 0
                 while i < k - 1:
                     sum = sum + itogznach[i]
                     i += 1
 
-                # стили для текста в левой ячейке
+                # Text styles for the left cell
                 styles = getSampleStyleSheet()
                 styleN = styles['BodyText']
                 styleN.wordWrap = 'True'
                 styleN.fontName = 'Arial'
                 styleN.leading = 14
 
-                # пихаем значения красиво в табличку
+                # putting the numbers into a table
                 i = 0
                 qu = []
-                tablemas = [["Параметр", "Значение"]]  # Тут сразу и заголовки таблицы
+                tablemas = [["Параметр", "Значение"]]  # Headings
                 if sum != 0:
                     while i < k - 1:
-                        # Тут мы высчитываем проценты, чтобы вставить их в табличку
+                        # Percentage
                         qu = [Paragraph((diagramttl[i]) + "    (" + str(round(itogznach[i] / sum * 100, 2)) + "%)",
                                         styleN),
                               str(itogznach[i]) + dop_chis]
@@ -320,7 +322,7 @@ class M3Visualizing:
 
                 data = tablemas  # Данные для таблицы
 
-                # Стили для таблицы
+                # Styles
                 styles = getSampleStyleSheet()
                 table = Table(data, colWidths=[15 * cm, 3.5 * cm])
                 table.setStyle(TableStyle([
@@ -340,11 +342,11 @@ class M3Visualizing:
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.Color(0.87, 0.92, 0.96)]),
                 ]))
 
-                # Создаем страницу с таблицей
+                # Creating a page with the table
                 c = canvas.Canvas(path + "\\" + "table_" + filename_pdf, pagesize=A4)
                 c.setFont('Arial', 14)
 
-                # Функция для позиционирования таблицы
+                # Table positioning function
                 def __coord(x, y, height, unit=1):
                     x, y = x * unit, height - y * unit
                     return x, y
@@ -365,18 +367,18 @@ class M3Visualizing:
                 """
                 c.save()
 
-                # фирменный шаблон
+                # Pattern doc
                 input1 = PdfFileReader(open("pattern.pdf", "rb"))
                 page1 = input1.getPage(0)
 
-                # страница с таблицей
+                # Table page
                 input2 = PdfFileReader(open(path + "\\" + "table_" + filename_pdf, "rb"))
                 page2 = input2.getPage(0)
 
-                # накладываем страницу с таблицей на шаблон
+                # Putting the table into the pattern doc
                 page1.mergePage(page2)
 
-                # формируем итоговый файл
+                # Creating the result file
                 output = PdfFileWriter()
                 output.addPage(page1)
                 outputStream = open(path + "\\" + filename_pdf, "wb")
