@@ -19,7 +19,7 @@ API_TOKEN = config.TELEGRAM_API_TOKEN_FINAL
 bot = telebot.TeleBot(API_TOKEN)
 
 
-# проверяет, является ли строка, введенная пользователем, числом
+# checks if the string may be converted into integer
 def represents_int(s):
     try:
         int(s)
@@ -28,21 +28,22 @@ def represents_int(s):
         return False
 
 
-# команда выбора региона (choose region)
+# /cr command handler
 @bot.message_handler(commands=['cr'])
 def send_welcome(message):
     connection = sqlite3.connect('users.db')
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM users WHERE userid = ' + str(message.chat.id))
-    data = cursor.fetchall()
+    data = cursor.fetchall() # gets sql row from the table 'users'
     if len(data) != 0:
-        s = str(message.text)[4:]
+        s = str(message.text)[4:] # cut symbols "/cr " off
         if s == '' or main_place(s) is not None:
-            if s == '':
+            if s == '': # in case of empty space after /cr null will be written into the table
                 cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
                 connection.commit()
                 connection.close()
 
+            # otherwise string will be edited in the parser and then will be written to the table
             if main_place(s) is not None:
                 s = main_place(s)
                 cursor.execute('UPDATE users SET place=\'' + s + '\' WHERE userid=' + str(message.chat.id) + ';')
@@ -61,13 +62,13 @@ def send_welcome(message):
         bot.send_message(message.chat.id, constants.ERROR_CR_MSG)
 
 
-# команда старта
+# /start command handler; send start-message to the user
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.send_message(message.chat.id, constants.START_MSG, parse_mode='HTML')
 
 
-# команды помощи
+# /help command handler; send hello-message to the user
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
     bot.send_message(
@@ -77,7 +78,7 @@ def send_welcome(message):
         reply_markup=constants.HELP_KEYBOARD,
         disable_web_page_preview=True)
 
-
+# /search message handler
 @bot.message_handler(commands=['search'])
 def repeat_all_messages(message):
     connection = sqlite3.connect('users.db')
@@ -87,12 +88,13 @@ def repeat_all_messages(message):
 
     if len(data) != 0:
         cursor.execute(
-            'DELETE FROM users WHERE userid = ' + str(message.chat.id))  # удаление ранее введенной юзером информации
+            # delete previous info about user's call from the table
+            'DELETE FROM users WHERE userid = ' + str(message.chat.id))
         connection.commit()
         connection.close()
 
     s = message.text[8:]
-    if s == '':
+    if s == '': # if there's no text after /search, start questioning user w/ buttons
         markup = types.ReplyKeyboardMarkup()
         markup.row('доходы')
         markup.row('расходы')
@@ -108,15 +110,14 @@ def repeat_all_messages(message):
         connection.close()
 
     else:
+        # parse message after the /search command and pass it further
         s1 = main_func(s.lower())
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
 
-
+# Text handler | PRESSING NON-INLINE BUTTONS RETURNS TEXT TOO!
 @bot.message_handler(content_types=['text'])
 def repeat_all_messages(message):
-    markup = types.ReplyKeyboardHide()
-
     connection = sqlite3.connect('users.db')
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM users WHERE userid = ' + str(message.chat.id))
@@ -129,9 +130,11 @@ def repeat_all_messages(message):
 
     now_date = datetime.date.today()
 
+    # check if user wants us to salute him
     if hello_back(message.text) is not None:
         bot.send_message(message.chat.id, hello_back(message.text))
 
+    # Processing of all the words...
     elif represents_int(message.text) and len(data) != 0:
         i = int(message.text)
         markup = types.ReplyKeyboardHide()
@@ -271,26 +274,26 @@ def repeat_all_messages(message):
     else:
         bot.send_message(message.chat.id, constants.ERROR_CHECK_INPUT)
 
-
+# inline mode handler
 @bot.inline_handler(lambda query: len(query.query) >= 0)
 def query_text(query):
-    text = query.query
-    input_message_content = text
-    s1 = main_func(text)
-    s_mod2 = forming_string_from_neural(s1)
+    input_message_content = query.query
+    s1 = main_func(input_message_content)
+    s_mod2 = forming_string_from_neural(s1) # receive Module 2-friendly string format
     print(s_mod2)
     result_array = []
-    result = M2Retrieving.get_data(s_mod2)
-    if result.status is False:
+    result = M2Retrieving.get_data(s_mod2) # check if current user string is correct
+    if result.status is False: # in case the string is not correct we ask user to keep typing
         msg = types.InlineQueryResultArticle(id='0',
                                              title='Продолжайте ввод запроса',
                                              input_message_content=types.InputTextMessageContent(
                                                  message_text=input_message_content + '\nЗапрос не удался😢'
                                              ))
-        result_array.append(msg)
+        result_array.append(msg) # Nothing works without this list, I dunno why :P
         bot.answer_inline_query(query.id, result_array)
 
     else:
+
         m3_result = M3Visualizing.create_response(query.id, result.response, result.theme, visualization=False)
         try:
             if m3_result.data is False:
@@ -310,7 +313,7 @@ def query_text(query):
         finally:
             bot.answer_inline_query(query.id, result_array)
 
-
+# inline messages query handler
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     if call.message:
@@ -399,7 +402,7 @@ def callback_inline(call):
         connection.commit()
         connection.close()
 
-
+# voice message handler
 @bot.message_handler(content_types=['voice'])
 def voice_processing(message):
     connection = sqlite3.connect('users.db')
@@ -518,8 +521,9 @@ def querying_and_visualizing(message, s_mod2, notify_user=True):
     except:
         bot.send_message(message.chat.id, constants.ERROR_SERVER_DOES_NOT_RESPONSE)
 
-
+# forms string for Module 2
 def final_result_formatting(data, message):
+    # count data collected from the 'user' table
     k = 0
     for i in data:
         for i1 in i:
@@ -545,6 +549,7 @@ def final_result_formatting(data, message):
                 new_data.append(item[count])
                 count += 1
 
+        # format string for Module 2
         for n, i in enumerate(new_data):
             if i == 0 or i == '0' or i is None:
                 new_data[n] = 'null'
@@ -559,7 +564,7 @@ def final_result_formatting(data, message):
 
         querying_and_visualizing(message, s_mod2)
 
-
+# polling cycle
 if __name__ == '__main__':
     while True:
         try:
