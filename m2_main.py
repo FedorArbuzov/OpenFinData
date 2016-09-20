@@ -19,6 +19,7 @@ class M2Retrieving:
         # Creating mapper based on list of parameters
         mapper = M2Retrieving.__list_to_mapper(params, response)
 
+        # If response.message is not empty, notification of user about the error
         if response.message != "":
             return response
 
@@ -92,7 +93,7 @@ class M2Retrieving:
         if parameters[3] == 'null':
             mapper += '0.'
 
-            # Refactoring 'Фактические' in 'текущие'
+            # Refactoring 'Фактические' in 'текущие' if year is null
             if mapper[2] == '3':
                 mapper = mapper[:2] + '4.' + mapper[4:]
                 parameters[1] = 'текущий'
@@ -107,7 +108,7 @@ class M2Retrieving:
                 if parameters[3] == '2016':
                     mapper += '0.'
 
-                    # Refactoring 'Фактические' in 'текущие'
+                    # Refactoring 'Фактические' in 'текущие' if year is 2016
                     if mapper[2] == '3':
                         mapper = mapper[:2] + '4.' + mapper[4:]
                         parameters[1] = 'текущий'
@@ -118,9 +119,9 @@ class M2Retrieving:
                 return
 
         # Processing sphere
-        if exp_differ is True and parameters[4] in constants.SPHERES:
+        if exp_differ is True and parameters[4] in constants.SPHERES:  # for all requests about expenditures
             mapper += '1.'
-        elif exp_differ is False and parameters[4] in constants.SPHERES:
+        elif exp_differ is False and parameters[4] in constants.SPHERES:  # for all other requests
             mapper += '0.'
         else:
             response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
@@ -141,13 +142,14 @@ class M2Retrieving:
     def __get_mdx_skeleton_for_mapper(mapper, params, response):
         """Finding MDX sampler for mapper"""
 
+        # Trying to find necessary MDX-skeleton for given mapper or returning 0 if nothing is found
         mdx_skeleton = constants.MAPPERS.get(mapper, 0)
 
         # Processing error message for which MDX-query is not ready yet
         # if mdx_skeleton is None:
         #     response.message = 'Данный запрос еще в стадии разработки'
 
-        # Finding the nearest mapper to given and forming response
+        # Finding the nearest mapper to given and forming response for user
         if mdx_skeleton == 0:
             message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
                       'один из предложенных вариантов:\r\n'
@@ -174,13 +176,13 @@ class M2Retrieving:
         from_element = query_by_elements[query_by_elements.index('FROM') + 1]
         cube = from_element[1:len(from_element) - 4]
 
-        # Creating marker for displaying results about deficit/surplus
+        # Creating marker for correct understanding "-/+" for deficit/surplus questions in different cubes
         if cube == 'FSYR01':
             response.theme = '1' + response.theme
         else:
             response.theme = '0' + response.theme
 
-        # If there are marks for substitution in MDX-sampler
+        # If there are '*' in MDX-sampler for substitution
         if '*' in mdx_skeleton:
             temp = mdx_skeleton
             while temp.find('*') != -1:
@@ -211,10 +213,10 @@ class M2Retrieving:
                     else:
                         data = '08-' + constants.PLACES[params[param_id]][0]
 
-                # Replacing mark by parameter
+                # Replacing '*' by proper parameter
                 mdx_skeleton = mdx_skeleton.replace(star, data)
 
-                # Cutting temp in order ro find next mark
+                # Cutting temp in order ro find next '*'
                 temp = temp[i + 1:]
 
         # Adding cube and MDX-query
@@ -384,7 +386,7 @@ class M2Retrieving:
 
 class Result:
     def __init__(self, status=False, message='', response='', theme=''):
-        self.status = status
-        self.message = message
-        self.response = response
-        self.theme = theme
+        self.status = status  # Variable, which shows first module if result of request is successful or not
+        self.message = message  # Variable for containing error- and feedback-messages
+        self.response = response  # Variable for storing JSON-response from server
+        self.theme = theme  # Variable for defining difference between requests about deficit to different cubes
