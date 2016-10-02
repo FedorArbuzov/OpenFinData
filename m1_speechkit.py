@@ -4,11 +4,12 @@ import httplib2
 import tempfile
 import os
 import uuid
-from config import YANDEX_API_KEY
+import config
 
 YANDEX_ASR_HOST = 'asr.yandex.net'
 YANDEX_ASR_PATH = '/asr_xml'
 CHUNK_SIZE = 1024 ** 2
+PATH_TO_FFMPEG = config.FFMPEG_PATH_DIMA
 
 
 def convert_to_pcm16b16000r(in_filename=None, in_bytes=None):
@@ -23,7 +24,7 @@ def convert_to_pcm16b16000r(in_filename=None, in_bytes=None):
             raise Exception('Neither input file name nor input bytes is specified.')
 
         command = [
-            r'C:\Users\The Cat Trex\PycharmProjects\OpenFinData\ffmpeg\bin\ffmpeg.exe',  # or /path/to/ffmpeg
+            PATH_TO_FFMPEG,  # or /path/to/ffmpeg
             '-i', in_filename,
             '-f', 's16le',
             '-acodec', 'pcm_s16le',
@@ -53,7 +54,7 @@ def read_chunks(chunk_size, bytes):
 
 
 def speech_to_text(filename=None, bytes=None, request_id=uuid.uuid4().hex, topic='notes', lang='ru-RU',
-                   key=YANDEX_API_KEY):
+                   key=config.YANDEX_API_KEY):
     if filename:
         with open(filename, 'br') as file:
             bytes = file.read()
@@ -102,6 +103,12 @@ def speech_to_text(filename=None, bytes=None, request_id=uuid.uuid4().hex, topic
             if max_confidence != - float("inf"):
                 return text
             else:
-                raise Exception('No text found.\n\nResponse:\n%s\n\nRequest id: %s' % (response_text, request_id))
+                raise SpeechException('No text found.\n\nResponse:\n%s\n\nRequest id: %s' % (response_text, request_id))
+        else:
+            raise SpeechException('No text found.\n\nResponse:\n%s\n\nRequest id: %s' % (response_text, request_id))
     else:
-        raise Exception('Unknown error.\nCode: %s\n\n%s' % (response.code, response.read()))
+        raise SpeechException('Unknown error.\nCode: %s\n\n%s' % (response.code, response.read()))
+
+
+class SpeechException(Exception):
+    pass

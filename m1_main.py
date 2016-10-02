@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 import requests
 import time
+import os
 from transliterate import translit as tr
 from telebot import types
 
@@ -12,10 +13,11 @@ from m1_req import main_func
 from m1_req import main_place
 from m1_req import hello_back
 from m1_speechkit import speech_to_text
+from m1_speechkit import SpeechException
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
-API_TOKEN = config.TELEGRAM_API_TOKEN_FINAL
+API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
 
 
@@ -412,17 +414,15 @@ def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get(
         'https://api.telegram.org/file/bot{0}/{1}'.format(API_TOKEN, file_info.file_path))
-    text = speech_to_text(bytes=file.content)
-
-    if text is not None:
-        # msg = 'Ваш запрос: '' + text + ''. '
-        # bot.send_message(message.chat.id, msg)
+    try:
+        text = speech_to_text(bytes=file.content)
+    except SpeechException:
+        msg = constants.ERROR_CANNOT_UNDERSTAND_VOICE
+        bot.send_message(message.chat.id, msg)
+    else:
         s1 = main_func(text)
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
-    else:
-        msg = constants.ERROR_CANNOT_UNDERSTAND_VOICE
-        bot.send_message(message.chat.id, msg)
 
 
 def year_markup(message):
@@ -561,11 +561,30 @@ def final_result_formatting(data, message):
 
 
 if __name__ == '__main__':
+    admin_id = (65305591, 164241807, 139653713)
+
+    for _id in admin_id:
+        bot.send_message(_id, "ADMIN_INFO: Бот запушен")
+
+    e = None
+    count = 0
+
     while True:
         try:
-            bot.polling(none_stop=True)
+            # No more than 5 attempts for one exception
+            if count < 5:
+                count += 1
+                bot.polling(none_stop=True)
+            else:
+                err_message = "ADMIN_INFO: Бот упал.\n\nERROR: '{}'.".format(e)
+                for _id in admin_id:
+                    bot.send_message(_id, err_message)
+                break
+        except Exception as e1:
             os.popen("ipconfig /flushdns")
-        except requests.exceptions.ConnectionError as e:
-            print('There was requests.exceptions.ConnectionError')
-            os.popen("ipconfig /flushdns")
-            time.sleep(15)
+
+            if type(e) is type(e1) and e.args == e1.args:
+                time.sleep(10)
+            else:
+                e = e1
+                count = 0
