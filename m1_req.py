@@ -9,7 +9,7 @@ useless_word_in_sen = []
 
 key_words_quantity = len(constants.KEY_WORDS)
 
-
+# check if the string is convertible to integer type
 def represents_int(s):
     try:
         int(s)
@@ -17,14 +17,14 @@ def represents_int(s):
     except ValueError:
         return False
 
-
+# remove extra symbols and split the string
 def simple_split(s):
     s = s.lower()
     s = re.sub(r'[^\w\s]', '', s)
     s_splitted = s.split()
     return s_splitted
 
-
+# check if user it trying to salute the bot or say 'How are you?'
 def hello_back(s):
     for _ in simple_split(s):
         if _ in constants.HELLO:
@@ -71,7 +71,7 @@ def distance(a: object, b: object) -> object:
     return current_row[n]
 
 
-# Основная функция
+# return index of possible key word
 def check_the_territories(str_user):
     minimum_value = key_words_quantity
     index_of_the_most_likely_variant = 0
@@ -86,7 +86,7 @@ def check_the_territories(str_user):
 
     return index_of_the_most_likely_variant
 
-
+# return potential key word
 def main_place(s):
     s = re.sub(r'[^\w\s]', '', s)
     list1 = s.split()
@@ -102,7 +102,7 @@ def main_place(s):
             if s == constants.KEY_WORDS[result]:
                 return s
 
-
+# parse the string into affordable form for Module 2
 def main_func(s):
     s = re.sub(r'[^\w\s]', '', s)
     list1 = s.split()
