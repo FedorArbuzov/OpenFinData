@@ -17,7 +17,7 @@ from m1_speechkit import SpeechException
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
-API_TOKEN = config.TELEGRAM_API_TOKEN1
+API_TOKEN = config.TELEGRAM_API_TOKEN_FINAL
 bot = telebot.TeleBot(API_TOKEN)
 
 
