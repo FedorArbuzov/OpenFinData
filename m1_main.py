@@ -597,7 +597,7 @@ if __name__ == '__main__':
     while True:
         try:
             # No more than 5 attempts for one exception
-            if count < 5:
+            if count < 900:
                 count += 1
                 bot.polling(none_stop=True)
             else:
@@ -607,9 +607,13 @@ if __name__ == '__main__':
                 break
         except Exception as e1:
             os.popen("ipconfig /flushdns")
-
-            if type(e) is type(e1) and e.args == e1.args:
+            print('There was requests.exceptions.ConnectionError')
+            print(type(e1),type(e))
+            print(count)
+            #if type(e) == type(e1) and e.args is e1.args:
+            if type(e) is type(e1):
                 time.sleep(10)
             else:
                 e = e1
                 count = 0
+            print(count)
