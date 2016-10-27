@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 import requests
 import time
+import logging
 import os
 from transliterate import translit as tr
 from telebot import types
@@ -17,8 +18,10 @@ from m1_speechkit import SpeechException
 from m2_main import M2Retrieving
 from m3_main import M3Visualizing
 
-API_TOKEN = config.TELEGRAM_API_TOKEN_FINAL
+API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
+
+logging.basicConfig(filename='logs.log', level=50, format='%(asctime)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
 
 
 # checks if the string may be converted into integer
@@ -36,11 +39,11 @@ def send_welcome(message):
     connection = sqlite3.connect('users.db')
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM users WHERE userid = ' + str(message.chat.id))
-    data = cursor.fetchall() # gets sql row from the table 'users'
+    data = cursor.fetchall()  # gets sql row from the table 'users'
     if len(data) != 0:
-        s = str(message.text)[4:] # cut symbols "/cr " off
+        s = str(message.text)[4:]  # cut symbols "/cr " off
         if s == '' or main_place(s) is not None:
-            if s == '': # in case of empty space after /cr null will be written into the table
+            if s == '':  # in case of empty space after /cr null will be written into the table
                 cursor.execute('UPDATE users SET place=\'' + 'null' + '\' WHERE userid=' + str(message.chat.id) + ';')
                 connection.commit()
                 connection.close()
@@ -80,6 +83,7 @@ def send_welcome(message):
         reply_markup=constants.HELP_KEYBOARD,
         disable_web_page_preview=True)
 
+
 # /search message handler
 @bot.message_handler(commands=['search'])
 def repeat_all_messages(message):
@@ -95,8 +99,10 @@ def repeat_all_messages(message):
         connection.commit()
         connection.close()
 
+    # TODO: abstraction7
     s = message.text[8:]
-    if s == '': # if there's no text after /search, start questioning user w/ buttons
+    if s == '':  # if there's no text after /search, start questioning user w/ buttons
+        # TODO: abstraction8
         markup = types.ReplyKeyboardMarkup()
         markup.row('доходы')
         markup.row('расходы')
@@ -114,8 +120,11 @@ def repeat_all_messages(message):
     else:
         # parse message after the /search command and pass it further
         s1 = main_func(s.lower())
+        asked_question = s.lower()
+        logging.critical("{}\t{}".format(message.chat.id, asked_question))
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
+
 
 # Text handler | PRESSING NON-INLINE BUTTONS RETURNS TEXT TOO!
 @bot.message_handler(content_types=['text'])
@@ -154,6 +163,7 @@ def repeat_all_messages(message):
             current_year = str(datetime.datetime.now().year)
             bot.send_message(message.chat.id, constants.ERROR_NO_DATA_THIS_YEAR % current_year, reply_markup=markup)
 
+    # TODO: abstraction9
     elif (message.text == 'доходы' or message.text == 'расходы' or message.text == 'дефицит/профицит'
           or message.text == 'налоговые' or message.text == 'неналоговые' or message.text == 'все') and (
                 len(data) != 0):
@@ -276,26 +286,27 @@ def repeat_all_messages(message):
     else:
         bot.send_message(message.chat.id, constants.ERROR_CHECK_INPUT)
 
+
 # inline mode handler
 @bot.inline_handler(lambda query: len(query.query) >= 0)
 def query_text(query):
     input_message_content = query.query
     s1 = main_func(input_message_content)
-    s_mod2 = forming_string_from_neural(s1) # receive Module 2-friendly string format
+    s_mod2 = forming_string_from_neural(s1)  # receive Module 2-friendly string format
     print(s_mod2)
     result_array = []
-    result = M2Retrieving.get_data(s_mod2) # check if current user string is correct
-    if result.status is False: # in case the string is not correct we ask user to keep typing
+    result = M2Retrieving.get_data(s_mod2)  # check if current user string is correct
+    if result.status is False:  # in case the string is not correct we ask user to keep typing
         msg = types.InlineQueryResultArticle(id='0',
                                              title='Продолжайте ввод запроса',
                                              input_message_content=types.InputTextMessageContent(
                                                  message_text=input_message_content + '\nЗапрос не удался😢'
                                              ))
-        result_array.append(msg) # Nothing works without this list, I dunno why :P
+        result_array.append(msg)  # Nothing works without this list, I dunno why :P
         bot.answer_inline_query(query.id, result_array)
 
     else:
-
+        logging.critical("{}\t{}".format("inline", input_message_content))
         m3_result = M3Visualizing.create_response(query.id, result.response, result.theme, visualization=False)
         try:
             if m3_result.data is False:
@@ -315,9 +326,11 @@ def query_text(query):
         finally:
             bot.answer_inline_query(query.id, result_array)
 
+
 # inline messages query handler
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
+    # TODO: abstraction10
     if call.message:
         connection = sqlite3.connect('users.db')
         cursor = connection.cursor()
@@ -404,6 +417,7 @@ def callback_inline(call):
         connection.commit()
         connection.close()
 
+
 # voice message handler
 @bot.message_handler(content_types=['voice'])
 def voice_processing(message):
@@ -419,6 +433,7 @@ def voice_processing(message):
         'https://api.telegram.org/file/bot{0}/{1}'.format(API_TOKEN, file_info.file_path))
     try:
         text = speech_to_text(bytes=file.content)
+        logging.critical("{}\t{}".format(message.chat.id, text))
     except SpeechException:
         msg = constants.ERROR_CANNOT_UNDERSTAND_VOICE
         bot.send_message(message.chat.id, msg)
@@ -429,6 +444,7 @@ def voice_processing(message):
 
 
 def year_markup(message):
+    # TODO: abstraction11
     markup = types.ReplyKeyboardMarkup(row_width=4)
     y2007 = types.KeyboardButton('2007')
     y2008 = types.KeyboardButton('2008')
@@ -464,9 +480,9 @@ def file_naming(request_string):
     request_string = tr(request_string, 'ru', reversed=True)
     filename = request_string.replace('null', '')
     filename = filename.replace(',', '_')
-    filename = filename.replace('__', '_')
-    filename = filename.replace('__', '_')
-    filename = filename.replace('__', '_')
+
+    for i in range(0, 3):
+        filename = filename.replace('__', '_')
 
     if filename[len(filename) - 1] == '_':
         filename = filename[:len(filename) - 1]
@@ -521,6 +537,7 @@ def querying_and_visualizing(message, s_mod2, notify_user=True):
     except:
         bot.send_message(message.chat.id, constants.ERROR_SERVER_DOES_NOT_RESPONSE)
 
+
 # forms string for Module 2
 def final_result_formatting(data, message):
     # count data collected from the 'user' table
@@ -550,6 +567,7 @@ def final_result_formatting(data, message):
                 count += 1
 
         # format string for Module 2
+        # TODO: abstraction12
         for n, i in enumerate(new_data):
             if i == 0 or i == '0' or i is None:
                 new_data[n] = 'null'
@@ -564,13 +582,15 @@ def final_result_formatting(data, message):
 
         querying_and_visualizing(message, s_mod2)
 
+
 # polling cycle
 if __name__ == '__main__':
-    admin_id = (65305591, 164241807, 139653713)
 
-    for _id in admin_id:
-        bot.send_message(_id, "ADMIN_INFO: Бот запушен")
-
+    # admin_id = (65305591, 164241807, 139653713)
+    #
+    # for _id in admin_id:
+    #     bot.send_message(_id, "ADMIN_INFO: Бот запушен")
+    #
     e = None
     count = 0
 
@@ -581,9 +601,9 @@ if __name__ == '__main__':
                 count += 1
                 bot.polling(none_stop=True)
             else:
-                err_message = "ADMIN_INFO: Бот упал.\n\nERROR: '{}'.".format(e)
-                for _id in admin_id:
-                    bot.send_message(_id, err_message)
+                # err_message = "ADMIN_INFO: Бот упал.\n\nERROR: '{}'.".format(e)
+                # for _id in admin_id:
+                #     bot.send_message(_id, err_message)
                 break
         except Exception as e1:
             os.popen("ipconfig /flushdns")

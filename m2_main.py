@@ -43,6 +43,7 @@ class M2Retrieving:
     def __list_to_mapper(parameters, response):
         """Refactoring input parameters in mapper"""
 
+        # TODO: abstraction3
         # Inner codes for refactoring list in mapper
         codes = (
             {
@@ -247,6 +248,7 @@ class M2Retrieving:
     def __hint(true_mapper, false_mapper, params):
         """Transfer in words steps which should be made in order to form correct request"""
 
+        # TODO: abstraction2
         # Inner codes for refactoring difference between correct and incorrect mapper in help message
         codes = (
             {
@@ -313,6 +315,7 @@ class M2Retrieving:
     def feedback(params):
         """Forming response how we have understood user's request"""
 
+        # TODO: abstraction1
         if params[0] == "дефицит":
             theme = " дефицит/профицит"
 

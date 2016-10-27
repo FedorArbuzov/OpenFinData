@@ -98,6 +98,7 @@ def main_place(s):
     for _ in list1:
         result = check_the_territories(list1[i])
         i += 1
+        # TODO: abstraction6
         for s in constants.KEY_WORDS[11:-11]:
             if s == constants.KEY_WORDS[result]:
                 return s
@@ -126,6 +127,7 @@ def main_func(s):
     for _ in list1:
         result = check_the_territories(list1[i])
 
+        # TODO: abstraction4
         if constants.KEY_WORDS[result] == 'плановый':
             user_req.planned_or_actual = 'плановый'
         if constants.KEY_WORDS[result] == 'фактический':
