@@ -9,7 +9,7 @@ import config
 YANDEX_ASR_HOST = 'asr.yandex.net'
 YANDEX_ASR_PATH = '/asr_xml'
 CHUNK_SIZE = 1024 ** 2
-PATH_TO_FFMPEG = config.FFMPEG_PATH_DIMA
+PATH_TO_FFMPEG = config.FFMPEG_PATH_SERVER
 
 
 def convert_to_pcm16b16000r(in_filename=None, in_bytes=None):
