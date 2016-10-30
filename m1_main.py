@@ -1,8 +1,6 @@
 import telebot
 import requests
-import time
 import logging
-import os
 from transliterate import translit as tr
 from telebot import types
 
@@ -22,13 +20,13 @@ logging.basicConfig(filename='logs.log', level=50, format='%(asctime)s\t%(messag
 
 
 # /start command handler; send start-message to the user
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=[constants.COMMANDS[0]])
 def send_welcome(message):
     bot.send_message(message.chat.id, constants.START_MSG, parse_mode='HTML')
 
 
 # /help command handler; send hello-message to the user
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=[constants.COMMANDS[1]])
 def send_welcome(message):
     bot.send_message(
         message.chat.id,
@@ -39,15 +37,15 @@ def send_welcome(message):
 
 
 # /search message handler
-@bot.message_handler(commands=['search'])
+@bot.message_handler(commands=[constants.COMMANDS[2]])
 def repeat_all_messages(message):
-    # TODO: abstraction7
-    s = message.text[8:]
-    if s != '':  # if there's no text after /search, start questioning user w/ buttons
-        # parse message after the /search command and pass it further
-        s1 = main_func(s.lower())
-        asked_question = s.lower()
-        logging.critical("{}\t{}".format(message.chat.id, asked_question))
+    command_length = len(constants.COMMANDS[2])
+    message_text = message.text[command_length + 2:].lower()
+    if message_text != '':
+        # Logging request
+        logging.critical("{}\t{}".format(message.chat.id, message_text))
+
+        s1 = main_func(message_text)
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
 
@@ -81,26 +79,23 @@ def query_text(query):
     else:
         logging.critical("{}\t{}".format("inline", input_message_content))
         m3_result = M3Visualizing.create_response(query.id, result.response, result.theme, visualization=False)
-        try:
-            if m3_result.data is False:
-                msg_append_text = ': ' + constants.ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
-                title = 'Данных нет'
-            else:
-                msg_append_text = ':\n' + str(m3_result.number)
-                title = str(m3_result.number)
+        # try:
+        if m3_result.data is False:
+            msg_append_text = ': ' + constants.ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
+            title = 'Данных нет'
+        else:
+            msg_append_text = ':\n' + str(m3_result.number)
+            title = str(m3_result.number)
 
-            msg = types.InlineQueryResultArticle(id='1',
-                                                 title=title,
-                                                 input_message_content=types.InputTextMessageContent(
-                                                     message_text=input_message_content + msg_append_text),
-                                                 )
-            result_array.append(msg)
+        msg = types.InlineQueryResultArticle(id='1',
+                                             title=title,
+                                             input_message_content=types.InputTextMessageContent(
+                                                 message_text=input_message_content + msg_append_text),
+                                             )
+        result_array.append(msg)
 
-        finally:
-            bot.answer_inline_query(query.id, result_array)
-
-
-# voice message handler
+        # finally:
+        #     bot.answer_inline_query(query.id, result_array)  # voice message handler
 @bot.message_handler(content_types=['voice'])
 def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
@@ -129,8 +124,6 @@ def file_naming(request_string):
     if filename[len(filename) - 1] == '_':
         filename = filename[:len(filename) - 1]
 
-    print(filename)
-
     filename_svg = 'diagram_' + filename + '.svg'
     filename_pdf = 'table_' + filename + '.pdf'
     names = [filename_svg, filename_pdf]
@@ -149,14 +142,13 @@ def forming_string_from_neural(s1):
 
 
 def querying_and_visualizing(message, s_mod2, notify_user=True):
-    markup = types.ReplyKeyboardHide()
     print(s_mod2)
     try:
         m2_result = M2Retrieving.get_data(s_mod2)
         if m2_result.status is False:
-            bot.send_message(message.chat.id, m2_result.message, reply_markup=markup)
+            bot.send_message(message.chat.id, m2_result.message)
         else:
-            bot.send_message(message.chat.id, constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU, reply_markup=markup)
+            bot.send_message(message.chat.id, constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
             names = file_naming(s_mod2)
             m3_result = M3Visualizing.create_response(message.chat.id, m2_result.response, m2_result.theme,
                                                       filename_svg=names[0], filename_pdf=names[1])
@@ -176,36 +168,11 @@ def querying_and_visualizing(message, s_mod2, notify_user=True):
                     file2 = open(path + names[1], 'rb')
                     bot.send_document(message.chat.id, file1)
                     bot.send_document(message.chat.id, file2)
-    except:
+    except Exception as e:
+        print(e)
         bot.send_message(message.chat.id, constants.ERROR_SERVER_DOES_NOT_RESPONSE)
 
 
 # polling cycle
 if __name__ == '__main__':
-
-    admin_id = (65305591, 164241807, 139653713)
-
-    # for _id in admin_id:
-    #     bot.send_message(_id, "ADMIN_INFO: Бот запушен")
-
-    e = None
-    count = 0
-
-    while True:
-        try:
-            # No more than 5 attempts for one exception
-            if count < 900:
-                count += 1
-                bot.polling(none_stop=True)
-            else:
-                # err_message = "ADMIN_INFO: Бот упал.\n\nERROR: '{}'.".format(e)
-                # for _id in admin_id:
-                #     bot.send_message(_id, err_message)
-                break
-        except Exception as e1:
-            os.popen("ipconfig /flushdns")
-            if type(e) is type(e1):
-                time.sleep(10)
-            else:
-                e = e1
-                count = 0
+    bot.polling(none_stop=True)

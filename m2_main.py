@@ -1,7 +1,13 @@
 import requests
 import datetime
+import data
 from m1_req import distance
-import constants
+from constants import ERROR_PARSING
+from constants import ERROR_INCORRECT_YEAR
+from constants import MSG_IN_DEVELOPMENT
+from constants import ERROR_NO_DATA_GOT
+
+EMPTY_INDICATOR = 'null'
 
 
 # Module, which is responsible for getting required from user data
@@ -23,8 +29,7 @@ class M2Retrieving:
         if response.message != "":
             return response
 
-        print(params)
-        print(mapper)
+        print("M2: params - {}, mapper - {}".format(params, mapper))
         # Find MDX-sampler for formed mapper
         mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, params, response)
 
@@ -43,60 +48,48 @@ class M2Retrieving:
     def __list_to_mapper(parameters, response):
         """Refactoring input parameters in mapper"""
 
-        # TODO: abstraction3
-        # Inner codes for refactoring list in mapper
-        codes = (
-            {
-                'расходы': 2,
-                'доходы': 3,
-                'дефицит': 4,
-            },
-
-            {
-                'null': 3,  # By default is "фактический"
-                'плановый': 2,
-                'фактический': 3,
-                'текущий': 4
-            }
-        )
+        NULL_VALUE = '0.'
+        NOT_NULL_VALUE = '1.'
 
         mapper = ''
 
         # Processing theme
         exp_differ = False
-        if parameters[0] in codes[0]:
-            mapper += str(codes[0].get(parameters[0])) + '.'
+        if parameters[0] in data.SUBJECT:
+            mapper += data.SUBJECT[parameters[0]] + '.'
             response.theme = parameters[0]
-            if mapper == '2.':
-                exp_differ = True  # Marking expenditure request
+
+            # Marking expenditure request
+            if mapper == data.SUBJECT['расходы'] + '.':
+                exp_differ = True
         else:
-            response.message = 'Неверно выбрана предметная область😏 Попробуйте еще раз /search'
+            response.message = ERROR_PARSING
             return
 
         # Processing param1
-        if parameters[1] in codes[1]:
-            mapper += str(codes[1].get(parameters[1])) + '.'
+        if parameters[1] in data.TYPES:
+            mapper += data.TYPES[parameters[1]] + '.'
         else:
-            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
+            response.message = ERROR_PARSING
             return
 
         # Processing param2
-        if parameters[2] == 'null':
-            mapper += '0.'
-        elif parameters[2] in constants.PARAM2:
-            mapper += '1.'
+        if parameters[2] == EMPTY_INDICATOR:
+            mapper += NULL_VALUE
+        elif parameters[2] in data.NALOG_NENALOG:
+            mapper += NOT_NULL_VALUE
         else:
-            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
+            response.message = ERROR_PARSING
             return
 
         # Processing year
         now_year = datetime.datetime.now().year
-        if parameters[3] == 'null':
-            mapper += '0.'
+        if parameters[3] == EMPTY_INDICATOR:
+            mapper += NULL_VALUE
 
             # Refactoring 'Фактические' in 'текущие' if year is null
-            if mapper[2] == '3':
-                mapper = mapper[:2] + '4.' + mapper[4:]
+            if mapper[2] == data.TYPES['фактический']:
+                mapper = "{}{}.{}".format(mapper[:2], data.TYPES['текущий'], mapper[4:])
                 parameters[1] = 'текущий'
         else:
             # Refactoring input year parameter if year is defined only by 1 or 2 last numbers
@@ -106,35 +99,38 @@ class M2Retrieving:
 
             if 2006 < int(parameters[3]) <= now_year:
                 # Processing 2016 year
-                if parameters[3] == '2016':
-                    mapper += '0.'
+                if parameters[3] == str(now_year):
+                    mapper += NULL_VALUE
+                    parameters[3] = EMPTY_INDICATOR
 
                     # Refactoring 'Фактические' in 'текущие' if year is 2016
-                    if mapper[2] == '3':
-                        mapper = mapper[:2] + '4.' + mapper[4:]
+                    if mapper[2] == data.TYPES['фактический']:
+                        mapper = "{}{}.{}".format(mapper[:2], data.TYPES['текущий'], mapper[4:])
                         parameters[1] = 'текущий'
                 else:
-                    mapper += '1.'
+                    mapper += NOT_NULL_VALUE
             else:
-                response.message = 'Введите год из промежутка c 2007 по ' + str(datetime.datetime.now().year) + '🙈'
+                response.message = ERROR_INCORRECT_YEAR % str(datetime.datetime.now().year)
                 return
 
         # Processing sphere
-        if exp_differ is True and parameters[4] in constants.SPHERES:  # for all requests about expenditures
-            mapper += '1.'
-        elif exp_differ is False and parameters[4] in constants.SPHERES:  # for all other requests
-            mapper += '0.'
+        # Turning on sphere details for all requests about expenditures
+        if exp_differ is True and parameters[4] in data.SPHERES:
+            mapper += NOT_NULL_VALUE
+        # Turning off sphere details for all other requests
+        elif exp_differ is False and parameters[4] in data.SPHERES:
+            mapper += NULL_VALUE
         else:
-            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
+            response.message = ERROR_PARSING
             return
 
         # Processing territory
-        if parameters[5] == 'null':
-            mapper += '0'
-        elif parameters[5] in constants.PLACES:
-            mapper += '1'
+        if parameters[5] == EMPTY_INDICATOR:
+            mapper += NULL_VALUE[:-1]
+        elif parameters[5] in data.PLACES:
+            mapper += NOT_NULL_VALUE[:-1]
         else:
-            response.message = 'Что-то пошло не так🙃 Проверьте ваш запрос на корректность'
+            response.message = ERROR_PARSING
             return
 
         return mapper
@@ -144,18 +140,19 @@ class M2Retrieving:
         """Finding MDX sampler for mapper"""
 
         # Trying to find necessary MDX-skeleton for given mapper or returning 0 if nothing is found
-        mdx_skeleton = constants.MAPPERS.get(mapper, 0)
+        mdx_skeleton = data.MAPPERS.get(mapper, 0)
 
         # Processing error message for which MDX-query is not ready yet
-        # if mdx_skeleton is None:
-        #     response.message = 'Данный запрос еще в стадии разработки'
+        if mdx_skeleton is None:
+            response.message = MSG_IN_DEVELOPMENT
+            return mdx_skeleton
 
         # Finding the nearest mapper to given and forming response for user
         if mdx_skeleton == 0:
             message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
                       'один из предложенных вариантов:\r\n'
             index = 1
-            for i in list(constants.MAPPERS.keys()):
+            for i in list(data.MAPPERS.keys()):
                 if distance(i, mapper) == 1:
                     message += '- ' + M2Retrieving.__hint(i, mapper, params)
                     index += 1
@@ -195,27 +192,27 @@ class M2Retrieving:
                 # Replacing property2
                 if param_id == 2:
                     if mapper in ('3.2.1.0.0.0', '3.4.1.0.0.0'):
-                        data = constants.PARAM2[params[param_id]][1]
+                        d = data.NALOG_NENALOG[params[param_id]][1]
                     else:
-                        data = constants.PARAM2[params[param_id]][0]
+                        d = data.NALOG_NENALOG[params[param_id]][0]
 
                 # Replacing year
                 if param_id == 3:
-                    data = str(params[param_id])
+                    d = str(params[param_id])
 
                 # Replacing sphere
                 if param_id == 4:
-                    data = constants.SPHERES[params[param_id]]
+                    d = data.SPHERES[params[param_id]][1]
 
                 # Replacing territory
                 if param_id == 5:
                     if 'CLDO02' in mdx_skeleton:
-                        data = '08-' + constants.PLACES_FOR_CLDO02[params[param_id]]
+                        d = '08-' + data.PLACES_FOR_CLDO02[params[param_id]]
                     else:
-                        data = '08-' + constants.PLACES[params[param_id]][0]
+                        d = '08-' + data.PLACES[params[param_id]][0]
 
                 # Replacing '*' by proper parameter
-                mdx_skeleton = mdx_skeleton.replace(star, data)
+                mdx_skeleton = mdx_skeleton.replace(star, d)
 
                 # Cutting temp in order ro find next '*'
                 temp = temp[i + 1:]
@@ -230,12 +227,12 @@ class M2Retrieving:
     def __send_mdx_request(data_mart_code, mdx_query, response, params):
         """Sending POST request to remote server"""
 
-        data = {'dataMartCode': data_mart_code, 'mdxQuery': mdx_query}
-        r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', data)
+        d = {'dataMartCode': data_mart_code, 'mdxQuery': mdx_query}
+        r = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', d)
 
         # Processing if MDX-query fails
         if '"success":false' in r.text:
-            response.message = 'Что-то пошло не так🙃 Данные получить не удалось:('
+            response.message = ERROR_NO_DATA_GOT
             response.response = r.text
             return
 
@@ -248,7 +245,7 @@ class M2Retrieving:
     def __hint(true_mapper, false_mapper, params):
         """Transfer in words steps which should be made in order to form correct request"""
 
-        # TODO: abstraction2
+        # TODO: To make more abstract
         # Inner codes for refactoring difference between correct and incorrect mapper in help message
         codes = (
             {
@@ -315,43 +312,43 @@ class M2Retrieving:
     def feedback(params):
         """Forming response how we have understood user's request"""
 
-        # TODO: abstraction1
+        # TODO: To make more abstract
         if params[0] == "дефицит":
-            theme = " дефицит/профицит"
+            theme = ' дефицит/профицит'
 
-            if params[1] == "null":
-                param_1 = "Фактический"
+            if params[1] == EMPTY_INDICATOR:
+                param_1 = 'Фактический'
             else:
                 param_1 = params[1][0].upper() + params[1][1:]
 
-            if params[3] == "null":
+            if params[3] == EMPTY_INDICATOR:
                 if param_1 == 'Плановый':
-                    year = ' в 2016 году'
+                    year = ' в ' + str(datetime.datetime.now().year) + ' году'
                 else:
                     year = ''
             else:
                 year = " в " + params[3] + " году"
 
-            if params[5] == "null":
-                territory = " федерального бюджета"
+            if params[5] == EMPTY_INDICATOR:
+                territory = " " + data.PLACES[EMPTY_INDICATOR]
             else:
-                territory = ' ' + constants.PLACES[params[5]][1]
+                territory = ' ' + data.PLACES[params[5]][1]
 
             response = param_1 + theme + territory + year
         else:
             theme = " " + params[0]
 
-            if params[1] == "null":
+            if params[1] == EMPTY_INDICATOR:
                 param_1 = "Фактические"
             else:
                 param_1 = params[1][0].upper() + params[1][1:-1] + "е"
 
-            if params[2] == "null":
+            if params[2] == EMPTY_INDICATOR:
                 param_2 = ""
             else:
                 param_2 = " " + params[2][:-1] + "е"
 
-            if params[3] == "null":
+            if params[3] == EMPTY_INDICATOR:
                 if param_1 == 'Плановые':
                     year_3 = ' в 2016 году'
                 else:
@@ -359,28 +356,12 @@ class M2Retrieving:
             else:
                 year_3 = " в " + params[3] + " году"
 
-            if params[4] == "null":
-                sphere_4 = ""
-            else:
-                spheres = {
-                    '2': 'общегосударственные вопросы',
-                    '3': 'национальную оборону',
-                    '4': 'национальную безопасность и правоохранительную деятельность',
-                    '5': 'национальную экономику',
-                    '6': 'жилищно-коммунальное хозяйство',
-                    '7': 'охрану окружающей среды',
-                    '8': 'образование',
-                    '9': 'культуру и кинематографию',
-                    '10': 'здравоохранение',
-                    '11': 'социальную политику',
-                    '12': 'спорт'
-                }
-                sphere_4 = " на " + spheres.get(params[4])
+            sphere_4 = " " + data.SPHERES[params[4]][0]
 
-            if params[5] == "null":
-                territory = " федерального бюджета"
+            if params[5] == EMPTY_INDICATOR:
+                territory = ' ' + data.PLACES[EMPTY_INDICATOR]
             else:
-                territory = ' ' + constants.PLACES[params[5]][1]
+                territory = ' ' + data.PLACES[params[5]][1]
 
             response = param_1 + param_2 + theme + territory + sphere_4 + year_3
 
