@@ -207,7 +207,7 @@ class M2Retrieving:
                 # Replacing territory
                 if param_id == 5:
                     if 'CLDO02' in mdx_skeleton:
-                        d = '08-' + data.PLACES_FOR_CLDO02[params[param_id]]
+                        d = '08-' + data.PLACES[params[param_id]][1]
                     else:
                         d = '08-' + data.PLACES[params[param_id]][0]
 
@@ -332,7 +332,7 @@ class M2Retrieving:
             if params[5] == EMPTY_INDICATOR:
                 territory = " " + data.PLACES[EMPTY_INDICATOR]
             else:
-                territory = ' ' + data.PLACES[params[5]][1]
+                territory = ' ' + data.PLACES[params[5]][2]
 
             response = param_1 + theme + territory + year
         else:
@@ -361,7 +361,7 @@ class M2Retrieving:
             if params[5] == EMPTY_INDICATOR:
                 territory = ' ' + data.PLACES[EMPTY_INDICATOR]
             else:
-                territory = ' ' + data.PLACES[params[5]][1]
+                territory = ' ' + data.PLACES[params[5]][2]
 
             response = param_1 + param_2 + theme + territory + sphere_4 + year_3
 

@@ -48,6 +48,8 @@ def repeat_all_messages(message):
         s1 = main_func(message_text)
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
+    else:
+        bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
 
 
 # Text handler | PRESSING NON-INLINE BUTTONS RETURNS TEXT TOO!
@@ -79,23 +81,25 @@ def query_text(query):
     else:
         logging.critical("{}\t{}".format("inline", input_message_content))
         m3_result = M3Visualizing.create_response(query.id, result.response, result.theme, visualization=False)
-        # try:
-        if m3_result.data is False:
-            msg_append_text = ': ' + constants.ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
-            title = 'Данных нет'
-        else:
-            msg_append_text = ':\n' + str(m3_result.number)
-            title = str(m3_result.number)
+        try:
+            if m3_result.data is False:
+                msg_append_text = ': ' + constants.ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
+                title = 'Данных нет'
+            else:
+                msg_append_text = ':\n' + str(m3_result.number)
+                title = str(m3_result.number)
 
-        msg = types.InlineQueryResultArticle(id='1',
-                                             title=title,
-                                             input_message_content=types.InputTextMessageContent(
-                                                 message_text=input_message_content + msg_append_text),
-                                             )
-        result_array.append(msg)
+            msg = types.InlineQueryResultArticle(id='1',
+                                                 title=title,
+                                                 input_message_content=types.InputTextMessageContent(
+                                                     message_text=input_message_content + msg_append_text),
+                                                 )
+            result_array.append(msg)
 
-        # finally:
-        #     bot.answer_inline_query(query.id, result_array)  # voice message handler
+        finally:
+            bot.answer_inline_query(query.id, result_array)
+
+
 @bot.message_handler(content_types=['voice'])
 def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
