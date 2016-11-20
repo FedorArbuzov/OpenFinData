@@ -15,13 +15,18 @@ EMPTY_INDICATOR = 'null'
 class M2Retrieving:
     @staticmethod
     def get_data(input_string, using_db=False):
-        """Getting JSON data based on input parameters"""
+        """Единственный API метод для 2го модуля.
+
+        Принимает на вход строку в особенном формате и по умолчанию не использует БД, как
+        источник данных.
+
+        Возвращает объект класса M2Result из m2_main."""
 
         # Splitting input string in parameters: [Theme, Property, Property2, Year, Sphere, Territory]
         params = input_string.split(',')
 
         # Creating response object
-        response = Result()
+        response = M2Result()
 
         # Creating mapper based on list of parameters
         if not using_db:
@@ -253,19 +258,9 @@ class M2Retrieving:
             response.message = MSG_IN_DEVELOPMENT
             return mdx_skeleton
 
-        # Finding the nearest mapper to given and forming response for user
+        # If no proper mapper found
         if mdx_skeleton == -1:
-            message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
-                      'один из предложенных вариантов:\r\n'
-            index = 1
-            for i in list(data.MAPPERS.keys()):
-                if DataParser.distance(i, mapper) == 1:
-                    message += '- ' + M2Retrieving.__hint(i, mapper, params)
-                    index += 1
-            if index == 1:
-                message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
-
-            response.message = M2Retrieving._feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
+            response.message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.'
 
         return mdx_skeleton
 
@@ -458,7 +453,7 @@ class M2Retrieving:
         return 'Я понял ваш запрос как: "' + response + '".'
 
 
-class Result:
+class M2Result:
     def __init__(self, status=False, message='', response='', theme=''):
         self.status = status  # Variable, which shows first module if result of request is successful or not
         self.message = message  # Variable for containing error- and feedback-messages

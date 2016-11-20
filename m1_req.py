@@ -165,10 +165,10 @@ class DataParser:
                 continue
 
             if result in subjects:
-                if result == 'профицит' or result == 'дефицит':
-                    user_req.subject = 'профицит/дефицит'
-                else:
-                    user_req.subject = result
+                # if result == 'профицит' or result == 'дефицит':
+                #     user_req.subject = 'профицит/дефицит'
+                # else:
+                user_req.subject = result
                 continue
 
             if result in types:

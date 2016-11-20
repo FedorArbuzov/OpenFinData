@@ -31,8 +31,14 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 class M3Visualizing:
     #static method responsible for getting the sum of money and creating the docs
     @staticmethod
-    def create_response(user_id, json_string, theme, filename_svg=None, filename_pdf=None, visualization=True):
-        result = Result()
+    def create_response(json_string, theme, filename_svg=None, filename_pdf=None, visualization=True):
+        """Единственный API метод для 3го модуля.
+
+        Принимает на вход JSON-ответ со стороны сервера, тему запроса, название SVG и PDF файла,
+        а также по умолчанию пытается создать визуализацию данных, если это возможно.
+
+        Возвращает объект класса M3Result из m3_main."""
+        result = M3Result()
 
         par = json.loads(json_string)
 
@@ -120,7 +126,7 @@ class M3Visualizing:
                     i += 1
 
                 # creation of the folder and returning the path to it
-                path = M3Visualizing.__create_folder(str(user_id))
+                path = M3Visualizing.__create_folder()
                 # writing the path to the return object
                 result.path = path
 
@@ -474,17 +480,17 @@ class M3Visualizing:
 
     # метод по созданию папочки
     @staticmethod
-    def __create_folder(user_id):
+    def __create_folder():
         """Method which creates folder for request"""
         # Defining current hour
         now_time = datetime.datetime.now()
         cur_hour = now_time.hour
 
         # Forming random string
-        random_str = ''.join(random.sample(string.ascii_lowercase, 7))
+        random_str = ''.join(random.sample(string.ascii_lowercase, 10))
 
         # Forming path
-        path = 'tmp' + str(cur_hour) + '_' + user_id + random_str
+        path = 'tmp' + str(cur_hour) + '_' + random_str
 
         # Creating folder
         os.mkdir(path)
@@ -492,7 +498,7 @@ class M3Visualizing:
         return path
 
 
-class Result:
+class M3Result:
     def __init__(self, is_file=False, number='', path='', data=True):
         self.is_file = is_file
         self.number = number
