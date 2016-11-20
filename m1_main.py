@@ -6,8 +6,7 @@ from telebot import types
 
 import constants
 import config
-from m1_req import main_func
-from m1_req import hello_back
+from m1_req import DataParser
 from m1_speechkit import speech_to_text
 from m1_speechkit import SpeechException
 from m2_main import M2Retrieving
@@ -20,13 +19,13 @@ logging.basicConfig(filename='logs.log', level=50, format='%(asctime)s\t%(messag
 
 
 # /start command handler; send start-message to the user
-@bot.message_handler(commands=[constants.COMMANDS[0]])
+@bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.send_message(message.chat.id, constants.START_MSG, parse_mode='HTML')
 
 
 # /help command handler; send hello-message to the user
-@bot.message_handler(commands=[constants.COMMANDS[1]])
+@bot.message_handler(commands=['help'])
 def send_welcome(message):
     bot.send_message(
         message.chat.id,
@@ -37,15 +36,17 @@ def send_welcome(message):
 
 
 # /search message handler
-@bot.message_handler(commands=[constants.COMMANDS[2]])
+@bot.message_handler(commands=['search'])
 def repeat_all_messages(message):
-    command_length = len(constants.COMMANDS[2])
+    command_length = len('search')
     message_text = message.text[command_length + 2:].lower()
     if message_text != '':
         # Logging request
         logging.critical("{}\t{}".format(message.chat.id, message_text))
 
-        s1 = main_func(message_text)
+        dp = DataParser(using_db=True)  # using DB
+
+        s1 = dp.main_func(message_text)
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
     else:
@@ -56,19 +57,22 @@ def repeat_all_messages(message):
 @bot.message_handler(content_types=['text'])
 def repeat_all_messages(message):
     # check if user wants us to salute him
-    if hello_back(message.text) is not None:
-        bot.send_message(message.chat.id, hello_back(message.text))
+    if DataParser.hello_back(message.text) is not None:
+        bot.send_message(message.chat.id, DataParser.hello_back(message.text))
 
 
 # inline mode handler
 @bot.inline_handler(lambda query: len(query.query) >= 0)
 def query_text(query):
     input_message_content = query.query
-    s1 = main_func(input_message_content)
+
+    dp = DataParser(using_db=True)  # using DB
+
+    s1 = dp.main_func(input_message_content)
     s_mod2 = forming_string_from_neural(s1)  # receive Module 2-friendly string format
     print(s_mod2)
     result_array = []
-    result = M2Retrieving.get_data(s_mod2)  # check if current user string is correct
+    result = M2Retrieving.get_data(s_mod2, using_db=True)  # check if current user string is correct
     if result.status is False:  # in case the string is not correct we ask user to keep typing
         msg = types.InlineQueryResultArticle(id='0',
                                              title='Продолжайте ввод запроса',
@@ -112,7 +116,9 @@ def voice_processing(message):
         msg = constants.ERROR_CANNOT_UNDERSTAND_VOICE
         bot.send_message(message.chat.id, msg)
     else:
-        s1 = main_func(text)
+        dp = DataParser(using_db=True)  # using DB
+
+        s1 = dp.main_func(text)
         s_mod2 = forming_string_from_neural(s1)
         querying_and_visualizing(message, s_mod2)
 
@@ -140,7 +146,7 @@ def forming_string_from_neural(s1):
         s_mod2 += s1[0] + ',' + s1[4] + ',' + 'null' + ',' + str(s1[2]) + ',' + str(s1[3]) + ',' + s1[1]
     elif s1[0] == 'доходы':
         s_mod2 += s1[0] + ',' + s1[4] + ',' + str(s1[3]) + ',' + str(s1[2]) + ',' + 'null' + ',' + s1[1]
-    elif s1[0] == 'дефицит':
+    elif s1[0] == 'дефицит' or s1[0] == "профицит/дефицит":
         s_mod2 += s1[0] + ',' + s1[4] + ',' + 'null' + ',' + str(s1[2]) + ',' + 'null' + ',' + s1[1]
     return s_mod2
 
@@ -148,7 +154,7 @@ def forming_string_from_neural(s1):
 def querying_and_visualizing(message, s_mod2, notify_user=True):
     print(s_mod2)
     try:
-        m2_result = M2Retrieving.get_data(s_mod2)
+        m2_result = M2Retrieving.get_data(s_mod2, using_db=True)
         if m2_result.status is False:
             bot.send_message(message.chat.id, m2_result.message)
         else:

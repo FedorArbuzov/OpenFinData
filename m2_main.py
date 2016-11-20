@@ -1,7 +1,8 @@
 import requests
 import datetime
 import data
-from m1_req import distance
+from m1_req import DataParser
+from db_creation import Parameter, ParameterType, ParameterMap, Theme, ThemeType, Query
 from constants import ERROR_PARSING
 from constants import ERROR_INCORRECT_YEAR
 from constants import MSG_IN_DEVELOPMENT
@@ -13,7 +14,7 @@ EMPTY_INDICATOR = 'null'
 # Module, which is responsible for getting required from user data
 class M2Retrieving:
     @staticmethod
-    def get_data(input_string):
+    def get_data(input_string, using_db=False):
         """Getting JSON data based on input parameters"""
 
         # Splitting input string in parameters: [Theme, Property, Property2, Year, Sphere, Territory]
@@ -23,29 +24,37 @@ class M2Retrieving:
         response = Result()
 
         # Creating mapper based on list of parameters
-        mapper = M2Retrieving.__list_to_mapper(params, response)
+        if not using_db:
+            mapper = M2Retrieving._list_to_mapper(params, response)
+        else:
+            mapper = M2Retrieving._get_param_set_from_db(params, response)
 
         # If response.message is not empty, notification of user about the error
         if response.message != "":
             return response
 
-        print("M2: params - {}, mapper - {}".format(params, mapper))
+        if not using_db:
+            print("M2: params - {}, mapper - {}".format(params, mapper))
+
         # Find MDX-sampler for formed mapper
-        mdx_skeleton = M2Retrieving.__get_mdx_skeleton_for_mapper(mapper, params, response)
+        if not using_db:
+            mdx_skeleton = M2Retrieving._get_mdx_skeleton_for_mapper(mapper, params, response)
+        else:
+            mdx_skeleton = M2Retrieving._get_template_query_from_db(mapper, params, response)
 
         # Escaping this method if no mdx skeleton for current mapper is found
-        if mdx_skeleton == 0 or mdx_skeleton is None:
+        if mdx_skeleton == -1 or mdx_skeleton is None:
             return response
 
         # Forming POST-data (cube and query) for request
-        mdx_cube_and_query = M2Retrieving.__refactor_mdx_skeleton(mdx_skeleton, params, mapper, response)
+        mdx_cube_and_query = M2Retrieving._refactor_mdx_skeleton(mdx_skeleton, params, mapper, response)
 
         # Sending request
-        M2Retrieving.__send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response, params)
+        M2Retrieving._send_mdx_request(mdx_cube_and_query[0], mdx_cube_and_query[1], response, params)
         return response
 
     @staticmethod
-    def __list_to_mapper(parameters, response):
+    def _list_to_mapper(parameters, response):
         """Refactoring input parameters in mapper"""
 
         NULL_VALUE = '0.'
@@ -136,11 +145,108 @@ class M2Retrieving:
         return mapper
 
     @staticmethod
-    def __get_mdx_skeleton_for_mapper(mapper, params, response):
+    def _get_param_set_from_db(parameters, response):
+        param_set = []
+
+        # Processing theme
+        exp_differ = False
+        p1 = ThemeType.select().where(ThemeType.type == parameters[0])
+        if len(p1):
+            param_set.append(p1)
+
+            # Marking expenditure request
+            for _p1 in p1:
+                if _p1.type == 'расходы':
+                    exp_differ = True
+        else:
+            response.message = ERROR_PARSING
+            return
+
+        # Processing param1
+        if parameters[1] == EMPTY_INDICATOR:
+            p2 = ParameterType.select().where(ParameterType.type == 'фактический')
+            param_set.append(p2)
+        else:
+            p2 = ParameterType.select().where(ParameterType.type == parameters[1])
+            if len(p2):
+                param_set.append(p2)
+            else:
+                response.message = ERROR_PARSING
+                return
+
+        # Processing param2
+        if parameters[2] == EMPTY_INDICATOR:
+            pass
+        else:
+            p3 = Parameter.select().where((Parameter.tagValue == parameters[2]) & (Parameter.type == 7))
+            if len(p3):
+                param_set.append(ParameterType.select().where(ParameterType.type == 'тип доходов'))
+            else:
+                response.message = ERROR_PARSING
+                return
+
+        # Processing year
+        now_year = datetime.datetime.now().year
+        if parameters[3] == EMPTY_INDICATOR:
+            # Refactoring 'Фактические' in 'текущие' if year is null
+            for param in p2:
+                if param.type == 'фактический':
+                    del param_set[1]
+                    param_set.append(ParameterType.select().where(ParameterType.type == 'текущий'))
+                    parameters[1] = 'текущий'
+        else:
+            # Refactoring input year parameter if year is defined only by 1 or 2 last numbers
+            year_len = len(parameters[3])
+            if year_len == 1 or year_len == 2:
+                parameters[3] = '2' + '0' * (3 - year_len) + parameters[3]
+
+            if 2006 < int(parameters[3]) <= now_year:
+                # Processing 2016 year
+                if parameters[3] == str(now_year):
+                    parameters[3] = EMPTY_INDICATOR
+
+                    # Refactoring 'Фактические' in 'текущие' if year is 2016
+                    for param in p2:
+                        if param.type == 'фактический':
+                            del param_set[1]
+                            param_set.append(ParameterType.select().where(ParameterType.type == 'текущий'))
+                            parameters[1] = 'текущий'
+                else:
+                    param_set.append(ParameterType.select().where(ParameterType.type == 'год'))
+            else:
+                response.message = ERROR_INCORRECT_YEAR % str(datetime.datetime.now().year)
+                return
+
+        # Processing sphere
+        # Turning on sphere details for all requests about expenditures
+        p5 = Parameter.select().where((Parameter.tagValue == parameters[4]) & (Parameter.type == 3))
+        if exp_differ is True and len(p5):
+            param_set.append(ParameterType.select().where(ParameterType.type == 'сфера'))
+        # Turning off sphere details for all other requests
+        elif exp_differ is False and len(p5):
+            pass
+        else:
+            response.message = ERROR_PARSING
+            return
+
+        # Processing territory
+        p6 = Parameter.select().where((Parameter.tagValue == parameters[5]) & (Parameter.type == 1))
+        if parameters[5] == EMPTY_INDICATOR:
+            pass
+        elif len(p6):
+            param_set.append(ParameterType.select().where(ParameterType.type == 'территория'))
+        else:
+            response.message = ERROR_PARSING
+            return
+
+        return param_set
+
+    @staticmethod
+    def _get_mdx_skeleton_for_mapper(mapper, params, response):
         """Finding MDX sampler for mapper"""
 
         # Trying to find necessary MDX-skeleton for given mapper or returning 0 if nothing is found
-        mdx_skeleton = data.MAPPERS.get(mapper, 0)
+        mdx_skeleton = data.MAPPERS.get(mapper, -1)
 
         # Processing error message for which MDX-query is not ready yet
         if mdx_skeleton is None:
@@ -148,23 +254,74 @@ class M2Retrieving:
             return mdx_skeleton
 
         # Finding the nearest mapper to given and forming response for user
-        if mdx_skeleton == 0:
+        if mdx_skeleton == -1:
             message = 'Запрос чуть-чуть некорректен🤔 Пожалуйста, подправьте его, выбрав ' \
                       'один из предложенных вариантов:\r\n'
             index = 1
             for i in list(data.MAPPERS.keys()):
-                if distance(i, mapper) == 1:
+                if DataParser.distance(i, mapper) == 1:
                     message += '- ' + M2Retrieving.__hint(i, mapper, params)
                     index += 1
             if index == 1:
                 message = 'В запросе неверно несколько параметров: попробуйте изменить запрос.   '
 
-            response.message = M2Retrieving.feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
+            response.message = M2Retrieving._feedback(params) + '\n\n' + message[:-2] + '\n Жмите /search'
 
         return mdx_skeleton
 
     @staticmethod
-    def __refactor_mdx_skeleton(mdx_skeleton, params, mapper, response):
+    def _get_template_query_from_db(mapper, params, response):
+        current_theme_sets = ParameterMap.select().where(ParameterMap.theme_type == mapper.pop(0))
+
+        data = []
+        i = -1
+
+        old_set_id = -1
+        cur_set_id = -1
+        for r in current_theme_sets:
+            cur_set_id = r.paramSet
+            if cur_set_id == old_set_id:
+                data[i][1].append(r.parameter_type)
+                old_set_id = cur_set_id
+            else:
+                data.append([])
+                i += 1
+                data[i].append(r.paramSet)
+                data[i].append([])
+                data[i][1].append(r.parameter_type)
+                old_set_id = cur_set_id
+
+        def _transform(arr):
+            new_arr = []
+            for a1 in arr:
+                for a2 in a1:
+                    new_arr.append(a2)
+            return new_arr
+
+        mapper = _transform(mapper)
+        param_ser = None
+
+        for row in data:
+            if set(mapper) == set(row[1]):
+                param_ser = row[0]
+                break
+
+        if param_ser is None:
+            response.message = 'Обработка запроса не удалась'
+            return
+
+        ps = ParameterMap.select().where(ParameterMap.paramSet == param_ser).limit(1)
+
+        id_param_set = 0
+        for p in ps:
+            id_param_set = p.id
+
+        query = Query.select().where(Query.parameterMap == id_param_set)
+        for q in query:
+            return q.templateQuery1
+
+    @staticmethod
+    def _refactor_mdx_skeleton(mdx_skeleton, params, mapper, response):
         """Replacing marks in MDX samplers by real data"""
 
         mdx_cube_and_query = []
@@ -224,7 +381,7 @@ class M2Retrieving:
         return mdx_cube_and_query
 
     @staticmethod
-    def __send_mdx_request(data_mart_code, mdx_query, response, params):
+    def _send_mdx_request(data_mart_code, mdx_query, response, params):
         """Sending POST request to remote server"""
 
         d = {'dataMartCode': data_mart_code, 'mdxQuery': mdx_query}
@@ -238,78 +395,11 @@ class M2Retrieving:
 
         # Updating params of resulting object
         response.status = True
-        response.message = M2Retrieving.feedback(params)
+        response.message = M2Retrieving._feedback(params)
         response.response = r.text
 
     @staticmethod
-    def __hint(true_mapper, false_mapper, params):
-        """Transfer in words steps which should be made in order to form correct request"""
-
-        # TODO: To make more abstract
-        # Inner codes for refactoring difference between correct and incorrect mapper in help message
-        codes = (
-            {
-                2: 'расходы',
-                3: 'доходы',
-                4: 'профицит/дефицит',
-            },
-            {
-                2: 'плановый',
-                3: 'фактический',
-                4: 'текущий'
-            },
-            'налоговые/неналоговые',
-            'год (отличный от ' + str(datetime.datetime.now().year) + " г.)",
-            'конкретную сферу',
-            'конкретный регион'
-        )
-
-        items1, items2 = true_mapper.split('.'), false_mapper.split('.')
-        error_message = ''
-        count = 0
-
-        for i1, i2 in zip(items1, items2):
-            if i1 != i2:
-                i1 = int(i1)
-                i2 = int(i2)
-
-                # If error is in existence or absence of parameter (without considering param1)
-                if (i1 == 0 or i1 == 1) and count != 1:
-
-                    # If parameter is not given but should be
-                    if i1 > i2:
-                        error_message = 'Укажите ' + codes[count] + '\r\n'
-
-                        # If error is in param2
-                        if count == 2:
-                            error_message = 'Укажите параметр "' + codes[count] + '"\r\n'
-
-                    # If parameter is given but should not be
-                    else:
-                        error_message = 'Не указывайте ' + codes[count] + '\r\n'
-
-                        # If error is in param2
-                        if count == 2:
-                            error_message = 'Не указывайте параметр "' + params[count][:-2] + 'ые"\r\n'
-
-                # If parameter exist but should be another or error is in param1
-                else:
-
-                    # If there is no param1 but should be
-                    if i2 == 0 and count == 1:
-                        error_message = 'Добавьте параметр "' + codes[count].get(i1) + '"\r\n'
-                    # If there is param1 but should not be
-                    elif i1 == 0 and count == 1:
-                        error_message = 'Не указывайте параметр "' + codes[count].get(i2) + '"\r\n'
-                    else:
-                        error_message = 'Замените параметр "' + codes[count].get(i2) + \
-                                        '" на "' + codes[count].get(i1) + '"\r\n'
-            count += 1
-
-        return error_message
-
-    @staticmethod
-    def feedback(params):
+    def _feedback(params):
         """Forming response how we have understood user's request"""
 
         # TODO: To make more abstract
