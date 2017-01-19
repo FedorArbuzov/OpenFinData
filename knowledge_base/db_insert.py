@@ -1,4 +1,4 @@
-from db_creation import *
+from knowledge_base.db_creation import *
 
 # region Data for fulling KB
 TYPES = ('плановый', 'фактический', 'текущий')
@@ -239,119 +239,122 @@ MAPPERS = {
 # endregion
 
 create_tables()
+
+
 # drop_tables()
 
-theme_type1 = ThemeType.create(type='расходы')
-theme_type2 = ThemeType.create(type='доходы')
-theme_type3 = ThemeType.create(type='профицит/дефицит')
+# theme_type1 = ThemeType.create(type='расходы')
+# theme_type2 = ThemeType.create(type='доходы')
+# theme_type3 = ThemeType.create(type='профицит/дефицит')
+#
+# tag1 = Tag.create(tag='расходы', weight=1.0)
+# tag2 = Tag.create(tag='доходы', weight=1.0)
+# tag3 = Tag.create(tag='дефицит', weight=1.0)
+# tag4 = Tag.create(tag='профицит', weight=1.0)
+#
+# t1 = Theme.create(type=theme_type1, tag=tag1)
+# t2 = Theme.create(type=theme_type2, tag=tag2)
+# t3 = Theme.create(type=theme_type3, tag=tag3)
+# t4 = Theme.create(type=theme_type3, tag=tag4)
+#
+# param_type1 = ParameterType.create(type='территория')
+# param_type2 = ParameterType.create(type='год')
+# param_type3 = ParameterType.create(type='сфера')
+# param_type42 = ParameterType.create(type='плановый')
+# param_type43 = ParameterType.create(type='фактический')
+# param_type44 = ParameterType.create(type='текущий')
+# param_type5 = ParameterType.create(type='тип доходов')
+# param_type6 = ParameterType.create(type='прошлый год')
+#
+# cube = ResourceType.create(type='куб')
+#
+# previous_year = Parameter.create(type=param_type6, tagValue='прошлый')
+# year = Parameter.create(type=param_type2)
+#
+#
+# def p_territories():
+#     for key, value in PLACES.items():
+#         Parameter.create(type=param_type1, tagValue=key, feedbackValue=value[2], value1=value[0], value2=value[1])
+#
+#
+# def p_spheres():
+#     for key, value in SPHERES.items():
+#         Parameter.create(type=param_type3, tagValue=key, feedbackValue=value[0], value1=value[1])
+#
+#
+# def p_nalog_nenalog():
+#     Parameter.create(type=param_type5, tagValue='налоговый',
+#                      feedbackValue='налоговые', value1=NALOG_NENALOG['налоговый'][0],
+#                      value2=NALOG_NENALOG['налоговый'][1])
+#
+#     Parameter.create(type=param_type5, tagValue='неналоговый',
+#                      feedbackValue='неналоговые', value1=NALOG_NENALOG['неналоговый'][0],
+#                      value2=NALOG_NENALOG['неналоговый'][1])
+#
+#
+# def p_planned_current_fact():
+#     Parameter.create(type=param_type42, tagValue=TYPES[0], feedbackValue=TYPES[0][:-2] + '%s')
+#     Parameter.create(type=param_type43, tagValue=TYPES[1], feedbackValue=TYPES[1][:-2] + '%s')
+#     Parameter.create(type=param_type44, tagValue=TYPES[2], feedbackValue=TYPES[2][:-2] + '%s')
+#
+#
+# def parameter_map():
+#     param_set = 1
+#     sql_queries = []
+#
+#     for mapper, sql_q in MAPPERS.items():
+#         mapper = list(map(int, mapper.split('.')))
+#
+#         t = None
+#         if mapper[0] == 2:
+#             t = t1
+#         elif mapper[0] == 3:
+#             t = t2
+#         else:
+#             t = t3
+#
+#         if mapper[1] > 0:
+#             if mapper[1] == 2:
+#                 ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type42)
+#             elif mapper[1] == 3:
+#                 ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type43)
+#             else:
+#                 ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type44)
+#
+#         if mapper[2] > 0:
+#             ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type5)
+#
+#         if mapper[3] > 0:
+#             ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type2)
+#
+#         if mapper[4] > 0:
+#             ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type3)
+#
+#         if mapper[5] > 0:
+#             ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type1)
+#
+#         sql_queries.append(sql_q)
+#         param_set += 1
+#
+#     return sql_queries
+#
+#
+# def query():
+#     sql_queries = parameter_map()
+#
+#     for _paramSet in range(1, 33):
+#         param_map = ParameterMap.select().where(ParameterMap.paramSet == _paramSet) \
+#             .order_by(ParameterMap.id).limit(1)
+#         Query.create(parameterMap=param_map, resource1=cube, templateQuery1=sql_queries[_paramSet - 1])
+#
+#
+# def full_db():
+#     p_territories()
+#     p_spheres()
+#     p_nalog_nenalog()
+#     p_planned_current_fact()
+#     query()
+#
+#
+# full_db()
 
-tag1 = Tag.create(tag='расходы', weight=1.0)
-tag2 = Tag.create(tag='доходы', weight=1.0)
-tag3 = Tag.create(tag='дефицит', weight=1.0)
-tag4 = Tag.create(tag='профицит', weight=1.0)
-
-t1 = Theme.create(type=theme_type1, tag=tag1)
-t2 = Theme.create(type=theme_type2, tag=tag2)
-t3 = Theme.create(type=theme_type3, tag=tag3)
-t4 = Theme.create(type=theme_type3, tag=tag4)
-
-param_type1 = ParameterType.create(type='территория')
-param_type2 = ParameterType.create(type='год')
-param_type3 = ParameterType.create(type='сфера')
-param_type42 = ParameterType.create(type='плановый')
-param_type43 = ParameterType.create(type='фактический')
-param_type44 = ParameterType.create(type='текущий')
-param_type5 = ParameterType.create(type='тип доходов')
-param_type6 = ParameterType.create(type='прошлый год')
-
-cube = ResourceType.create(type='куб')
-
-previous_year = Parameter.create(type=param_type6, tagValue='прошлый')
-year = Parameter.create(type=param_type2)
-
-
-def p_territories():
-    for key, value in PLACES.items():
-        Parameter.create(type=param_type1, tagValue=key, feedbackValue=value[2], value1=value[0], value2=value[1])
-
-
-def p_spheres():
-    for key, value in SPHERES.items():
-        Parameter.create(type=param_type3, tagValue=key, feedbackValue=value[0], value1=value[1])
-
-
-def p_nalog_nenalog():
-    Parameter.create(type=param_type5, tagValue='налоговый',
-                     feedbackValue='налоговые', value1=NALOG_NENALOG['налоговый'][0],
-                     value2=NALOG_NENALOG['налоговый'][1])
-
-    Parameter.create(type=param_type5, tagValue='неналоговый',
-                     feedbackValue='неналоговые', value1=NALOG_NENALOG['неналоговый'][0],
-                     value2=NALOG_NENALOG['неналоговый'][1])
-
-
-def p_planned_current_fact():
-    Parameter.create(type=param_type42, tagValue=TYPES[0], feedbackValue=TYPES[0][:-2] + '%s')
-    Parameter.create(type=param_type43, tagValue=TYPES[1], feedbackValue=TYPES[1][:-2] + '%s')
-    Parameter.create(type=param_type44, tagValue=TYPES[2], feedbackValue=TYPES[2][:-2] + '%s')
-
-
-def parameter_map():
-    param_set = 1
-    sql_queries = []
-
-    for mapper, sql_q in MAPPERS.items():
-        mapper = list(map(int, mapper.split('.')))
-
-        t = None
-        if mapper[0] == 2:
-            t = t1
-        elif mapper[0] == 3:
-            t = t2
-        else:
-            t = t3
-
-        if mapper[1] > 0:
-            if mapper[1] == 2:
-                ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type42)
-            elif mapper[1] == 3:
-                ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type43)
-            else:
-                ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type44)
-
-        if mapper[2] > 0:
-            ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type5)
-
-        if mapper[3] > 0:
-            ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type2)
-
-        if mapper[4] > 0:
-            ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type3)
-
-        if mapper[5] > 0:
-            ParameterMap.create(paramSet=param_set, theme_type=t, parameter_type=param_type1)
-
-        sql_queries.append(sql_q)
-        param_set += 1
-
-    return sql_queries
-
-
-def query():
-    sql_queries = parameter_map()
-
-    for _paramSet in range(1, 33):
-        param_map = ParameterMap.select().where(ParameterMap.paramSet == _paramSet) \
-            .order_by(ParameterMap.id).limit(1)
-        Query.create(parameterMap=param_map, resource1=cube, templateQuery1=sql_queries[_paramSet - 1])
-
-
-def full_db():
-    p_territories()
-    p_spheres()
-    p_nalog_nenalog()
-    p_planned_current_fact()
-    query()
-
-
-full_db()

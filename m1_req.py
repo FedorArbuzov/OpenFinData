@@ -2,7 +2,7 @@ import re
 import constants
 import data
 from data import NEURO_KEY_WORDS as WORDS
-from db_creation import Parameter, Tag
+# from db_creation import Parameter, Tag
 import datetime
 import random as rng
 
@@ -19,14 +19,14 @@ class DataParser:
                         list(data.TYPES.keys()) + list(data.NALOG_NENALOG.keys()) + \
                         list(data.SPHERES.keys()) + list(data.PLACES.keys())
             all_words = list(filter(lambda x: x != 'null', all_words))
-        else:
-            for tv in Parameter.select(Parameter.tagValue):
-                all_words.append(tv.tagValue)
-
-            for t in Tag.select(Tag.tag):
-                all_words.append(t.tag)
-
-            all_words = list(filter(lambda x: x != 'null' and x is not None, all_words))
+        # else:
+        #     for tv in Parameter.select(Parameter.tagValue):
+        #         all_words.append(tv.tagValue)
+        #
+        #     for t in Tag.select(Tag.tag):
+        #         all_words.append(t.tag)
+        #
+        #     all_words = list(filter(lambda x: x != 'null' and x is not None, all_words))
 
         return all_words
 
@@ -134,28 +134,28 @@ class DataParser:
             subjects = data.SUBJECT.keys()
             types = list(filter(lambda x: x != 'null', data.TYPES.keys()))
             sectors = data.NALOG_NENALOG.keys()
-        else:
-            territories = []
-            for t in Parameter.select(Parameter.tagValue).where(Parameter.type == 1):
-                territories.append(t.tagValue)
-
-            spheres = []
-            for s in Parameter.select(Parameter.tagValue).where(Parameter.type == 3):
-                spheres.append(s.tagValue)
-            spheres = list(filter(lambda x: x != 'null', spheres))
-
-            subjects = []
-            for t in Tag.select(Tag.tag):
-                subjects.append(t.tag)
-
-            types = []
-            for p in Parameter.select(Parameter.tagValue) \
-                    .where((Parameter.type == 4) | (Parameter.type == 5) | (Parameter.type == 6)):
-                types.append(p.tagValue)
-
-            sectors = []
-            for s in Parameter.select(Parameter.tagValue).where(Parameter.type == 7):
-                sectors.append(s.tagValue)
+        # else:
+        #     territories = []
+        #     for t in Parameter.select(Parameter.tagValue).where(Parameter.type == 1):
+        #         territories.append(t.tagValue)
+        #
+        #     spheres = []
+        #     for s in Parameter.select(Parameter.tagValue).where(Parameter.type == 3):
+        #         spheres.append(s.tagValue)
+        #     spheres = list(filter(lambda x: x != 'null', spheres))
+        #
+        #     subjects = []
+        #     for t in Tag.select(Tag.tag):
+        #         subjects.append(t.tag)
+        #
+        #     types = []
+        #     for p in Parameter.select(Parameter.tagValue) \
+        #             .where((Parameter.type == 4) | (Parameter.type == 5) | (Parameter.type == 6)):
+        #         types.append(p.tagValue)
+        #
+        #     sectors = []
+        #     for s in Parameter.select(Parameter.tagValue).where(Parameter.type == 7):
+        #         sectors.append(s.tagValue)
 
         for i in range(len(words)):
             result = self._find_similar_word(words[i])

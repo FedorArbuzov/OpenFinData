@@ -1,8 +1,6 @@
 import requests
 import datetime
 import data
-from m1_req import DataParser
-from db_creation import Parameter, ParameterType, ParameterMap, Theme, ThemeType, Query
 from constants import ERROR_PARSING
 from constants import ERROR_INCORRECT_YEAR
 from constants import MSG_IN_DEVELOPMENT
@@ -31,8 +29,8 @@ class M2Retrieving:
         # Creating mapper based on list of parameters
         if not using_db:
             mapper = M2Retrieving._list_to_mapper(params, response)
-        else:
-            mapper = M2Retrieving._get_param_set_from_db(params, response)
+        # else:
+        #     mapper = M2Retrieving._get_param_set_from_db(params, response)
 
         # If response.message is not empty, notification of user about the error
         if response.message != "":
@@ -44,8 +42,8 @@ class M2Retrieving:
         # Find MDX-sampler for formed mapper
         if not using_db:
             mdx_skeleton = M2Retrieving._get_mdx_skeleton_for_mapper(mapper, params, response)
-        else:
-            mdx_skeleton = M2Retrieving._get_template_query_from_db(mapper, params, response)
+        # else:
+        #     mdx_skeleton = M2Retrieving._get_template_query_from_db(mapper, params, response)
 
         # Escaping this method if no mdx skeleton for current mapper is found
         if mdx_skeleton == -1 or mdx_skeleton is None:
@@ -149,102 +147,102 @@ class M2Retrieving:
 
         return mapper
 
-    @staticmethod
-    def _get_param_set_from_db(parameters, response):
-        param_set = []
-
-        # Processing theme
-        exp_differ = False
-        p1 = ThemeType.select().where(ThemeType.type == parameters[0])
-        if len(p1):
-            param_set.append(p1)
-
-            # Marking expenditure request
-            for _p1 in p1:
-                if _p1.type == 'расходы':
-                    exp_differ = True
-        else:
-            response.message = ERROR_PARSING
-            return
-
-        # Processing param1
-        if parameters[1] == EMPTY_INDICATOR:
-            p2 = ParameterType.select().where(ParameterType.type == 'фактический')
-            param_set.append(p2)
-        else:
-            p2 = ParameterType.select().where(ParameterType.type == parameters[1])
-            if len(p2):
-                param_set.append(p2)
-            else:
-                response.message = ERROR_PARSING
-                return
-
-        # Processing param2
-        if parameters[2] == EMPTY_INDICATOR:
-            pass
-        else:
-            p3 = Parameter.select().where((Parameter.tagValue == parameters[2]) & (Parameter.type == 7))
-            if len(p3):
-                param_set.append(ParameterType.select().where(ParameterType.type == 'тип доходов'))
-            else:
-                response.message = ERROR_PARSING
-                return
-
-        # Processing year
-        now_year = datetime.datetime.now().year
-        if parameters[3] == EMPTY_INDICATOR:
-            # Refactoring 'Фактические' in 'текущие' if year is null
-            for param in p2:
-                if param.type == 'фактический':
-                    del param_set[1]
-                    param_set.append(ParameterType.select().where(ParameterType.type == 'текущий'))
-                    parameters[1] = 'текущий'
-        else:
-            # Refactoring input year parameter if year is defined only by 1 or 2 last numbers
-            year_len = len(parameters[3])
-            if year_len == 1 or year_len == 2:
-                parameters[3] = '2' + '0' * (3 - year_len) + parameters[3]
-
-            if 2006 < int(parameters[3]) <= now_year:
-                # Processing 2016 year
-                if parameters[3] == str(now_year):
-                    parameters[3] = EMPTY_INDICATOR
-
-                    # Refactoring 'Фактические' in 'текущие' if year is 2016
-                    for param in p2:
-                        if param.type == 'фактический':
-                            del param_set[1]
-                            param_set.append(ParameterType.select().where(ParameterType.type == 'текущий'))
-                            parameters[1] = 'текущий'
-                else:
-                    param_set.append(ParameterType.select().where(ParameterType.type == 'год'))
-            else:
-                response.message = ERROR_INCORRECT_YEAR % str(datetime.datetime.now().year)
-                return
-
-        # Processing sphere
-        # Turning on sphere details for all requests about expenditures
-        p5 = Parameter.select().where((Parameter.tagValue == parameters[4]) & (Parameter.type == 3))
-        if exp_differ is True and len(p5):
-            param_set.append(ParameterType.select().where(ParameterType.type == 'сфера'))
-        # Turning off sphere details for all other requests
-        elif exp_differ is False and len(p5):
-            pass
-        else:
-            response.message = ERROR_PARSING
-            return
-
-        # Processing territory
-        p6 = Parameter.select().where((Parameter.tagValue == parameters[5]) & (Parameter.type == 1))
-        if parameters[5] == EMPTY_INDICATOR:
-            pass
-        elif len(p6):
-            param_set.append(ParameterType.select().where(ParameterType.type == 'территория'))
-        else:
-            response.message = ERROR_PARSING
-            return
-
-        return param_set
+    # @staticmethod
+    # def _get_param_set_from_db(parameters, response):
+    #     param_set = []
+    #
+    #     # Processing theme
+    #     exp_differ = False
+    #     p1 = ThemeType.select().where(ThemeType.type == parameters[0])
+    #     if len(p1):
+    #         param_set.append(p1)
+    #
+    #         # Marking expenditure request
+    #         for _p1 in p1:
+    #             if _p1.type == 'расходы':
+    #                 exp_differ = True
+    #     else:
+    #         response.message = ERROR_PARSING
+    #         return
+    #
+    #     # Processing param1
+    #     if parameters[1] == EMPTY_INDICATOR:
+    #         p2 = ParameterType.select().where(ParameterType.type == 'фактический')
+    #         param_set.append(p2)
+    #     else:
+    #         p2 = ParameterType.select().where(ParameterType.type == parameters[1])
+    #         if len(p2):
+    #             param_set.append(p2)
+    #         else:
+    #             response.message = ERROR_PARSING
+    #             return
+    #
+    #     # Processing param2
+    #     if parameters[2] == EMPTY_INDICATOR:
+    #         pass
+    #     else:
+    #         p3 = Parameter.select().where((Parameter.tagValue == parameters[2]) & (Parameter.type == 7))
+    #         if len(p3):
+    #             param_set.append(ParameterType.select().where(ParameterType.type == 'тип доходов'))
+    #         else:
+    #             response.message = ERROR_PARSING
+    #             return
+    #
+    #     # Processing year
+    #     now_year = datetime.datetime.now().year
+    #     if parameters[3] == EMPTY_INDICATOR:
+    #         # Refactoring 'Фактические' in 'текущие' if year is null
+    #         for param in p2:
+    #             if param.type == 'фактический':
+    #                 del param_set[1]
+    #                 param_set.append(ParameterType.select().where(ParameterType.type == 'текущий'))
+    #                 parameters[1] = 'текущий'
+    #     else:
+    #         # Refactoring input year parameter if year is defined only by 1 or 2 last numbers
+    #         year_len = len(parameters[3])
+    #         if year_len == 1 or year_len == 2:
+    #             parameters[3] = '2' + '0' * (3 - year_len) + parameters[3]
+    #
+    #         if 2006 < int(parameters[3]) <= now_year:
+    #             # Processing 2016 year
+    #             if parameters[3] == str(now_year):
+    #                 parameters[3] = EMPTY_INDICATOR
+    #
+    #                 # Refactoring 'Фактические' in 'текущие' if year is 2016
+    #                 for param in p2:
+    #                     if param.type == 'фактический':
+    #                         del param_set[1]
+    #                         param_set.append(ParameterType.select().where(ParameterType.type == 'текущий'))
+    #                         parameters[1] = 'текущий'
+    #             else:
+    #                 param_set.append(ParameterType.select().where(ParameterType.type == 'год'))
+    #         else:
+    #             response.message = ERROR_INCORRECT_YEAR % str(datetime.datetime.now().year)
+    #             return
+    #
+    #     # Processing sphere
+    #     # Turning on sphere details for all requests about expenditures
+    #     p5 = Parameter.select().where((Parameter.tagValue == parameters[4]) & (Parameter.type == 3))
+    #     if exp_differ is True and len(p5):
+    #         param_set.append(ParameterType.select().where(ParameterType.type == 'сфера'))
+    #     # Turning off sphere details for all other requests
+    #     elif exp_differ is False and len(p5):
+    #         pass
+    #     else:
+    #         response.message = ERROR_PARSING
+    #         return
+    #
+    #     # Processing territory
+    #     p6 = Parameter.select().where((Parameter.tagValue == parameters[5]) & (Parameter.type == 1))
+    #     if parameters[5] == EMPTY_INDICATOR:
+    #         pass
+    #     elif len(p6):
+    #         param_set.append(ParameterType.select().where(ParameterType.type == 'территория'))
+    #     else:
+    #         response.message = ERROR_PARSING
+    #         return
+    #
+    #     return param_set
 
     @staticmethod
     def _get_mdx_skeleton_for_mapper(mapper, params, response):
@@ -264,56 +262,56 @@ class M2Retrieving:
 
         return mdx_skeleton
 
-    @staticmethod
-    def _get_template_query_from_db(mapper, params, response):
-        current_theme_sets = ParameterMap.select().where(ParameterMap.theme_type == mapper.pop(0))
-
-        data = []
-        i = -1
-
-        old_set_id = -1
-        cur_set_id = -1
-        for r in current_theme_sets:
-            cur_set_id = r.paramSet
-            if cur_set_id == old_set_id:
-                data[i][1].append(r.parameter_type)
-                old_set_id = cur_set_id
-            else:
-                data.append([])
-                i += 1
-                data[i].append(r.paramSet)
-                data[i].append([])
-                data[i][1].append(r.parameter_type)
-                old_set_id = cur_set_id
-
-        def _transform(arr):
-            new_arr = []
-            for a1 in arr:
-                for a2 in a1:
-                    new_arr.append(a2)
-            return new_arr
-
-        mapper = _transform(mapper)
-        param_ser = None
-
-        for row in data:
-            if set(mapper) == set(row[1]):
-                param_ser = row[0]
-                break
-
-        if param_ser is None:
-            response.message = 'Обработка запроса не удалась'
-            return
-
-        ps = ParameterMap.select().where(ParameterMap.paramSet == param_ser).limit(1)
-
-        id_param_set = 0
-        for p in ps:
-            id_param_set = p.id
-
-        query = Query.select().where(Query.parameterMap == id_param_set)
-        for q in query:
-            return q.templateQuery1
+    # @staticmethod
+    # def _get_template_query_from_db(mapper, params, response):
+    #     current_theme_sets = ParameterMap.select().where(ParameterMap.theme_type == mapper.pop(0))
+    #
+    #     data = []
+    #     i = -1
+    #
+    #     old_set_id = -1
+    #     cur_set_id = -1
+    #     for r in current_theme_sets:
+    #         cur_set_id = r.paramSet
+    #         if cur_set_id == old_set_id:
+    #             data[i][1].append(r.parameter_type)
+    #             old_set_id = cur_set_id
+    #         else:
+    #             data.append([])
+    #             i += 1
+    #             data[i].append(r.paramSet)
+    #             data[i].append([])
+    #             data[i][1].append(r.parameter_type)
+    #             old_set_id = cur_set_id
+    #
+    #     def _transform(arr):
+    #         new_arr = []
+    #         for a1 in arr:
+    #             for a2 in a1:
+    #                 new_arr.append(a2)
+    #         return new_arr
+    #
+    #     mapper = _transform(mapper)
+    #     param_ser = None
+    #
+    #     for row in data:
+    #         if set(mapper) == set(row[1]):
+    #             param_ser = row[0]
+    #             break
+    #
+    #     if param_ser is None:
+    #         response.message = 'Обработка запроса не удалась'
+    #         return
+    #
+    #     ps = ParameterMap.select().where(ParameterMap.paramSet == param_ser).limit(1)
+    #
+    #     id_param_set = 0
+    #     for p in ps:
+    #         id_param_set = p.id
+    #
+    #     query = Query.select().where(Query.parameterMap == id_param_set)
+    #     for q in query:
+    #         return q.templateQuery1
 
     @staticmethod
     def _refactor_mdx_skeleton(mdx_skeleton, params, mapper, response):
@@ -398,59 +396,59 @@ class M2Retrieving:
         """Forming response how we have understood user's request"""
 
         # TODO: To make more abstract
-        if params[0] == "дефицит":
-            theme = ' дефицит/профицит'
-
-            if params[1] == EMPTY_INDICATOR:
-                param_1 = 'Фактический'
-            else:
-                param_1 = params[1][0].upper() + params[1][1:]
-
-            if params[3] == EMPTY_INDICATOR:
-                if param_1 == 'Плановый':
-                    year = ' в ' + str(datetime.datetime.now().year) + ' году'
-                else:
-                    year = ''
-            else:
-                year = " в " + params[3] + " году"
-
-            if params[5] == EMPTY_INDICATOR:
-                territory = " " + data.PLACES[EMPTY_INDICATOR]
-            else:
-                territory = ' ' + data.PLACES[params[5]][2]
-
-            response = param_1 + theme + territory + year
-        else:
-            theme = " " + params[0]
-
-            if params[1] == EMPTY_INDICATOR:
-                param_1 = "Фактические"
-            else:
-                param_1 = params[1][0].upper() + params[1][1:-1] + "е"
-
-            if params[2] == EMPTY_INDICATOR:
-                param_2 = ""
-            else:
-                param_2 = " " + params[2][:-1] + "е"
-
-            if params[3] == EMPTY_INDICATOR:
-                if param_1 == 'Плановые':
-                    year_3 = ' в 2016 году'
-                else:
-                    year_3 = ''
-            else:
-                year_3 = " в " + params[3] + " году"
-
-            sphere_4 = " " + data.SPHERES[params[4]][0]
-
-            if params[5] == EMPTY_INDICATOR:
-                territory = ' ' + data.PLACES[EMPTY_INDICATOR]
-            else:
-                territory = ' ' + data.PLACES[params[5]][2]
-
-            response = param_1 + param_2 + theme + territory + sphere_4 + year_3
-
-        return 'Я понял ваш запрос как: "' + response + '".'
+        # if params[0] == "дефицит":
+        #     theme = ' дефицит/профицит'
+        #
+        #     if params[1] == EMPTY_INDICATOR:
+        #         param_1 = 'Фактический'
+        #     else:
+        #         param_1 = params[1][0].upper() + params[1][1:]
+        #
+        #     if params[3] == EMPTY_INDICATOR:
+        #         if param_1 == 'Плановый':
+        #             year = ' в ' + str(datetime.datetime.now().year) + ' году'
+        #         else:
+        #             year = ''
+        #     else:
+        #         year = " в " + params[3] + " году"
+        #
+        #     if params[5] == EMPTY_INDICATOR:
+        #         territory = " " + data.PLACES[EMPTY_INDICATOR]
+        #     else:
+        #         territory = ' ' + data.PLACES[params[5]][2]
+        #
+        #     response = param_1 + theme + territory + year
+        # else:
+        #     theme = " " + params[0]
+        #
+        #     if params[1] == EMPTY_INDICATOR:
+        #         param_1 = "Фактические"
+        #     else:
+        #         param_1 = params[1][0].upper() + params[1][1:-1] + "е"
+        #
+        #     if params[2] == EMPTY_INDICATOR:
+        #         param_2 = ""
+        #     else:
+        #         param_2 = " " + params[2][:-1] + "е"
+        #
+        #     if params[3] == EMPTY_INDICATOR:
+        #         if param_1 == 'Плановые':
+        #             year_3 = ' в 2016 году'
+        #         else:
+        #             year_3 = ''
+        #     else:
+        #         year_3 = " в " + params[3] + " году"
+        #
+        #     sphere_4 = " " + data.SPHERES[params[4]][0]
+        #
+        #     if params[5] == EMPTY_INDICATOR:
+        #         territory = ' ' + data.PLACES[EMPTY_INDICATOR]
+        #     else:
+        #         territory = ' ' + data.PLACES[params[5]][2]
+        #
+        #     response = param_1 + param_2 + theme + territory + sphere_4 + year_3
+        #
+        # return 'Я понял ваш запрос как: "' + response + '".'
 
 
 class M2Result:
