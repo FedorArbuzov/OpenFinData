@@ -5,7 +5,7 @@ from telebot import types
 import constants
 import config
 
-from m1_manager import MessengerManager
+from messenger_manager import MessengerManager
 
 API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
@@ -54,10 +54,27 @@ def repeat_all_messages(message):
 # Text handler
 @bot.message_handler(content_types=['text'])
 def salute(message):
-    print(message.text)
-    msg = MessengerManager.greetings(message.text)
-    if msg:
-        bot.send_message(message.chat.id, msg)
+    message_text = message.text.lower().strip()
+
+    greets = MessengerManager.greetings(message.text)
+    if greets:
+        bot.send_message(message.chat.id, greets)
+    else:
+        result = MessengerManager.make_request(message_text, 'TG')
+        if len(result.messages) == 1:
+            bot.send_message(message.chat.id, result.messages[0])
+        else:
+            for msg in result.messages:
+                bot.send_message(message.chat.id, msg)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    if call.data == 'full_documentation':
+        file1 = open('files\\Datatron User Guide.pdf', 'rb')
+        bot.send_document(chat_id=call.message.chat.id, data=file1)
+    elif call.data == 'intro_video':
+        bot.send_message(call.message.chat.id, 'https://youtu.be/swok2pcFtNI')
 
 
 # inline mode handler
@@ -78,14 +95,9 @@ def query_text(query):
         bot.answer_inline_query(query.id, result_array)
 
     else:
-        m3_result = MessengerManager.make_request_m3(m2_result)
         try:
-            if m3_result.data is False:
-                msg_append_text = ': ' + constants.ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
-                title = 'Данных нет'
-            else:
-                msg_append_text = ':\n' + str(m3_result.number)
-                title = str(m3_result.number)
+            msg_append_text = ':\n' + str(m2_result.response)
+            title = str(m2_result.response)
 
             msg = types.InlineQueryResultArticle(id='1',
                                                  title=title,
@@ -102,7 +114,7 @@ def query_text(query):
 def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(API_TOKEN, file_info.file_path))
-    r = MessengerManager.parse_voice(file.content, "TG")
+    r = MessengerManager.make_voice_request(file.content, "TG")
 
     if type(r) is str:
         bot.send_message(message.chat.id, r.messages[0])
@@ -112,12 +124,6 @@ def voice_processing(message):
         else:
             for m in r.messages:
                 bot.send_message(message.chat.id, m)
-            if r.is_file:
-                path = r.path + '\\'
-                file1 = open(path + r.file_names[0], 'rb')
-                file2 = open(path + r.file_names[1], 'rb')
-                bot.send_document(message.chat.id, file1)
-                bot.send_document(message.chat.id, file2)
 
 
 # polling cycle

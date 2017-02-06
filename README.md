@@ -1,2 +1,2 @@
 # OpenFinData
-kek
+Intelligent search system for financial data

@@ -1,4 +1,4 @@
-from m1_manager import MessengerManager
+from messenger_manager import MessengerManager
 from constants import CMD_START_MSG
 
 print(CMD_START_MSG)
@@ -9,17 +9,17 @@ flag = True
 while flag:
     text = input('Введите запрос: ')
     if text.strip() != '':
-        msg = MessengerManager.greetings(text)
-        if msg:
-            print(msg)
+        greets = MessengerManager.greetings(text)
+        if greets:
+            print(greets)
             continue
 
-        r = MessengerManager.make_request(text.lower(), 'CMD', visualisation=False)
-        if len(r.messages) == 1:
-            print(r.messages[0])
+        result = MessengerManager.make_request(text.lower(), 'CMD')
+        if len(result.messages) == 1:
+            print(result.messages[0])
         else:
-            for m in r.messages:
-                print(m)
+            for msg in result.messages:
+                print(msg)
 
         y_n = input('Продолжить Y/N? ')
         if y_n in continue_case:
