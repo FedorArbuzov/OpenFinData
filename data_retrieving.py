@@ -1,6 +1,7 @@
 import requests
-from constants import ERROR_NO_DATA_GOT
+from constants import ERROR_NO_DATA_GOT, ERROR_NO_DOCS_FOUND
 import json
+import logging
 
 
 # Module, which is responsible for getting required from user data
@@ -13,9 +14,12 @@ class DataRetrieving:
         result = M2Result()
 
         docs = DataRetrieving._send_request_to_solr(user_request)
-        mdx_query, verbal = DataRetrieving._parse_solr_response(docs, result)
-
-        DataRetrieving._send_request_to_server(mdx_query, result)
+        if docs['response']['numFound']:
+            id_query, mdx_query, verbal_query = DataRetrieving._parse_solr_response(docs)
+            logging.info('{}\t{}\t{}\t{}'.format(__name__, user_request, id_query, verbal_query))
+            DataRetrieving._send_request_to_server(mdx_query, result)
+        else:
+            result.message = ERROR_NO_DOCS_FOUND
 
         return result
 
@@ -26,10 +30,13 @@ class DataRetrieving:
         return docs
 
     @staticmethod
-    def _parse_solr_response(solr_docs, result):
-        mdx = solr_docs['response']['docs'][0]['mdx'][0]
-        verbal = solr_docs['response']['docs'][0]['verbal'][0]
-        return mdx, verbal
+    def _parse_solr_response(solr_docs):
+        id_query = solr_docs['response']['docs'][0]['id'][0]
+        # mdx_query = solr_docs['response']['docs'][0]['mdx_query'][0]
+        # verbal_query = solr_docs['response']['docs'][0]['verbal_query'][0]
+        mdx_query = solr_docs['response']['docs'][0]['mdx'][0]
+        verbal_query = solr_docs['response']['docs'][0]['query'][0]
+        return id_query, mdx_query, verbal_query
 
     @staticmethod
     def _send_request_to_server(mdx_query, result):
@@ -50,7 +57,7 @@ class DataRetrieving:
 
         # Updating params of resulting object
         result.status = True
-        result.response = r.text["cells"][0][0]["value"]
+        result.response = json.loads(r.text)["cells"][0][0]["value"]
 
 
 class M2Result:

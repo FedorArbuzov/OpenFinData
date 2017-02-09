@@ -34,19 +34,12 @@ def repeat_all_messages(message):
     command_length = len('search')
     message_text = message.text[command_length + 2:].lower()
     if message_text != '':
-        r = MessengerManager.make_request(message_text, 'TG')
-        if len(r.messages) == 1:
-            bot.send_message(message.chat.id, r.messages[0])
+        result = MessengerManager.make_request(message_text, 'TG')
+        if len(result.messages) == 1:
+            bot.send_message(message.chat.id, result.messages[0])
         else:
-            for m in r.messages:
-                bot.send_message(message.chat.id, m)
-            if r.is_file:
-                path = r.path + '\\'
-                file1 = open(path + r.file_names[0], 'rb')
-                file2 = open(path + r.file_names[1], 'rb')
-                bot.send_document(message.chat.id, file1)
-                bot.send_document(message.chat.id, file2)
-
+            for msg in result.messages:
+                bot.send_message(message.chat.id, msg)
     else:
         bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
 
@@ -82,7 +75,7 @@ def callback_inline(call):
 def query_text(query):
     input_message_content = query.query
 
-    m2_result = MessengerManager.make_request_m2(input_message_content, 'TG-INLINE')
+    m2_result = MessengerManager.make_request_directly_to_m2(input_message_content, 'TG-INLINE')
 
     result_array = []
     if m2_result.status is False:  # in case the string is not correct we ask user to keep typing
@@ -114,15 +107,15 @@ def query_text(query):
 def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(API_TOKEN, file_info.file_path))
-    r = MessengerManager.make_voice_request(file.content, "TG")
+    result = MessengerManager.make_voice_request(file.content, "TG")
 
-    if type(r) is str:
-        bot.send_message(message.chat.id, r.messages[0])
+    if type(result) is str:
+        bot.send_message(message.chat.id, result.messages[0])
     else:
-        if len(r.messages) == 1:
-            bot.send_message(message.chat.id, r.messages[0])
+        if len(result.messages) == 1:
+            bot.send_message(message.chat.id, result.messages[0])
         else:
-            for m in r.messages:
+            for m in result.messages:
                 bot.send_message(message.chat.id, m)
 
 

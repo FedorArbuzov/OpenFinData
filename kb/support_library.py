@@ -86,7 +86,7 @@ def docs_needed(md, dd, measure_dim_sets):
         d_set_values_num = 1
 
         # для каждого измерения в кортеже
-        for dim_id in d_set[0]:
+        for dim_id in d_set[1]:
 
             # если имеются значениия для данного измерения
             if dim_with_number_of_values[dim_id] != 0:

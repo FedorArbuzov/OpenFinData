@@ -1,6 +1,6 @@
 from peewee import *
 
-DATABASE = 'simple.db'
+DATABASE = 'knowledge_base.db'
 database = SqliteDatabase(DATABASE)
 
 
@@ -48,23 +48,35 @@ class Cube_Dimension(BaseModel):
         primary_key = CompositeKey('dimension', 'cube')
 
 
+class Documents(BaseModel):
+    cube = ForeignKeyField(Cube)
+    mdx_query = CharField()
+    verbal_query = CharField()
+
+
 def create_tables():
     database.connect()
     database.create_tables(
-        [Dimension, Cube, Cube_Value, Cube_Dimension, Value, Dimension_Value])
+        [Dimension, Cube, Cube_Value, Cube_Dimension, Value, Dimension_Value, Documents])
 
 
 def drop_tables():
     database.drop_tables(
-        [Dimension, Cube, Cube_Value, Cube_Dimension, Value, Dimension_Value])
+        [Dimension, Cube, Cube_Value, Cube_Dimension, Value, Dimension_Value, Documents])
 
 
-create_tables()
-# drop_tables()
+def create_database(create=True):
+    if create:
+        create_tables()
 
-inserts = ""
-with open('simple.db.sql', 'r', encoding="utf-8") as file:
-    inserts = file.read().split(';')[1:-2]
+        inserts = ""
+        with open('knowledge_base.db.sql', 'r', encoding="utf-8") as file:
+            inserts = file.read().split(';')[1:-2]
 
-for i in inserts:
-    database.execute_sql(i)
+        for i in inserts:
+            database.execute_sql(i)
+    else:
+        drop_tables()
+
+create_database()
+# create_database(create=False)

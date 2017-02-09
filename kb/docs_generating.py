@@ -5,13 +5,13 @@ from os import getcwd, listdir, mkdir
 from os.path import isfile, join
 import json
 import pycurl
+import time
 
 
 def get_cube_name(cube_id):
     """Получение названия куба по id"""
 
-    for cube in Cube.raw('select name from cube where id = %s' % cube_id):
-        return cube.name
+    return Cube.get(Cube.id == cube_id).name
 
 
 def get_cube_measures_dimensions(cube_id):
@@ -34,14 +34,14 @@ def get_cube_measures_dimensions(cube_id):
     return md, dd
 
 
-def get_all_dimension_combinations(dd, md):
+def get_dimension_and_measure_combinations(dd, md, dimension_limit=3):
     """Создание всех возможных комбинаций измерений
 
     Вход: словарь из всех измерений и мер куба
     Выход: массив из возможных наборов комбинаций измерений и мер"""
 
     # Строк для логирования результатов данного методы
-    all_possible_combinations = ''
+    log_all_possible_combinations = []
 
     # все возможные сочетания измерений — например, [(1,2),(1,2,3),(1,2,5)...], где цифры - id измерений
     dimension_sets = []
@@ -51,7 +51,7 @@ def get_all_dimension_combinations(dd, md):
 
     # выбираем все возможные комбинации измерений по i элементов, где i больше либо равен 1 и
     # меньше либо равен количеству измерений куба
-    for number in range(1, len(dd) + 1):
+    for number in range(1, dimension_limit + 1):
         combination_with_i_items = list(combinations(dd.keys(), number))
 
         # добавляем получившихся набор комбинаций для i-го количества элементов в общий массив
@@ -63,26 +63,35 @@ def get_all_dimension_combinations(dd, md):
     for m_id in md:
         for idx, d_set in enumerate(dimension_sets):
             # логируем получившийся набор
-            all_possible_combinations += '{}. M:{} D:{}\n'.format(idx, md[m_id][1],
-                                                                  ''.join([dd[d_id] + ' ' for d_id in d_set]))
+            log_all_possible_combinations.append(
+                '{}. M:{} D:{}\n'.format(idx, md[m_id][1], ''.join([dd[d_id] + ' ' for d_id in d_set])))
 
             # добавляем получившийся объединенный набор (мера + измерение) в массив
             dimension_measure_sets.append([m_id, d_set])
 
     # записываем в файл получившиеся наборы
-    logging('1st all_possible_combinations', all_possible_combinations)
+    logging('1st all_possible_combinations', ''.join(log_all_possible_combinations))
 
     return dimension_measure_sets
 
 
-def generate_documents(md, dd, dimension_measure_sets, cube_name):
+def generate_documents(md, dd, dimension_measure_sets, cube_id, cube_name):
     """Генерация документов
 
     Вход: cловари из имеющихся мер и измерений куба, полный набор сочитающихся измерений и мер, название куба
     Выход: набор документов"""
 
-    # переменная для хранения всех значений измерений куба
+    # начало исполнение метода
+    start_time = time.time()
+
+    # все значения измерений куба
     dim_vals = []
+    # сгенерированные документы
+    docs = []
+    # количество созданных документов
+    docs_count = 0
+    # шаблон MDX запроса
+    mdx_template = 'SELECT {{[MEASURES].[{}]}} ON COLUMNS FROM [{}.DB] WHERE ({})'
 
     # выбор из БД значений всех измерений куба
     for idx, d_id in enumerate(dd):
@@ -93,15 +102,6 @@ def generate_documents(md, dd, dimension_measure_sets, cube_name):
             for v in Value.raw('select fvalue, nvalue from value where id = %s' % dv.value_id):
                 dim_vals[idx][1].append((v.nvalue, v.fvalue))
 
-    # переменная для хранения сгенерированных документов
-    docs = []
-
-    # шаблон MDX запроса
-    mdx_template = 'SELECT {{[MEASURES].[{}]}} ON COLUMNS FROM [{}.DB] WHERE ({})'
-
-    # TODO: рефакторить код
-    # TODO: добавить фильтры
-    i = 0
     # для каждого набора измерений с мерой
     for dim_set in dimension_measure_sets:
         # массив со всеми (за некоторыми исключениями) значениями определенного набора измерений
@@ -120,14 +120,14 @@ def generate_documents(md, dd, dimension_measure_sets, cube_name):
 
         for item in combs:
             # cтроки для сохранения нескольких фомальных/вербальных значений переменных
-            fvalues, nvalues = '', ''
+            fvalues, nvalues = [], []
 
             for elem, d_id in zip(item, dim_set[1]):
-                fvalues += '[{}].[{}],'.format(dd[d_id], elem[1])
-                nvalues += elem[0] + ' '
+                fvalues.append('[{}].[{}],'.format(dd[d_id], elem[1]))
+                nvalues.append(elem[0] + ' ')
 
             # убираем ненунжныю запятую и пробел в конце строки
-            fvalues, nvalues = fvalues[:-1], nvalues[:-1]
+            fvalues, nvalues = ''.join(fvalues)[:-1], ''.join(nvalues)[:-1]
 
             # mdx-запрос
             fr = mdx_template.format(md[dim_set[0]][1], cube_name, fvalues)
@@ -135,52 +135,58 @@ def generate_documents(md, dd, dimension_measure_sets, cube_name):
             # вербальный запрос
             nr = md[dim_set[0]][0] + ' ' + nvalues
 
-            docs.append({'id': i, 'mdx': fr, 'verbal': nr})
-            i += 1
+            docs.append({'cube': cube_id, 'mdx_query': fr, 'verbal_query': nr})
+            docs_count += 1
 
             # каждые 5000 документов выводим их количество
-            if i % 5000 == 0:
-                print(len(docs))
+            if docs_count % 20000 == 0:
+                print('{} / {}'.format(len(docs), docs_count))
 
-                # if i > 2000:
-                #     break
+        step_size = 200
+        with database.atomic():
+            for step in range(0, len(docs), step_size):
+                Documents.insert_many(docs[step:step + step_size]).execute()
+        docs.clear()
 
-    print('Документов создалось: {}'.format(len(docs)))
-    return docs
+    print('Документов создалось: {}'.format(docs_count))
+    print("Время выполнение методы: %s минут" % ((time.time() - start_time) / 60))
 
 
-def learn_model(docs):
+def learn_model(cube_id):
     """Отсеивание нерабочих документов
 
     Вход: набор документов
     Выход: набор документов только с работающими запросами"""
 
-    # Строк для логирования результатов данного методы
-    only_not_none_requests = ''
+    # Строка для логирования результатов данного методы
+    log_request_result = []
 
-    new_docs = []
-    for idx, item in enumerate(docs):
-        request_result = query_data(item['mdx'])
-        idx_step_string = '{}. {}: {}\n'.format(idx, item['mdx'], request_result[1])
+    count_all_docs = 0
+    count_deleted = 0
+
+    for idx, document in enumerate(Documents.select().where(Documents.id == cube_id)):
+        request_result = query_data(document.mdx_query)
+        idx_step_string = '{}. {}: {}\n'.format(idx, document.mdx_query, request_result[1])
         print(idx_step_string[:-1])
 
-        only_not_none_requests += idx_step_string
+        log_request_result.append(idx_step_string)
 
-        if request_result[0]:
-            new_docs.append(item)
+        # TODO: умное удаление ненужных строк
+        if not request_result[0]:
+            Documents.delete(document)
+            count_deleted += 1
+        count_all_docs = idx
 
-    print('Документов осталось: {0}, сокращение: {1:.2%}'.format(len(new_docs), len(new_docs)/len(docs)))
-    logging('only_not_none_requests', only_not_none_requests)
+    print('Документов осталось: {0}, сокращение: {1:.2%}'.format(count_all_docs - count_deleted,
+                                                                 count_deleted / count_all_docs))
+    logging('2nd request result', ''.join(log_request_result))
 
-    return new_docs
 
-
-def generate_json(docs, cube_name, max_obj_num=100000):
+def generate_json(cube_id, cube_name, max_obj_num=100000):
     """Генерация json документов
 
     Вход: набор документов
     Выход: None"""
-
     # Создаем папку для хранения сгенерированных документов для конкретного куба
     try:
         mkdir(cube_name)
@@ -188,10 +194,15 @@ def generate_json(docs, cube_name, max_obj_num=100000):
         pass
 
     i, j = 0, max_obj_num
+    docs = []
 
+    for document in Documents.select().where(Documents.id == cube_id):
+        docs.append({'ID': document.id, 'mdx_query': document.mdx_query, 'verbal_query': document.verbal_query})
+
+    # for documents in Documents.select().where(Documents.id == cube_id):
     for idx in range(len(docs) // max_obj_num + 1):
         # указываем путь и название файла для записи
-        doc_name = '{0}\\{1}\\{1}_{2}.json'.format(getcwd(), cube_name, idx)
+        doc_name = '{}\\{}\\{}.json'.format(getcwd(), cube_name, idx)
         json_str = json.dumps(docs[i:j])
 
         with open(doc_name, 'w', encoding='utf-8') as file:
@@ -206,7 +217,7 @@ def index_created_documents(cube_name):
 
     Вход: название куба
     Выход: None"""
-
+    pass
     # создание пути к папке, в которой хранятся документы
     path = '{}\\{}'.format(getcwd(), cube_name)
 
@@ -236,18 +247,18 @@ for cube in Cube.raw('select id from cube'):
 
     mdict, ddict = get_cube_measures_dimensions(id_cube)
 
-    measure_dim_sets = get_all_dimension_combinations(ddict)
+    measure_dim_sets = get_dimension_and_measure_combinations(ddict, mdict)
 
     dim_count, doc_count = docs_needed(mdict, ddict, measure_dim_sets)
 
-    documents = generate_documents(mdict, ddict, measure_dim_sets, name_cube)
+    generate_documents(mdict, ddict, measure_dim_sets, id_cube, name_cube)
 
     # # обучение путем проверки корректности документа, через реальный запрос к серверу
     # # !ОСТОРОЖНО!
-    # only_working_documents = learn_model(documents)
+    # only_working_documents = learn_model(id_cube)
     # # !ОСТОРОЖНО!
 
-    generate_json(documents, name_cube)
+    # generate_json(id_cube)
 
     # generate_json(only_working_documents, name_cube, max_obj_num=5000)
 
