@@ -21,8 +21,8 @@ def get_cube_measures_dimensions(cube_id):
     # например, {1: (текущие расходы, VALUE), 2: (плановые доходы, PLANONYEAR)}
     md = {}
     for m in Cube_Value.raw('select value_id from cube_value where cube_id = %s' % cube_id):
-        for v in Value.raw('select nvalue, fvalue from value where id = %s' % m.value_id):
-            md[m.value_id] = (v.nvalue, v.fvalue)
+        for v in Value.raw('select index_nvalue, fvalue from value where id = %s' % m.value_id):
+            md[m.value_id] = (v.index_nvalue, v.fvalue)
 
     # словарь измерений вида {id: формальное название измерения}
     # например, {1: 'TERRITORIES', 2: 'RZPR', 3: 'BGLEVELS'}
@@ -99,8 +99,8 @@ def generate_documents(md, dd, dimension_measure_sets, cube_id, cube_name):
         dim_vals[idx].append(d_id)
         dim_vals[idx].append([])
         for dv in Dimension_Value.raw('select value_id from dimension_value where dimension_id = %s' % d_id):
-            for v in Value.raw('select fvalue, nvalue from value where id = %s' % dv.value_id):
-                dim_vals[idx][1].append((v.nvalue, v.fvalue))
+            for v in Value.raw('select fvalue, index_nvalue from value where id = %s' % dv.value_id):
+                dim_vals[idx][1].append((v.index_nvalue, v.fvalue))
 
     # для каждого набора измерений с мерой
     for dim_set in dimension_measure_sets:

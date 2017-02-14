@@ -10,7 +10,8 @@ class BaseModel(Model):
 
 
 class Value(BaseModel):
-    nvalue = CharField(null=True)
+    full_nvalue = CharField()
+    index_nvalue = CharField()
     fvalue = CharField()
     mdx_extra = CharField(null=True)
 
