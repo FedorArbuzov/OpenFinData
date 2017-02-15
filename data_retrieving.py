@@ -58,6 +58,24 @@ class DataRetrieving:
         # Updating params of resulting object
         result.status = True
         result.response = json.loads(r.text)["cells"][0][0]["value"]
+        result.message = DataRetrieving._form_feedback(mdx_query, cube)
+
+    @staticmethod
+    def _form_feedback(mdx_query, cube):
+        left_part, right_part = mdx_query.split('(')
+
+        measure_value = left_part.split('}')[0].split('.')[1][1:-1]
+
+        dim = []
+        for item in right_part[:-1].split(','):
+            item = item.split('.')
+            dim.append(item[0][1:-1] + ': ' + item[1][1:-1])
+
+        dim_values = ', '.join(dim)
+
+        feedback = 'Система понял Вас так: \nКуб: {}\nМера: {}\nИзмерения: {}'.format(cube, measure_value, dim_values)
+        line = '='*20
+        return '\n'.join([line, feedback, line])
 
 
 class M2Result:

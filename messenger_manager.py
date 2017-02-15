@@ -78,7 +78,8 @@ class MessengerManager:
                 messages.append(m2_result.message)
             else:
                 messages.append(constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
-                messages.append(m2_result.response)
+                messages.append(m2_result.message)
+                messages.append('Ответ: ' + m2_result.response)
 
         except Exception as e:
             logging.info('{}\t{}'.format(e))
