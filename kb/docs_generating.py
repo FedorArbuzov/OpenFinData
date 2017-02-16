@@ -11,7 +11,7 @@ import json
 import pycurl
 import time
 
-MAX_OBJ_NUM = 1000
+MAX_OBJ_NUM = 100000
 
 temp_text_file_name = 'tmp_file{}.txt'
 temp_folder_name = 'tmp_docs'
@@ -137,6 +137,9 @@ def generate_documents(md, dd, dimension_measure_sets, cube_id, cube_name):
     # шаблон MDX запроса
     mdx_template = 'SELECT {{[MEASURES].[{}]}} ON COLUMNS FROM [{}.DB] WHERE ({})'
 
+    # индекс для названия tmp файла
+    doc_index = 0
+
     # выбор из БД значений всех измерений куба
     for idx, d_id in enumerate(dd):
         dim_vals.append([])
@@ -187,11 +190,12 @@ def generate_documents(md, dd, dimension_measure_sets, cube_id, cube_name):
                 print('{} / {}'.format(len(docs), docs_count))
 
         if idx == len(dimension_measure_sets) - 1 and len(docs) != 0:
-            write_documents_to_tmp_file(docs, idx, 'a')
+            write_documents_to_tmp_file(docs, doc_index, 'a')
             docs.clear()
         else:
             if len(docs) > MAX_OBJ_NUM:
-                write_documents_to_tmp_file(docs, idx, 'a')
+                write_documents_to_tmp_file(docs, doc_index, 'a')
+                doc_index += 1
                 docs.clear()
 
     print('Документов создалось: {}'.format(docs_count))
@@ -203,12 +207,15 @@ def learn_model():
 
     Выход: None (текстовый файл с документами, содержащими только работающие запросы"""
 
-    # Строка для логирования результатов данного методы
-    log_request_result = []
+    # начало исполнение метода
+    start_time = time.time()
+
     count_saved_docs = 0
     count_all_docs = 0
-    not_none_docs = []
     doc_index = 0
+
+    log_request_result = []
+    not_none_docs = []
 
     for document_set in read_documents_from_tmp_file():
         count_all_docs += len(document_set)
@@ -228,9 +235,11 @@ def learn_model():
         write_documents_to_tmp_file(not_none_docs, doc_index, 'w')
         not_none_docs.clear()
 
-    print('Документов осталось: {0}, сокращение: {1:.2%}'.format(count_saved_docs, 1 -
-                                                                 count_saved_docs / count_all_docs))
     logging(name_cube + '\\2nd request result', ''.join(log_request_result))
+
+    print('Документов осталось: {0}, сокращение: {1:.2%}'.format(
+        count_saved_docs, 1 - count_saved_docs / count_all_docs))
+    print("Время выполнение метода проверки наличия данных в запросах: %s минут" % ((time.time() - start_time) / 60))
 
 
 def generate_json(max_obj_num=MAX_OBJ_NUM):
@@ -257,8 +266,8 @@ def generate_json(max_obj_num=MAX_OBJ_NUM):
         tmp_file_index += 1
         i, j = 0, max_obj_num
 
-    # import shutil
-    # shutil.rmtree('{}\\{}'.format(name_cube, temp_folder_name))
+    import shutil
+    shutil.rmtree('{}\\{}'.format(name_cube, temp_folder_name))
 
 
 def index_created_documents(core='kb'):
@@ -293,21 +302,22 @@ for cube in Cube.raw('select id from cube'):
     name_cube = get_cube_name(id_cube)
 
     mdict, ddict = get_cube_measures_dimensions(id_cube)
-    #
+
+    # dimension_limit = 2, означает, что программа учитывает только комбинации от 1 до 2 измерений
     measure_dim_sets = get_dimension_and_measure_combinations(ddict, mdict, dimension_limit=2)
-    #
+
     dim_count, doc_count = docs_needed(mdict, ddict, measure_dim_sets)
-    #
+
     generate_documents(mdict, ddict, measure_dim_sets, id_cube, name_cube)
 
-    # # обучение путем проверки корректности документа, через реальный запрос к серверу
-    # # !ОСТОРОЖНО!
-    # only_working_documents = learn_model(name_cube)
-    # # !ОСТОРОЖНО!
+    # обучение путем проверки корректности документа, через реальный запрос к серверу
+    # !ОСТОРОЖНО!
+    # learn_model()
+    # !ОСТОРОЖНО!
 
     generate_json()
 
     index_created_documents()
 
-    # report(id_cube, name_cube, mdict, ddict, measure_dim_sets, dim_count, doc_count)
-    print('Время исполнения всей программы минут: {}'.format((time.time() - ts) / 60))
+    report(id_cube, name_cube, mdict, ddict, measure_dim_sets, dim_count, doc_count)
+    print('Время исполнения всей программы: {} минут'.format((time.time() - ts) / 60))

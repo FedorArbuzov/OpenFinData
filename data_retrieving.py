@@ -32,10 +32,8 @@ class DataRetrieving:
     @staticmethod
     def _parse_solr_response(solr_docs):
         id_query = solr_docs['response']['docs'][0]['id'][0]
-        # mdx_query = solr_docs['response']['docs'][0]['mdx_query'][0]
-        # verbal_query = solr_docs['response']['docs'][0]['verbal_query'][0]
-        mdx_query = solr_docs['response']['docs'][0]['mdx'][0]
-        verbal_query = solr_docs['response']['docs'][0]['query'][0]
+        mdx_query = solr_docs['response']['docs'][0]['mdx_query'][0]
+        verbal_query = solr_docs['response']['docs'][0]['verbal_query'][0]
         return id_query, mdx_query, verbal_query
 
     @staticmethod
@@ -73,7 +71,7 @@ class DataRetrieving:
 
         dim_values = ', '.join(dim)
 
-        feedback = 'Система понял Вас так: \nКуб: {}\nМера: {}\nИзмерения: {}'.format(cube, measure_value, dim_values)
+        feedback = 'Datatron выделил следующие параметры: \nКуб: {}\nМера: {}\nИзмерения: {}'.format(cube, measure_value, dim_values)
         line = '='*20
         return '\n'.join([line, feedback, line])
 

@@ -6,7 +6,7 @@ from data_retrieving import DataRetrieving
 import re
 import random as rnd
 
-logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'w', 'utf-8')], level=20,
+logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level=20,
                     format='%(asctime)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
 
 
