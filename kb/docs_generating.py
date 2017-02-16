@@ -1,37 +1,57 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+
 from kb.db_creation import *
 from itertools import combinations, chain, product
 from kb.support_library import logging, query_data, filter_combinations, report, docs_needed
-from os import getcwd, listdir, mkdir
+from os import getcwd, listdir, mkdir, remove, chdir
 from os.path import isfile, join
 import json
 import pycurl
 import time
 
-temp_text_file_name = 'tmp_documents.txt'
+MAX_OBJ_NUM = 1000
+
+temp_text_file_name = 'tmp_file{}.txt'
+temp_folder_name = 'tmp_docs'
+path_to_tmp_files = '{}\\{}\\' + temp_folder_name + '\\' + temp_text_file_name
 
 
-def write_documents_to_tmp_file(docs, mode):
+def write_documents_to_tmp_file(docs, file_index, mode):
     json_data = json.dumps(docs)
-    with open(name_cube + '\\' + temp_text_file_name, mode, encoding='utf-8') as file:
-        file.write(json_data[1:-1] + ',')
+    with open(path_to_tmp_files.format(getcwd(), name_cube, file_index), mode) as file:
+        file.write(json_data)
 
 
 def read_documents_from_tmp_file():
+    path = '{}\\{}\\{}'.format(getcwd(), name_cube, temp_folder_name)
+    tmp_files = [f for f in listdir(path) if isfile(join(path, f))]
+
     docs = []
-    with open(name_cube + '\\' + temp_text_file_name, 'r') as file:
-        json_data = json.loads('[' + file.readline()[:-1] + ']')
-        for line in json_data:
-            docs.append(
-                {'cube': line['cube'], 'mdx_query': line['mdx_query'], 'verbal_query': line['verbal_query']})
-    return docs
+    for tmp_file in tmp_files:
+        docs.clear()
+        with open(path + '\\' + tmp_file, 'r') as file:
+            json_data = json.loads(file.readline())
+            for line in json_data:
+                docs.append(
+                    {'cube': line['cube'], 'mdx_query': line['mdx_query'], 'verbal_query': line['verbal_query']})
+        yield docs
 
 
 def get_cube_name(cube_id):
     """Получение названия куба по id"""
 
     cube_name = Cube.get(Cube.id == cube_id).name
+
+    # создание директории для куба
     try:
         mkdir(cube_name)
+    except FileExistsError:
+        pass
+
+    try:
+        mkdir('{}\\{}'.format(cube_name, temp_folder_name))
     except FileExistsError:
         pass
 
@@ -94,7 +114,7 @@ def get_dimension_and_measure_combinations(dd, md, dimension_limit=3):
             dimension_measure_sets.append([m_id, d_set])
 
     # записываем в файл получившиеся наборы
-    logging(name_cube + '\\1st all_possible_combinations', ''.join(log_all_possible_combinations))
+    logging('{}\\{}'.format(name_cube, '1st all_possible_combinations'), ''.join(log_all_possible_combinations))
 
     return dimension_measure_sets
 
@@ -127,7 +147,7 @@ def generate_documents(md, dd, dimension_measure_sets, cube_id, cube_name):
                 dim_vals[idx][1].append((v.index_nvalue, v.fvalue))
 
     # для каждого набора измерений с мерой
-    for dim_set in dimension_measure_sets:
+    for idx, dim_set in enumerate(dimension_measure_sets):
         # массив со всеми (за некоторыми исключениями) значениями определенного набора измерений
         set_values_list = []
 
@@ -166,64 +186,79 @@ def generate_documents(md, dd, dimension_measure_sets, cube_id, cube_name):
             if docs_count % 20000 == 0:
                 print('{} / {}'.format(len(docs), docs_count))
 
-        if docs:
-            write_documents_to_tmp_file(docs, 'a')
+        if idx == len(dimension_measure_sets) - 1 and len(docs) != 0:
+            write_documents_to_tmp_file(docs, idx, 'a')
             docs.clear()
+        else:
+            if len(docs) > MAX_OBJ_NUM:
+                write_documents_to_tmp_file(docs, idx, 'a')
+                docs.clear()
 
     print('Документов создалось: {}'.format(docs_count))
     print("Время выполнение метода генерации документов: %s минут" % ((time.time() - start_time) / 60))
 
 
-def learn_model(cube_name):
+def learn_model():
     """Отсеивание нерабочих документов
 
     Выход: None (текстовый файл с документами, содержащими только работающие запросы"""
 
     # Строка для логирования результатов данного методы
     log_request_result = []
+    count_saved_docs = 0
+    count_all_docs = 0
+    not_none_docs = []
+    doc_index = 0
 
-    cleaned_docs = read_documents_from_tmp_file()
+    for document_set in read_documents_from_tmp_file():
+        count_all_docs += len(document_set)
 
-    count_deleted = 0
+        for idx, document in enumerate(document_set):
+            request_result = query_data(document['mdx_query'])
 
-    count_all_docs = len(cleaned_docs)
-    for idx, document in list(cleaned_docs):
-        request_result = query_data(document['mdx_query'])
-        idx_step_string = '{}. {}: {}\n'.format(idx, document['mdx_query'], request_result[1])
-        print(idx_step_string[:-1])
+            idx_step_string = '{}. {}: {}\n'.format(idx, document['mdx_query'], request_result[1])
+            print(idx_step_string[:-1])
 
-        log_request_result.append(idx_step_string)
+            if not request_result[0]:
+                log_request_result.append(idx_step_string)
+            else:
+                not_none_docs.append(document)
+                count_saved_docs += 1
 
-        if not request_result[0]:
-            cleaned_docs.remove(document)
-            count_deleted += 1
+        write_documents_to_tmp_file(not_none_docs, doc_index, 'w')
+        not_none_docs.clear()
 
-    print('Документов осталось: {0}, сокращение: {1:.2%}'.format(count_all_docs - count_deleted,
-                                                                 count_deleted / count_all_docs))
+    print('Документов осталось: {0}, сокращение: {1:.2%}'.format(count_saved_docs, 1 -
+                                                                 count_saved_docs / count_all_docs))
     logging(name_cube + '\\2nd request result', ''.join(log_request_result))
 
-    write_documents_to_tmp_file(cleaned_docs, 'w')
 
-
-def generate_json(max_obj_num=100000):
+def generate_json(max_obj_num=MAX_OBJ_NUM):
     """Генерация json документов
 
     Вход: набор документов
     Выход: None (текстовый файл с JSON-документами)"""
 
     i, j = 0, max_obj_num
-    docs = read_documents_from_tmp_file()
+    tmp_file_index = 0
 
-    for idx in range(len(docs) // max_obj_num + 1):
-        # указываем путь и название файла для записи
-        doc_name = '{}\\{}.json'.format(name_cube, idx)
-        json_str = json.dumps(docs[i:j])
+    for document_set in read_documents_from_tmp_file():
+        for idx in range(len(document_set) // max_obj_num + 1):
+            # указываем путь и название файла для записи
+            doc_name = '{}\\{}_{}.json'.format(name_cube, tmp_file_index, idx)
+            json_str = json.dumps(document_set[i:j])
 
-        with open(doc_name, 'w', encoding='utf-8') as file:
-            file.write(json_str)
+            with open(doc_name, 'w') as file:
+                file.write(json_str)
 
-        i += max_obj_num
-        j += max_obj_num
+            i += max_obj_num
+            j += max_obj_num
+
+        tmp_file_index += 1
+        i, j = 0, max_obj_num
+
+    # import shutil
+    # shutil.rmtree('{}\\{}'.format(name_cube, temp_folder_name))
 
 
 def index_created_documents(core='kb'):
@@ -231,12 +266,12 @@ def index_created_documents(core='kb'):
 
     Вход: название куба
     Выход: None"""
-    pass
+
     # создание пути к папке, в которой хранятся документы
     path = '{}\\{}'.format(getcwd(), name_cube)
 
-    # получение названия всех файлов, в папке
-    json_file_names = [f for f in listdir(path) if isfile(join(path, f))]
+    # получение названия всех json файлов, в папке
+    json_file_names = [f for f in listdir(path) if f.endswith('.json')]
 
     c = pycurl.Curl()
     c.setopt(c.URL, 'http://localhost:8983/solr/{}/update?commit=true'.format(core))
@@ -245,7 +280,7 @@ def index_created_documents(core='kb'):
         c.setopt(c.HTTPPOST,
                  [
                      ('fileupload',
-                      (c.FORM_FILE, getcwd()+'\\{}\\{}'.format(name_cube, file_name),
+                      (c.FORM_FILE, getcwd() + '\\{}\\{}'.format(name_cube, file_name),
                        c.FORM_CONTENTTYPE, 'application/json')
                       ),
                  ])
@@ -258,11 +293,11 @@ for cube in Cube.raw('select id from cube'):
     name_cube = get_cube_name(id_cube)
 
     mdict, ddict = get_cube_measures_dimensions(id_cube)
-
+    #
     measure_dim_sets = get_dimension_and_measure_combinations(ddict, mdict, dimension_limit=2)
-
+    #
     dim_count, doc_count = docs_needed(mdict, ddict, measure_dim_sets)
-
+    #
     generate_documents(mdict, ddict, measure_dim_sets, id_cube, name_cube)
 
     # # обучение путем проверки корректности документа, через реальный запрос к серверу
@@ -274,5 +309,5 @@ for cube in Cube.raw('select id from cube'):
 
     index_created_documents()
 
-    report(id_cube, name_cube, mdict, ddict, measure_dim_sets, dim_count, doc_count)
+    # report(id_cube, name_cube, mdict, ddict, measure_dim_sets, dim_count, doc_count)
     print('Время исполнения всей программы минут: {}'.format((time.time() - ts) / 60))
