@@ -34,6 +34,7 @@ def read_documents_from_tmp_file():
         with open(path + '\\' + tmp_file, 'r') as file:
             json_data = json.loads(file.readline())
             for line in json_data:
+                #TODO: разобраться с id
                 docs.append(
                     {'cube': line['cube'], 'mdx_query': line['mdx_query'], 'verbal_query': line['verbal_query']})
         yield docs

@@ -1,5 +1,5 @@
 import requests
-from constants import ERROR_NO_DATA_GOT, ERROR_NO_DOCS_FOUND
+from constants import ERROR_NO_DATA_GOT, ERROR_NO_DOCS_FOUND, ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
 import json
 import logging
 
@@ -53,6 +53,13 @@ class DataRetrieving:
             result.response = r.text
             return
 
+        number = json.loads(r.text)["cells"][0][0]["value"]
+
+        if not number:
+            result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST_SHORT
+            result.response = r.text
+            return
+
         # Updating params of resulting object
         result.status = True
         result.response = json.loads(r.text)["cells"][0][0]["value"]
@@ -60,6 +67,8 @@ class DataRetrieving:
 
     @staticmethod
     def _form_feedback(mdx_query, cube):
+
+        # TODO: подправить feedback под любой UI
         left_part, right_part = mdx_query.split('(')
 
         measure_value = left_part.split('}')[0].split('.')[1][1:-1]
@@ -71,8 +80,10 @@ class DataRetrieving:
 
         dim_values = ', '.join(dim)
 
-        feedback = 'Datatron выделил следующие параметры: \nКуб: {}\nМера: {}\nИзмерения: {}'.format(cube, measure_value, dim_values)
-        line = '='*20
+        feedback = 'Datatron выделил следующие параметры: \nКуб: {}\nМера: {}\nИзмерения: {}'.format(cube,
+                                                                                                     measure_value,
+                                                                                                     dim_values)
+        line = '=' * 20
         return '\n'.join([line, feedback, line])
 
 
@@ -81,3 +92,6 @@ class M2Result:
         self.status = status  # Variable, which shows first module if result of request is successful or not
         self.message = message  # Variable for containing error- and feedback-messages
         self.response = response  # Variable for storing JSON-response from server
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
