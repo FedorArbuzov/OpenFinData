@@ -35,11 +35,12 @@ def repeat_all_messages(message):
     message_text = message.text[command_length + 2:].lower()
     if message_text != '':
         result = MessengerManager.make_request(message_text, 'TG')
-        if len(result.messages) == 1:
-            bot.send_message(message.chat.id, result.messages[0])
+        if not result.status:
+            bot.send_message(message.chat.id, result.error)
         else:
-            for msg in result.messages:
-                bot.send_message(message.chat.id, msg)
+            bot.send_message(message.chat.id, result.message)
+            bot.send_message(message.chat.id, parse_feedback(result.feedback))
+            bot.send_message(message.chat.id, 'Ответ: ' + result.response)
     else:
         bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
 
@@ -54,11 +55,12 @@ def salute(message):
         bot.send_message(message.chat.id, greets)
     else:
         result = MessengerManager.make_request(message_text, 'TG')
-        if len(result.messages) == 1:
-            bot.send_message(message.chat.id, result.messages[0])
+        if not result.status:
+            bot.send_message(message.chat.id, result.error)
         else:
-            for msg in result.messages:
-                bot.send_message(message.chat.id, msg)
+            bot.send_message(message.chat.id, result.message)
+            bot.send_message(message.chat.id, parse_feedback(result.feedback))
+            bot.send_message(message.chat.id, 'Ответ: ' + result.response)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -117,6 +119,18 @@ def voice_processing(message):
         else:
             for m in result.messages:
                 bot.send_message(message.chat.id, m)
+
+
+def parse_feedback(fb):
+    fb_exp = fb['formal']
+    fb_norm = fb['verbal']
+    exp = '<b>Экспертная обратная связь</b>\nКуб: {}\nМера: {}\nИзмерения: {}'
+    norm = '<b>Дататрон выделил следующие параметры (обычная обратная связь)</b>:\n{}'
+    exp = exp.format(fb_exp['cube'], fb_exp['measure'],
+                     ', '.join([i['dim'] + ': ' + i['val'] for i in fb_exp['dims']]))
+    norm = norm.format('0. {}\n'.format(
+        fb_norm['measure']) + '\n'.join([str(idx + 1) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
+    return '{}\n\n{}'.format(exp, norm)
 
 
 # polling cycle

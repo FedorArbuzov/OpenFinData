@@ -4,6 +4,7 @@ from speechkit_library import speech_to_text
 from speechkit_library import SpeechException
 from data_retrieving import DataRetrieving
 import re
+import json
 import random as rnd
 
 logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level=20,
@@ -70,24 +71,23 @@ class MessengerManager:
 
     @staticmethod
     def _querying(user_request_string):
-        general_result = M1Result()
-        messages = []
+        m1_result = M1Result()
         try:
             m2_result = DataRetrieving.get_data(user_request_string)
             if m2_result.status is False:
-                messages.append(m2_result.message)
+                m1_result.error = m2_result.message
             else:
-                messages.append(constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU)
-                messages.append(m2_result.message)
-                messages.append('Ответ: ' + m2_result.response)
+                m1_result.status = True
+                m1_result.message = constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU
+                m1_result.feedback = m2_result.message
+                m1_result.response = m2_result.response
 
         except Exception as e:
-            logging.info('{}\t{}'.format(e))
+            logging.info('{}'.format(e))
             print(e)
-            messages.append(constants.ERROR_SERVER_DOES_NOT_RESPONSE)
+            m1_result.error = constants.ERROR_SERVER_DOES_NOT_RESPONSE
 
-        general_result.messages = messages
-        return general_result
+        return m1_result
 
     @staticmethod
     def _simple_split(s):
@@ -105,5 +105,12 @@ class MessengerManager:
 
 
 class M1Result:
-    def __init__(self, messages=None):
-        self.messages = messages  # Variable, which storage all messages from _querying
+    def __init__(self, status=False, error=None, message=None, feedback=None, response=None, ):
+        self.status = status
+        self.error = error
+        self.message = message  # Variable, which storage all messages from _querying
+        self.feedback = feedback
+        self.response = response
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda obj: obj.__dict__, sort_keys=True, indent=4)

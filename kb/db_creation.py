@@ -1,12 +1,12 @@
+from config import PATH_TO_DB_DIMA
 from peewee import *
 
-DATABASE = 'knowledge_base.db'
-database = SqliteDatabase(DATABASE)
+database = None
 
 
 class BaseModel(Model):
     class Meta:
-        database = database
+        database = SqliteDatabase(PATH_TO_DB_DIMA)
 
 
 class Value(BaseModel):

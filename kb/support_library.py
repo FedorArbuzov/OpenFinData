@@ -1,17 +1,20 @@
-from kb.db_creation import Dimension_Value
+from kb.db_creation import Dimension_Value, Value, Cube, Cube_Value
 import requests
 import json
 
 
 def is_dim_in_dim_set(dim, dim_set, dd):
+    """Проверка наличия в конкретном наборе измерения dim_set такого измерение, название которого равно dim"""
     return bool(list(filter(lambda dim_id: dd[dim_id] == dim, iter(dim_set))))
 
 
 def is_dim_in_cube(dim, dd):
+    """Проверка наличия в среди всеъ измерений куба, измерения с названием dim"""
     return bool(list(filter(lambda dim_id: dd[dim_id] == dim, iter(dd))))
 
 
 def filter_combinations(combs, dim_set, dd):
+    """Фильтрация запросов на основе 1-4 пунктов от Алексея"""
     filtered_combs = list(combs)
 
     # уровень бюджета, если присутствует в измерения, должен быть указан (пункт 4)
@@ -101,6 +104,7 @@ def docs_needed(md, dd, measure_dim_sets):
 
 
 def report(cube_id, cube_name, md, dd, measure_dim_sets, dim_num, doc_num):
+    """Отчет в консоль по генерации документов"""
     split_line = '=' * 10 + ' Шаг %s ' + '=' * 10
     print('Куб: {}, cube_id: {}'.format(cube_name, cube_id))
     print(split_line % '1')
@@ -116,6 +120,7 @@ def report(cube_id, cube_name, md, dd, measure_dim_sets, dim_num, doc_num):
 
 
 def query_data(mdx_query):
+    """Фильтрация запросов на основе 1-4 пунктов от Алексея"""
     query_by_elements = mdx_query.split(' ')
     from_element = query_by_elements[query_by_elements.index('FROM') + 1]
     cube = from_element[1:len(from_element) - 4]
@@ -133,5 +138,23 @@ def query_data(mdx_query):
 
 
 def logging(file_name, text):
+    """Логирование промежуточных этапов"""
     with open(file_name + '.txt', 'w') as file:
         file.write(text)
+
+
+def get_full_nvalues_for_dimensions(fvalues):
+    """Получение полных вербальных значений измерений по формальным значениями"""
+    full_nvalues = []
+    for fvalue in fvalues:
+        for value in Value.select().where(Value.fvalue == fvalue):
+            full_nvalues.append(value.full_nvalue)
+    return full_nvalues
+
+
+def get_full_nvalue_for_measure(fvalue, cube_name):
+    """Получение полного вербального значения меры по формальному значению и кубу"""
+    for cube in Cube.select().where(Cube.name == cube_name):
+        for cube_value in Cube_Value.select().where(Cube_Value.cube == cube.id):
+            for value in Value.select().where(Value.id == cube_value.value_id, Value.fvalue == fvalue):
+                return value.full_nvalue
