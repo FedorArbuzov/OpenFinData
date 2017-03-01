@@ -5,7 +5,7 @@
 from kb.db_creation import *
 from itertools import combinations, chain, product
 from kb.support_library import logging, query_data, filter_combinations, report, docs_needed
-from os import getcwd, listdir, mkdir, remove, chdir
+from os import getcwd, listdir, mkdir
 from os.path import isfile, join
 import json
 import pycurl
@@ -16,6 +16,9 @@ MAX_OBJ_NUM = 100000
 temp_text_file_name = 'tmp_file{}.txt'
 temp_folder_name = 'tmp_docs'
 path_to_tmp_files = '{}\\{}\\' + temp_folder_name + '\\' + temp_text_file_name
+
+# Массив с названиями полей в документе
+df = ['cube', 'mdx_query', 'verbal_query']
 
 
 def write_documents_to_tmp_file(docs, file_index, mode):
@@ -34,9 +37,8 @@ def read_documents_from_tmp_file():
         with open(path + '\\' + tmp_file, 'r') as file:
             json_data = json.loads(file.readline())
             for line in json_data:
-                #TODO: разобраться с id
-                docs.append(
-                    {'cube': line['cube'], 'mdx_query': line['mdx_query'], 'verbal_query': line['verbal_query']})
+                # TODO: разобраться с id
+                docs.append({df[0]: line[df[0]], df[1]: line[df[1]], df[2]: line[df[2]]})
         yield docs
 
 
@@ -183,7 +185,7 @@ def generate_documents(md, dd, dimension_measure_sets, cube_id, cube_name):
             # вербальный запрос
             nr = md[dim_set[0]][0] + ' ' + nvalues
 
-            docs.append({'cube': cube_id, 'mdx_query': fr, 'verbal_query': nr})
+            docs.append({df[0]: cube_id, df[1]: fr, df[2]: nr})
             docs_count += 1
 
             # каждые 5000 документов выводим их количество
@@ -222,9 +224,9 @@ def learn_model():
         count_all_docs += len(document_set)
 
         for idx, document in enumerate(document_set):
-            request_result = query_data(document['mdx_query'])
+            request_result = query_data(document[df[1]])
 
-            idx_step_string = '{}. {}: {}\n'.format(idx, document['mdx_query'], request_result[1])
+            idx_step_string = '{}. {}: {}\n'.format(idx, document[df[1]], request_result[1])
             print(idx_step_string[:-1])
 
             if not request_result[0]:

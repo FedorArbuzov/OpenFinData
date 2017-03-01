@@ -1,5 +1,6 @@
 from messenger_manager import MessengerManager
 from bottle import Bottle, get, post, request, run
+import codecs
 
 app = Bottle()
 
@@ -24,6 +25,8 @@ def get_basic(request_text=None):
 @app.post('/post')
 def post_basic():
     req = request.forms.get('request')
+    # Исправлена кодировка для POST-запросов
+    req = codecs.decode(bytes(req, 'iso-8859-1'), 'utf-8')
     if req:
         return MessengerManager.make_request(req.lower(), 'WEB').toJSON()
 
