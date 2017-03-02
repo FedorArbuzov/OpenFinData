@@ -33,7 +33,7 @@ def send_welcome(message):
 def repeat_all_messages(message):
     command_length = len('search')
     message_text = message.text[command_length + 2:].lower()
-    if message_text != '':
+    if message_text:
         result = MessengerManager.make_request(message_text, 'TG')
         if not result.status:
             bot.send_message(message.chat.id, result.error)

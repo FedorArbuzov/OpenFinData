@@ -13,7 +13,7 @@ def main():
 @app.get('/get/<request_text>')
 def get_basic(request_text=None):
     request_text = request_text.lower().strip()
-    if not request_text:
+    if request_text:
         greets = MessengerManager.greetings(request_text)
         if greets:
             return greets

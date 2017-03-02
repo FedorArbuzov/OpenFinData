@@ -1,6 +1,7 @@
 from messenger_manager import MessengerManager
 from constants import CMD_START_MSG
 import json
+import requests
 
 
 def parse_feedback(fb):
@@ -18,24 +19,40 @@ def parse_feedback(fb):
 print(CMD_START_MSG)
 
 continue_case = ('Y', 'y')
+http_api = False
 flag = True
+
+http_usage = input('Работать по HTTP API Y[y]/N[n]: ')
+
+if http_usage in ('y', 'Y'):
+    http_api = True
 
 while flag:
     text = input('Введите запрос: ')
     text = text.lower().strip()
-    if not text:
+    if text:
         greets = MessengerManager.greetings(text)
         if greets:
             print(greets)
             continue
 
-        result = MessengerManager.make_request(text.lower(), 'CMD')
-        if not result.status:
-            print(result.error)
+        result = None
+        if http_api:
+            result = requests.get('http://localhost:8019/get/%s' % text)
+            result = json.loads(result.text)
+            if result['error']:
+                print(result['error'])
+            else:
+                print(parse_feedback(result['feedback']))
+                print('Ответ: ' + result['response'])
         else:
-            print(result.message)
-            print(parse_feedback(result.feedback))
-            print('Ответ: ' + result.response)
+            result = MessengerManager.make_request(text.lower(), 'CMD')
+            if not result.status:
+                print(result.error)
+            else:
+                print(result.message)
+                print(parse_feedback(result.feedback))
+                print('Ответ: ' + result.response)
 
         y_n = input('Продолжить Y/N? ')
         if y_n in continue_case:
