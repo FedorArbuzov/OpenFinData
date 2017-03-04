@@ -1,7 +1,7 @@
 import logging
 import constants
-from speechkit_library import speech_to_text
-from speechkit_library import SpeechException
+from speechkit import speech_to_text
+from speechkit import SpeechException
 from data_retrieving import DataRetrieving
 import re
 import json
