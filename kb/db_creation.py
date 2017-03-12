@@ -1,7 +1,7 @@
 from config import PATH_TO_DB_DIMA
 from peewee import *
 
-database = None
+database = SqliteDatabase(PATH_TO_DB_DIMA)
 
 
 class BaseModel(Model):

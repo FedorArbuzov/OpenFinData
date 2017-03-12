@@ -15,11 +15,15 @@ def write_to_file(docs):
 
 def create_values():
     values = []
-    for value in Value.select(Value.index_nvalue, Value.fvalue):
-        values.append({'verbal': value.index_nvalue, 'value': value.fvalue})
+    for value in Value.select():
+        for dimension_value in Dimension_Value.raw(
+                        'select dimension_id from dimension_value where value_id = %s' % value.id):
+            for dimension in Dimension.raw('select label from dimension where id = %s' % dimension_value.dimension_id):
+                values.append(
+                    {'verbal': value.index_nvalue, 'formal': {'dimension': dimension.label, 'fvalue': value.fvalue}})
     return values
 
-
+    
 def create_cubes():
     cubes = []
     for cube in Cube.select():
@@ -47,7 +51,8 @@ def index_created_documents(core='kb2'):
                  ])
         c.perform()
 
-# data = create_values() + create_cubes()
-# write_to_file(data)
+
+data = create_values() + create_cubes()
+write_to_file(data)
 index_created_documents()
 # remove(getcwd()+"\\data_for_indexing.json")
