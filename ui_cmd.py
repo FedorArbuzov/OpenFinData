@@ -29,7 +29,7 @@ if http_usage in ('y', 'Y'):
 
 while flag:
     text = input('Введите запрос: ')
-    text = text.lower().strip()
+    text = text.strip()
     if text:
         greets = MessengerManager.greetings(text)
         if greets:

@@ -15,6 +15,7 @@ class DataRetrieving:
         Принимает на вход запрос пользователя.
         Возвращает объект класса M2Result."""
 
+        user_request = user_request.lower()
         result = M2Result()
         # предварительная обработка входной строки
         if method == 'solr':

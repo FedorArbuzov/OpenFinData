@@ -7,10 +7,14 @@ class Solr:
     @staticmethod
     def get_data(user_request):
         filtered_user_request = Solr._preprocessing_request(user_request)
-        docs = Solr._send_request_to_solr(filtered_user_request)
-        if docs['response']['numFound']:
-            id_query, mdx_query, verbal_query = Solr._parse_solr_response(docs)
-            return DrSolrResult(True, id_query, mdx_query, verbal_query)
+        try:
+            docs = Solr._send_request_to_solr(filtered_user_request)
+
+            if docs['response']['numFound']:
+                id_query, mdx_query, verbal_query = Solr._parse_solr_response(docs)
+                return DrSolrResult(True, id_query, mdx_query, verbal_query)
+        except:
+            return DrSolrResult(False)
 
     @staticmethod
     def _preprocessing_request(user_request):
@@ -41,7 +45,7 @@ class Solr:
         Возвращает id, MDX и вербальный запросы, содержащиеся в документе"""
         id_query = solr_docs['response']['docs'][0]['id']
         mdx_query = solr_docs['response']['docs'][0]['mdx_query'][0]
-        verbal_query = solr_docs['response']['docs'][0]['verbal_query'][0]
+        verbal_query = solr_docs['response']['docs'][0]['verbal_query']
         return id_query, mdx_query, verbal_query
 
 

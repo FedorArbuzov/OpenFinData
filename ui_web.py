@@ -12,13 +12,13 @@ def main():
 
 @app.get('/get/<request_text>')
 def get_basic(request_text=None):
-    request_text = request_text.lower().strip()
+    request_text = request_text.strip()
     if request_text:
         greets = MessengerManager.greetings(request_text)
         if greets:
             return greets
 
-        result = MessengerManager.make_request(request_text.lower(), 'WEB')
+        result = MessengerManager.make_request(request_text, 'WEB')
         return result.toJSON()
 
 
@@ -28,7 +28,7 @@ def post_basic():
     # Исправлена кодировка для POST-запросов
     req = codecs.decode(bytes(req, 'iso-8859-1'), 'utf-8')
     if req:
-        return MessengerManager.make_request(req.lower(), 'WEB').toJSON()
+        return MessengerManager.make_request(req, 'WEB').toJSON()
 
 
 @app.error(404)

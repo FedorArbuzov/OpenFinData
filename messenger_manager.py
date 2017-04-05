@@ -97,6 +97,7 @@ class MessengerManager:
 
     @staticmethod
     def _greetings(text):
+        text = text.lower()
         for word in MessengerManager._simple_split(text):
             if word in constants.HELLO:
                 return constants.HELLO_ANSWER[rnd.randint(0, len(constants.HELLO_ANSWER) - 1)]

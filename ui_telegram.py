@@ -32,7 +32,7 @@ def send_welcome(message):
 @bot.message_handler(commands=['search'])
 def repeat_all_messages(message):
     command_length = len('search')
-    message_text = message.text[command_length + 2:].lower()
+    message_text = message.text[command_length + 2:]
     if message_text:
         result = MessengerManager.make_request(message_text, 'TG')
         if not result.status:
@@ -48,7 +48,7 @@ def repeat_all_messages(message):
 # Text handler
 @bot.message_handler(content_types=['text'])
 def salute(message):
-    message_text = message.text.lower().strip()
+    message_text = message.text.strip()
 
     greets = MessengerManager.greetings(message.text)
     if greets:
