@@ -73,7 +73,7 @@ class MessengerManager:
     def _querying(user_request_string):
         m1_result = M1Result()
         try:
-            m2_result = DataRetrieving.get_data(user_request_string)
+            m2_result = DataRetrieving.get_data(user_request_string, docs_type="base")
             if m2_result.status is False:
                 m1_result.error = m2_result.message
             else:
