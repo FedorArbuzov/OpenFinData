@@ -29,7 +29,7 @@ class Solr:
         Возвращает документ (так как rows=1) в виде JSON-объекта"""
 
         json_response = requests.get(
-            'http://localhost:8983/solr/kb/select/?q=%s&rows=1&wt=json' % filtered_user_request).text
+            'http://localhost:8983/solr/knowledgebase/select/?q=%s&rows=1&wt=json' % filtered_user_request).text
         docs = json.loads(json_response)
         return docs
 
