@@ -20,7 +20,7 @@ def create_values():
                         'select dimension_id from dimension_value where value_id = %s' % value.id):
             for dimension in Dimension.raw('select label from dimension where id = %s' % dimension_value.dimension_id):
                 values.append(
-                    {'verbal': value.index_nvalue, 'formal': {'dimension': dimension.label, 'fvalue': value.fvalue}})
+                    {'verbal': value.index_nvalue, 'dimension': dimension.label, 'fvalue': value.fvalue})
     return values
 
     
@@ -31,7 +31,7 @@ def create_cubes():
     return cubes
 
 
-def index_created_documents(core='kb2'):
+def index_created_documents(core='kb'):
     # создание пути к папке, в которой хранятся документы
     path = getcwd()
 
@@ -55,4 +55,4 @@ def index_created_documents(core='kb2'):
 data = create_values() + create_cubes()
 write_to_file(data)
 index_created_documents()
-# remove(getcwd()+"\\data_for_indexing.json")
+remove(getcwd()+"\\data_for_indexing.json")

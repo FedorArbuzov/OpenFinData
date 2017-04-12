@@ -10,7 +10,7 @@ from dr.cntk import CNTK
 # Module, which is responsible for getting required from user data
 class DataRetrieving:
     @staticmethod
-    def get_data(user_request, method='solr'):
+    def get_data(user_request, method='solr', docs_type="base"):
         """Единственный API метод для 2го модуля.
 
         Принимает на вход запрос пользователя.
@@ -19,11 +19,12 @@ class DataRetrieving:
         print(cntk_result.tags)
 
 
+        user_request = user_request.lower()
         result = M2Result()
         result.cntk_response = cntk_result.tags
         # предварительная обработка входной строки
         if method == 'solr':
-            solr_result = Solr.get_data(user_request)
+            solr_result = Solr.get_data(user_request, docs_type=docs_type)
             if solr_result.status:
                 api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
                 api_response = api_response.text
