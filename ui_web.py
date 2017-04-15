@@ -1,5 +1,5 @@
 from messenger_manager import MessengerManager
-from bottle import Bottle, get, post, request, run
+from bottle import Bottle, request, run
 import codecs
 
 app = Bottle()
@@ -18,7 +18,7 @@ def get_basic(request_text=None):
         if greets:
             return greets
 
-        result = MessengerManager.make_request(request_text, 'WEB')
+        result = MessengerManager.make_request(request_text, 'WEB', 'user_session_id')
         return result.toJSON()
 
 
