@@ -6,10 +6,11 @@ from os import getcwd, listdir, remove
 import json
 import pycurl
 
+file_name = 'data_for_indexing.json'
 
 def write_to_file(docs):
     json_data = json.dumps(docs)
-    with open('data_for_indexing.json', 'a') as file:
+    with open(file_name, 'a') as file:
         file.write(json_data)
 
 
@@ -20,18 +21,18 @@ def create_values():
                         'select dimension_id from dimension_value where value_id = %s' % value.id):
             for dimension in Dimension.raw('select label from dimension where id = %s' % dimension_value.dimension_id):
                 values.append(
-                    {'verbal': value.index_nvalue, 'dimension': dimension.label, 'fvalue': value.fvalue})
+                    {'verbal': value.lem_index_value, 'dimension': dimension.label, 'fvalue': value.cube_value})
     return values
 
     
 def create_cubes():
     cubes = []
     for cube in Cube.select():
-        cubes.append({'cube': cube.name, 'tags': cube.tags})
+        cubes.append({'cube': cube.name, 'tags': cube.description})
     return cubes
 
 
-def index_created_documents(core='kb'):
+def index_created_documents(core):
     # создание пути к папке, в которой хранятся документы
     path = getcwd()
 
@@ -52,7 +53,8 @@ def index_created_documents(core='kb'):
         c.perform()
 
 
-data = create_values() + create_cubes()
-write_to_file(data)
-index_created_documents()
-remove(getcwd()+"\\data_for_indexing.json")
+def generate_docs(core='kb'):
+    data = create_values() + create_cubes()
+    write_to_file(data)
+    index_created_documents(core=core)
+    remove('{}\\{}'.format(getcwd(), file_name))

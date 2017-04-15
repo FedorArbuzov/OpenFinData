@@ -1,6 +1,7 @@
 import requests
 from constants import ERROR_IN_MDX_REQUEST, ERROR_NO_DOCS_FOUND, ERROR_NULL_DATA_FOR_SUCH_REQUEST
 from kb.support_library import get_full_nvalues_for_dimensions, get_full_nvalue_for_measure
+from text_normalization import normalization
 import json
 import logging
 from dr.solr import Solr
@@ -9,17 +10,22 @@ from dr.solr import Solr
 # Module, which is responsible for getting required from user data
 class DataRetrieving:
     @staticmethod
-    def get_data(user_request, method='solr', docs_type="base"):
+    def get_data(user_request, method='solr', docs_type='base'):
         """Единственный API метод для 2го модуля.
 
         Принимает на вход запрос пользователя.
         Возвращает объект класса M2Result."""
 
-        user_request = user_request.lower()
         result = M2Result()
         # предварительная обработка входной строки
         if method == 'solr':
-            solr_result = Solr.get_data(user_request, docs_type=docs_type)
+            if docs_type == 'base':
+                solr = Solr('knowledgebase')
+                user_request = user_request.lower()
+            else:
+                solr = Solr('kb')
+                user_request = normalization(user_request.lower(), type='lem')
+            solr_result = solr.get_data(user_request, docs_type=docs_type)
             if solr_result.status:
                 api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
                 api_response = api_response.text
@@ -41,8 +47,9 @@ class DataRetrieving:
                     result.message = DataRetrieving._form_feedback(solr_result.mdx_query, cube)
 
                 logging.info(
-                    '{}\t{}\t{}\t{}\t{}'.format(__name__, user_request, solr_result.id_query, solr_result.verbal_query,
-                                                result.response))
+                    'Модуль: {}\tЗапрос: {}\tОтвет Solr: {}\t Число: {}'.format(__name__, user_request,
+                                                                                solr_result.verbal_query,
+                                                                                result.response))
             else:
                 result.message = ERROR_NO_DOCS_FOUND
         return result

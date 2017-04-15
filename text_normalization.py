@@ -8,7 +8,7 @@ from nltk.corpus import stopwords
 language = "russian"
 
 
-def normalization(text):
+def normalization(text, type='stem'):
     # TODO: стемминг или лематизация?
     stemmer = SnowballStemmer(language)  # Стеммер
     morph = pymorphy2.MorphAnalyzer()  # Лемматизатор
@@ -22,16 +22,16 @@ def normalization(text):
     # Убираем знаки пунктуации и стоп слова
     tokens = [t for t in tokens if (t not in stop_words) and (t not in list(pct) + ["«", "»"])]
 
-    # Стемминг
-    stem_tokens = [stemmer.stem(t) for t in tokens]
+    if type == 'stem':
+        # Стемминг
+        tokens = [stemmer.stem(t) for t in tokens]
+    else:
+        # Лемматизация
+        tokens = [morph.parse(t)[0].normal_form for t in tokens]
 
-    # Лемматизация
-    lem_tokens = [morph.parse(t)[0].normal_form for t in tokens]
+    tokens = delete_repeating_with_saving_order(tokens)
 
-    stem_tokens = delete_repeating_with_saving_order(stem_tokens)
-    lem_tokens = delete_repeating_with_saving_order(lem_tokens)
-
-    return ' '.join(stem_tokens), ' '.join(lem_tokens)
+    return ' '.join(tokens)
 
 
 def delete_repeating_with_saving_order(tokens):

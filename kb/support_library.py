@@ -1,4 +1,4 @@
-from kb.db_creation import Dimension_Value, Value, Cube, Cube_Value
+from kb.db_creation import Dimension_Value, Value, Cube, Cube_Measure, Measure
 import requests
 import json
 
@@ -143,18 +143,18 @@ def logging(file_name, text):
         file.write(text)
 
 
-def get_full_nvalues_for_dimensions(fvalues):
+def get_full_nvalues_for_dimensions(cube_values):
     """Получение полных вербальных значений измерений по формальным значениями"""
-    full_nvalues = []
-    for fvalue in fvalues:
-        for value in Value.select().where(Value.fvalue == fvalue):
-            full_nvalues.append(value.full_nvalue)
-    return full_nvalues
+    full_values = []
+    for cube_value in cube_values:
+        for value in Value.select().where(Value.cube_value == cube_value):
+            full_values.append(value.full_nvalue)
+    return full_values
 
 
-def get_full_nvalue_for_measure(fvalue, cube_name):
+def get_full_nvalue_for_measure(cube_value, cube_name):
     """Получение полного вербального значения меры по формальному значению и кубу"""
     for cube in Cube.select().where(Cube.name == cube_name):
-        for cube_value in Cube_Value.select().where(Cube_Value.cube == cube.id):
-            for value in Value.select().where(Value.id == cube_value.value_id, Value.fvalue == fvalue):
-                return value.full_nvalue
+        for cube_measure in Cube_Measure.select().where(Cube_Measure.cube == cube.id):
+            for measure in Measure.select().where(Measure.id == cube_measure.measure_id, Measure.cube_value == cube_value):
+                return measure.full_value

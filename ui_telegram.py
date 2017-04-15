@@ -34,7 +34,8 @@ def repeat_all_messages(message):
     command_length = len('search')
     message_text = message.text[command_length + 2:]
     if message_text:
-        result = MessengerManager.make_request(message_text, 'TG')
+        # user_id - id пользователя
+        result = MessengerManager.make_request(message_text, 'TG', message.chat.id)
         if not result.status:
             bot.send_message(message.chat.id, result.error)
         else:
@@ -54,12 +55,13 @@ def salute(message):
     if greets:
         bot.send_message(message.chat.id, greets)
     else:
-        result = MessengerManager.make_request(message_text, 'TG')
+        # user_id - id пользователя
+        result = MessengerManager.make_request(message_text, 'TG', message.chat.id)
         if not result.status:
             bot.send_message(message.chat.id, result.error)
         else:
             bot.send_message(message.chat.id, result.message)
-            bot.send_message(message.chat.id, parse_feedback(result.feedback))
+            bot.send_message(message.chat.id, parse_feedback(result.feedback), parse_mode='HTML')
             bot.send_message(message.chat.id, 'Ответ: ' + result.response)
 
 
@@ -109,16 +111,14 @@ def query_text(query):
 def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(API_TOKEN, file_info.file_path))
-    result = MessengerManager.make_voice_request(file.content, "TG")
-
-    if type(result) is str:
-        bot.send_message(message.chat.id, result.messages[0])
+    # user_id - id пользователя
+    result = MessengerManager.make_voice_request(file.content, "TG", message.chat.id)
+    if not result.status:
+        bot.send_message(message.chat.id, result.error)
     else:
-        if len(result.messages) == 1:
-            bot.send_message(message.chat.id, result.messages[0])
-        else:
-            for m in result.messages:
-                bot.send_message(message.chat.id, m)
+        bot.send_message(message.chat.id, result.message)
+        bot.send_message(message.chat.id, parse_feedback(result.feedback), parse_mode='HTML')
+        bot.send_message(message.chat.id, 'Ответ: ' + result.response)
 
 
 def parse_feedback(fb):

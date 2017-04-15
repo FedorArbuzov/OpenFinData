@@ -15,44 +15,52 @@ class MessengerManager:
     """Класс MessengerManager имеет API из 5 методов. Подробнее в документации к ним"""
 
     @staticmethod
-    def make_request(text, source):
+    def make_request(text, source, user_id):
         """Самый универсальный API метод для текстовых запросов.
 
-        Принимает на вход запрос (text), источник запроса (source).
+        Принимает на вход запрос (text), источник запроса (source), идентификатор пользователя (user_id).
 
         Возвращает объект класса M1Result."""
 
-        logging.info("{}\t{}\t{}".format(__name__, source, text))
+        logging.info(
+            "Модуль: {}\tПлатформа: {}\tID-пользователя: {}\tЗапрос: {}\tФормат: {}".format(__name__, source, user_id,
+                                                                                            text, 'текстовый запрос'))
 
         return MessengerManager._querying(text)
 
     @staticmethod
     def make_request_directly_to_m2(text, source):
+        # TODO: добавить id пользователя
         """API метод, используемый на данный момент только в inline-режиме
 
-        Принимает на вход запрос (text), источник запроса (source). Данный
-        метод позволяет получить ответ исключительно от второго модуля.
+        Принимает на вход запрос (text), источник запроса (source), идентификатор пользователя (user_id).
+        Данный метод позволяет получить ответ исключительно от второго модуля.
 
         В inline-режиме используется для проверки может ли система обработать
         запрос пользователя или нет.
 
         Возвращает объект класса M2Result."""
 
-        logging.info("{}\t{}\t{}".format(__name__, source, text))
+        logging.info(
+            "Модуль: {}\tПлатформа: {}\tЗапрос: {}\tФормат: {}".format(__name__, source, text, 'текстовый запрос'))
 
         return DataRetrieving.get_data(text)
 
     @staticmethod
-    def make_voice_request(record_bytes, source):
+    def make_voice_request(record_bytes, source, user_id):
         """Универсальный API метод для обработки голосовых запросов
 
-        Принимает на вход набор байтов записи (record_bytes), источник запроса (source).
+        Принимает на вход набор байтов записи (record_bytes), источник запроса (source),
+        идентификатор пользователя (user_id).
 
         Возвращает объект класса M1Result."""
 
         try:
             text = speech_to_text(bytes=record_bytes)
-            logging.info("{}\t{}\t{}".format(__name__, source, text))
+            logging.info(
+                "Модуль: {}\tПлатформа: {}\tID-пользователя: {}\tЗапрос: {}\tФормат: {}".format(__name__, source,
+                                                                                                user_id, text,
+                                                                                                'голосовой запрос'))
         except SpeechException:
             return constants.ERROR_CANNOT_UNDERSTAND_VOICE
         else:
@@ -106,7 +114,7 @@ class MessengerManager:
 
 
 class M1Result:
-    def __init__(self, status=False, error=None, message=None, feedback=None, response=None, ):
+    def __init__(self, status=False, error=None, message=None, feedback=None, response=None):
         self.status = status
         self.error = error
         self.message = message  # Variable, which storage all messages from _querying

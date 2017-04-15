@@ -10,10 +10,16 @@ class BaseModel(Model):
 
 
 class Value(BaseModel):
-    full_nvalue = CharField()
-    index_nvalue = CharField()
-    fvalue = CharField()
+    full_value = CharField()
+    lem_index_value = CharField()
+    cube_value = CharField()
     mdx_extra = CharField(null=True)
+
+
+class Measure(BaseModel):
+    full_value = CharField()
+    lem_index_value = CharField()
+    cube_value = CharField()
 
 
 class Dimension(BaseModel):
@@ -30,15 +36,7 @@ class Dimension_Value(BaseModel):
 
 class Cube(BaseModel):
     name = CharField()
-    tags = CharField()
-
-
-class Cube_Value(BaseModel):
-    cube = ForeignKeyField(Cube)
-    value = ForeignKeyField(Value)
-
-    class Meta:
-        primary_key = CompositeKey('cube', 'value')
+    description = CharField()
 
 
 class Cube_Dimension(BaseModel):
@@ -49,35 +47,20 @@ class Cube_Dimension(BaseModel):
         primary_key = CompositeKey('dimension', 'cube')
 
 
-class Documents(BaseModel):
+class Cube_Measure(BaseModel):
+    measure = ForeignKeyField(Measure)
     cube = ForeignKeyField(Cube)
-    mdx_query = CharField()
-    verbal_query = CharField()
+
+    class Meta:
+        primary_key = CompositeKey('measure', 'cube')
 
 
 def create_tables():
     database.connect()
     database.create_tables(
-        [Dimension, Cube, Cube_Value, Cube_Dimension, Value, Dimension_Value, Documents])
+        [Dimension, Cube, Measure, Cube_Measure, Cube_Dimension, Dimension_Value, Value])
 
 
 def drop_tables():
     database.drop_tables(
-        [Dimension, Cube, Cube_Value, Cube_Dimension, Value, Dimension_Value, Documents])
-
-
-def create_database(create=True):
-    if create:
-        create_tables()
-
-        inserts = ""
-        with open('knowledge_base.db.sql', 'r', encoding="utf-8") as file:
-            inserts = file.read().split(';')[1:-2]
-
-        for i in inserts:
-            database.execute_sql(i)
-    else:
-        drop_tables()
-
-# create_database()
-# create_database(create=False)
+        [Dimension, Cube, Measure, Cube_Measure, Cube_Dimension, Dimension_Value, Value])
