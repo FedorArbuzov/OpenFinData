@@ -29,12 +29,12 @@ def download(url, filename):
 #locations = ['Tutorials/SLUHandsOn', 'Examples/LanguageUnderstanding/ATIS/BrainScript']
 
 ##### СМЕНИТЕ ЭТИ ЛОКАЦИИ НА РАСПОЛОЖЕНИЕ ФАЙЛОВ У ВАС
-locations = ['C:/local/ATIS', 'C:/local/ATIS/Data']
+locations = ['C:/Users/imon/Documents/Git/Datatron 2.0/OpenFinData/cntk', 'C:/local/ATIS/Data']
 data = {
   'train': { 'file': 'atis.trainf.ctf', 'location': 0 },
   'test': { 'file': 'atis.testf.ctf', 'location': 0 },
-  'query': { 'file': 'query1.wl', 'location': 1 },
-  'slots': { 'file': 'slots1.wl', 'location': 1 }
+  'query': { 'file': 'query1.wl', 'location': 0 },
+  'slots': { 'file': 'slots1.wl', 'location': 0 }
 }
 
 for item in data.values():
