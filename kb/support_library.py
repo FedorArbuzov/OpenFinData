@@ -143,18 +143,19 @@ def logging(file_name, text):
         file.write(text)
 
 
-def get_full_nvalues_for_dimensions(cube_values):
+def get_full_values_for_dimensions(cube_values):
     """Получение полных вербальных значений измерений по формальным значениями"""
     full_values = []
     for cube_value in cube_values:
         for value in Value.select().where(Value.cube_value == cube_value):
-            full_values.append(value.full_nvalue)
+            full_values.append(value.full_value)
     return full_values
 
 
-def get_full_nvalue_for_measure(cube_value, cube_name):
+def get_full_value_for_measure(cube_value, cube_name):
     """Получение полного вербального значения меры по формальному значению и кубу"""
     for cube in Cube.select().where(Cube.name == cube_name):
         for cube_measure in Cube_Measure.select().where(Cube_Measure.cube == cube.id):
-            for measure in Measure.select().where(Measure.id == cube_measure.measure_id, Measure.cube_value == cube_value):
+            for measure in Measure.select().where(Measure.id == cube_measure.measure_id,
+                                                  Measure.cube_value == cube_value):
                 return measure.full_value

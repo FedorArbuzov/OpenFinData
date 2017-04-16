@@ -1,6 +1,7 @@
 import telebot
 import requests
 from telebot import types
+from logs_retriever import LogsRetriever
 
 import constants
 import config
@@ -9,6 +10,8 @@ from messenger_manager import MessengerManager
 
 API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
+
+logsRetriever = LogsRetriever('logs.log')
 
 
 # /start command handler; send start-message to the user
@@ -26,6 +29,30 @@ def send_welcome(message):
         parse_mode='HTML',
         reply_markup=constants.HELP_KEYBOARD,
         disable_web_page_preview=True)
+
+
+@bot.message_handler(commands=['getlog'])
+def get_all_logs(message):
+    bot.send_message(message.chat.id, logsRetriever.get_log(kind='all'))
+
+
+@bot.message_handler(commands=['getsessionlog'])
+def get_all_logs(message):
+    time_span = None
+    try:
+        time_span = int(message.text.split()[1])
+    except Exception as e:
+        print(e)
+    if time_span:
+        bot.send_message(message.chat.id,
+                         logsRetriever.get_log(kind='session', user_id=message.chat.id, time_delta=time_span))
+    else:
+        bot.send_message(message.chat.id, logsRetriever.get_log(kind='session', user_id=message.chat.id))
+
+
+@bot.message_handler(commands=['getrequestlog'])
+def get_all_logs(message):
+    bot.send_message(message.chat.id, logsRetriever.get_log(kind='request', user_id=message.chat.id))
 
 
 # /search message handler
@@ -79,7 +106,7 @@ def callback_inline(call):
 def query_text(query):
     input_message_content = query.query
 
-    m2_result = MessengerManager.make_request_directly_to_m2(input_message_content, 'TG-INLINE')
+    m2_result = MessengerManager.make_request_directly_to_m2(input_message_content, 'TG-INLINE', query.id)
 
     result_array = []
     if m2_result.status is False:  # in case the string is not correct we ask user to keep typing

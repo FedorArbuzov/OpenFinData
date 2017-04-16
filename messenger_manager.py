@@ -8,7 +8,9 @@ import json
 import random as rnd
 
 logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level=20,
-                    format='%(asctime)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
+              format='%(asctime)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
+
+logging_str = "Модуль: {}\tID-пользователя: {}\tПлатформа: {}\tЗапрос: {}\tФормат: {}"
 
 
 class MessengerManager:
@@ -22,14 +24,12 @@ class MessengerManager:
 
         Возвращает объект класса M1Result."""
 
-        logging.info(
-            "Модуль: {}\tПлатформа: {}\tID-пользователя: {}\tЗапрос: {}\tФормат: {}".format(__name__, source, user_id,
-                                                                                            text, 'текстовый запрос'))
+        logging.info(logging_str.format(__name__, user_id, source, text, 'text'))
 
-        return MessengerManager._querying(text)
+        return MessengerManager._querying(text, user_id)
 
     @staticmethod
-    def make_request_directly_to_m2(text, source):
+    def make_request_directly_to_m2(text, source, user_id):
         # TODO: добавить id пользователя
         """API метод, используемый на данный момент только в inline-режиме
 
@@ -41,8 +41,7 @@ class MessengerManager:
 
         Возвращает объект класса M2Result."""
 
-        logging.info(
-            "Модуль: {}\tПлатформа: {}\tЗапрос: {}\tФормат: {}".format(__name__, source, text, 'текстовый запрос'))
+        logging.info(logging_str.format(__name__, user_id, source, text, 'text'))
 
         return DataRetrieving.get_data(text)
 
@@ -57,14 +56,11 @@ class MessengerManager:
 
         try:
             text = speech_to_text(bytes=record_bytes)
-            logging.info(
-                "Модуль: {}\tПлатформа: {}\tID-пользователя: {}\tЗапрос: {}\tФормат: {}".format(__name__, source,
-                                                                                                user_id, text,
-                                                                                                'голосовой запрос'))
+            logging.info(logging_str.format(__name__, user_id, source, text, 'voice'))
         except SpeechException:
             return constants.ERROR_CANNOT_UNDERSTAND_VOICE
         else:
-            return MessengerManager._querying(text)
+            return MessengerManager._querying(text, user_id)
 
     @staticmethod
     def greetings(text):
@@ -78,10 +74,10 @@ class MessengerManager:
             return greets
 
     @staticmethod
-    def _querying(user_request_string):
+    def _querying(user_request_string, user_id):
         m1_result = M1Result()
         try:
-            m2_result = DataRetrieving.get_data(user_request_string, docs_type="base")
+            m2_result = DataRetrieving.get_data(user_request_string, user_id, docs_type="base")
             if m2_result.status is False:
                 m1_result.error = m2_result.message
             else:
@@ -91,7 +87,7 @@ class MessengerManager:
                 m1_result.response = m2_result.response
 
         except Exception as e:
-            logging.info('{}'.format(e))
+            logging.info('Ошибка: {}'.format(e))
             print(e)
             m1_result.error = constants.ERROR_SERVER_DOES_NOT_RESPONSE
 

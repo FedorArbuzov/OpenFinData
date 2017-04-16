@@ -1,6 +1,6 @@
 import requests
 from constants import ERROR_IN_MDX_REQUEST, ERROR_NO_DOCS_FOUND, ERROR_NULL_DATA_FOR_SUCH_REQUEST
-from kb.support_library import get_full_nvalues_for_dimensions, get_full_nvalue_for_measure
+from kb.support_library import get_full_values_for_dimensions, get_full_value_for_measure
 from text_normalization import normalization
 import json
 import logging
@@ -10,7 +10,7 @@ from dr.solr import Solr
 # Module, which is responsible for getting required from user data
 class DataRetrieving:
     @staticmethod
-    def get_data(user_request, method='solr', docs_type='base'):
+    def get_data(user_request, user_id, method='solr', docs_type='base'):
         """Единственный API метод для 2го модуля.
 
         Принимает на вход запрос пользователя.
@@ -46,12 +46,14 @@ class DataRetrieving:
                     # Формирование фидбэка
                     result.message = DataRetrieving._form_feedback(solr_result.mdx_query, cube)
 
-                logging.info(
-                    'Модуль: {}\tЗапрос: {}\tОтвет Solr: {}\t Число: {}'.format(__name__, user_request,
-                                                                                solr_result.verbal_query,
-                                                                                result.response))
+                logging_str = 'Модуль: {}\tID-пользователя: {}\tОтвет Solr: {}\tMDX-запрос: {}\tЧисло: {}'
+                logging.info(logging_str.format(__name__, user_id, solr_result.verbal_query, solr_result.mdx_query,
+                                          result.response))
             else:
                 result.message = ERROR_NO_DOCS_FOUND
+                logging_str = 'Модуль: {}\tID-пользователя: {}\tОтвет Solr: {}'
+                logging.info(logging_str.format(__name__, user_id, ERROR_NO_DOCS_FOUND))
+
         return result
 
     @staticmethod
@@ -92,8 +94,8 @@ class DataRetrieving:
             dims_vals.append({'dim': item[0][1:-1], 'val': item[1][1:-1]})
 
         # Полные вербальные отражения значений измерений и меры
-        full_verbal_dimensions_value = get_full_nvalues_for_dimensions([i['val'] for i in dims_vals])
-        full_verbal_measure_value = get_full_nvalue_for_measure(measure_value, cube)
+        full_verbal_dimensions_value = get_full_values_for_dimensions([i['val'] for i in dims_vals])
+        full_verbal_measure_value = get_full_value_for_measure(measure_value, cube)
 
         # фидбек в удобном виде для конвертации в JSON-объект
         feedback = {'formal': {'cube': cube, 'measure': measure_value, 'dims': dims_vals},
