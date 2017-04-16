@@ -1,12 +1,12 @@
-from config import PATH_TO_DB_DIMA
+from config import PATH_TO_DB_DIMA, PATH_TO_SERVER
 from peewee import *
 
-database = SqliteDatabase(PATH_TO_DB_DIMA)
+database = SqliteDatabase(PATH_TO_SERVER)
 
 
 class BaseModel(Model):
     class Meta:
-        database = SqliteDatabase(PATH_TO_DB_DIMA)
+        database = SqliteDatabase(PATH_TO_SERVER)
 
 
 class Value(BaseModel):

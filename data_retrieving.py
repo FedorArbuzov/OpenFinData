@@ -5,6 +5,7 @@ from text_normalization import normalization
 import json
 import logging
 from dr.solr import Solr
+from dr.cntk import CNTK
 
 
 # Module, which is responsible for getting required from user data
@@ -15,8 +16,12 @@ class DataRetrieving:
 
         Принимает на вход запрос пользователя.
         Возвращает объект класса M2Result."""
+        cntk_result = CNTK.get_data(user_request)
+        print(cntk_result.tags)
+
 
         result = M2Result()
+        result.cntk_response = cntk_result.tags
         # предварительная обработка входной строки
         if method == 'solr':
             if docs_type == 'base':
@@ -109,10 +114,11 @@ class DataRetrieving:
 
 
 class M2Result:
-    def __init__(self, status=False, message='', response=''):
+    def __init__(self, status=False, message='', response='', cntk_response=''):
         self.status = status  # Variable, which shows first module if result of request is successful or not
         self.message = message  # Variable for containing error- and feedback-messages
         self.response = response  # Variable for storing JSON-response from server
+        self.cntk_response = cntk_response #Variable for cntk
 
     def toJSON(self):
         return json.dumps(self, default=lambda obj: obj.__dict__, sort_keys=True, indent=4)

@@ -273,7 +273,7 @@ def generate_json(max_obj_num=MAX_OBJ_NUM):
     shutil.rmtree('{}\\{}'.format(name_cube, temp_folder_name))
 
 
-def index_created_documents(core='kb'):
+def index_created_documents(core='knowledgebase'):
     """Генерация json документов
 
     Вход: название куба
