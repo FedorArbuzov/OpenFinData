@@ -33,7 +33,9 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['getlog'])
 def get_all_logs(message):
-    bot.send_message(message.chat.id, logsRetriever.get_log(kind='all'))
+    # bot.send_message(message.chat.id, logsRetriever.get_log(kind='all'))
+    log_file = open('logs.log', 'rb')
+    bot.send_document(message.chat.id, data=log_file)
 
 
 @bot.message_handler(commands=['getsessionlog'])
