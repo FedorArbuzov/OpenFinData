@@ -24,32 +24,37 @@ class DataRetrieving:
         result.cntk_response = cntk_result.tags
         # предварительная обработка входной строки
         if method == 'solr':
-            solr_result = Solr.get_data(user_request, docs_type=docs_type)
-            if solr_result.status:
-                api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
-                api_response = api_response.text
+            solr_result = Solr.get_data(user_request)
+            if solr_result is not None:
+
+                if solr_result.status:
+                    api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
+                    api_response = api_response.text
 
                 # Обработка случая, когда MDX-запрос некорректен
-                if '"success":false' in api_response:
-                    result.message = ERROR_IN_MDX_REQUEST
-                    result.response = api_response
-                # Обработка случая, когда данных нет
-                elif not json.loads(api_response)["cells"][0][0]["value"]:
-                    result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST
-                    result.response = None
+                    if '"success":false' in api_response:
+                        result.message = ERROR_IN_MDX_REQUEST
+                        result.response = api_response
+                    # Обработка случая, когда данных нет
+                    elif not json.loads(api_response)["cells"][0][0]["value"]:
+                        result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST
+                        result.response = None
                 # В остальных случаях
-                else:
-                    result.status = True
-                    result.response = json.loads(api_response)["cells"][0][0]["value"]
+                    else:
+                        result.status = True
+                        result.response = json.loads(api_response)["cells"][0][0]["value"]
 
                     # Формирование фидбэка
-                    result.message = DataRetrieving._form_feedback(solr_result.mdx_query, cube)
+                        result.message = DataRetrieving._form_feedback(solr_result.mdx_query, cube)
 
-                logging.info(
-                    '{}\t{}\t{}\t{}\t{}'.format(__name__, user_request, solr_result.id_query, solr_result.verbal_query,
-                                                result.response))
+                    logging.info(
+                        '{}\t{}\t{}\t{}\t{}'.format(__name__, user_request, solr_result.id_query, solr_result.verbal_query,
+                                                    result.response))
+                else:
+                    result.message = ERROR_NO_DOCS_FOUND
+
             else:
-                result.message = ERROR_NO_DOCS_FOUND
+                result.response='no data for such request'
         return result
 
     @staticmethod
