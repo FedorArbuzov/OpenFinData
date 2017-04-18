@@ -1,5 +1,5 @@
 from kb.db_creation import *
-from text_normalization import normalization
+from text_preprocessing import normalization
 from os import remove, getcwd, path
 
 sep1 = ';'

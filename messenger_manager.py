@@ -77,7 +77,7 @@ class MessengerManager:
     def _querying(user_request_string, user_id):
         m1_result = M1Result()
         try:
-            m2_result = DataRetrieving.get_data(user_request_string, user_id, docs_type="base")
+            m2_result = DataRetrieving.get_data(user_request_string, user_id, docs_type="alternative")
             if m2_result.status is False:
                 m1_result.error = m2_result.message
             else:
@@ -88,7 +88,7 @@ class MessengerManager:
 
         except Exception as e:
             logging.info('Ошибка: {}'.format(e))
-            print(e)
+            print('MessengerManager:' +str(e))
             m1_result.error = constants.ERROR_SERVER_DOES_NOT_RESPONSE
 
         return m1_result

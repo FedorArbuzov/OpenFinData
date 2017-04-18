@@ -5,8 +5,10 @@ from kb.db_creation import *
 from os import getcwd, listdir, remove
 import json
 import pycurl
+import requests
 
 file_name = 'data_for_indexing.json'
+
 
 def write_to_file(docs):
     json_data = json.dumps(docs)
@@ -24,7 +26,7 @@ def create_values():
                     {'verbal': value.lem_index_value, 'dimension': dimension.label, 'fvalue': value.cube_value})
     return values
 
-    
+
 def create_cubes():
     cubes = []
     for cube in Cube.select():
@@ -39,6 +41,7 @@ def index_created_documents(core):
     # получение названия всех json файлов, в папке
     json_file_names = [f for f in listdir(path) if f.endswith('.json')]
 
+    # TODO: разобраться с pycurl.error: (6, 'Could not resolve: localhost (Domain name not found)')
     c = pycurl.Curl()
     c.setopt(c.URL, 'http://localhost:8983/solr/{}/update?commit=true'.format(core))
 
@@ -53,8 +56,22 @@ def index_created_documents(core):
         c.perform()
 
 
-def generate_docs(core='kb'):
+def clear_index(core):
+    dlt_str = 'http://localhost:8983/solr/{}/update?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true'
+    requests.get(dlt_str.format(core))
+
+
+def generate_docs(core='kb_3c'):
     data = create_values() + create_cubes()
     write_to_file(data)
     index_created_documents(core=core)
     remove('{}\\{}'.format(getcwd(), file_name))
+
+
+generate_docs()
+
+
+# TODO: сделать структуру документа через класс
+class DocumentStructure:
+    def __init__(self):
+        structure = None

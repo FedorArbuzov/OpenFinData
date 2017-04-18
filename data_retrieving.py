@@ -1,7 +1,7 @@
 import requests
 from constants import ERROR_IN_MDX_REQUEST, ERROR_NO_DOCS_FOUND, ERROR_NULL_DATA_FOR_SUCH_REQUEST
 from kb.support_library import get_full_values_for_dimensions, get_full_value_for_measure
-from text_normalization import normalization
+from text_preprocessing import TextPreprocessing
 import json
 import logging
 from dr.solr import Solr
@@ -16,24 +16,30 @@ class DataRetrieving:
 
         Принимает на вход запрос пользователя.
         Возвращает объект класса M2Result."""
-        cntk_result = CNTK.get_data(user_request)
-        print(cntk_result.tags)
 
+        # TODO: подправить под другое дефолтное значение
+        cntk_result = None
+        try:
+            cntk_result = CNTK.get_data(user_request)
+        except:
+            pass
 
         result = M2Result()
-        result.cntk_response = cntk_result.tags
         # предварительная обработка входной строки
         if method == 'solr':
             if docs_type == 'base':
                 solr = Solr('knowledgebase')
                 user_request = user_request.lower()
             else:
-                solr = Solr('kb')
-                user_request = normalization(user_request.lower(), type='lem')
+                solr = Solr('kb_3c')
+                tp = TextPreprocessing(user_id)
+                user_request = tp.normalization(user_request.lower())
             solr_result = solr.get_data(user_request, docs_type=docs_type)
             if solr_result.status:
                 api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
                 api_response = api_response.text
+
+                feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube)
 
                 # Обработка случая, когда MDX-запрос некорректен
                 if '"success":false' in api_response:
@@ -49,15 +55,22 @@ class DataRetrieving:
                     result.response = json.loads(api_response)["cells"][0][0]["value"]
 
                     # Формирование фидбэка
-                    result.message = DataRetrieving._form_feedback(solr_result.mdx_query, cube)
+                    result.message = feedback
 
                 logging_str = 'Модуль: {}\tID-пользователя: {}\tОтвет Solr: {}\tMDX-запрос: {}\tЧисло: {}'
+                if not solr_result.verbal_query:
+                    feedback_verbal = feedback['verbal']
+                    verbal = '0. {}'.format(
+                        feedback_verbal['measure']) + ' ' +\
+                             ', '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
+                    solr_result.verbal_query = verbal
+
                 logging.info(logging_str.format(__name__, user_id, solr_result.verbal_query, solr_result.mdx_query,
-                                          result.response))
+                                                result.response))
             else:
                 result.message = ERROR_NO_DOCS_FOUND
                 logging_str = 'Модуль: {}\tID-пользователя: {}\tОтвет Solr: {}'
-                logging.info(logging_str.format(__name__, user_id, ERROR_NO_DOCS_FOUND))
+                logging.info(logging_str.format(__name__, user_id, solr_result.error))
 
         return result
 
@@ -108,17 +121,12 @@ class DataRetrieving:
 
         return feedback
 
-    @staticmethod
-    def object_processing():
-        pass
-
 
 class M2Result:
     def __init__(self, status=False, message='', response='', cntk_response=''):
         self.status = status  # Variable, which shows first module if result of request is successful or not
         self.message = message  # Variable for containing error- and feedback-messages
         self.response = response  # Variable for storing JSON-response from server
-        self.cntk_response = cntk_response #Variable for cntk
 
     def toJSON(self):
         return json.dumps(self, default=lambda obj: obj.__dict__, sort_keys=True, indent=4)

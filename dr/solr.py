@@ -1,3 +1,4 @@
+from kb.support_library import get_cube_dimensions
 import re
 import json
 import requests
@@ -17,20 +18,23 @@ class Solr:
                     id_query, mdx_query, verbal_query = Solr._parse_solr_response(docs, docs_type=docs_type)
                     return DrSolrResult(True, id_query, mdx_query, verbal_query)
                 else:
-                    raise Exception
-            except:
-                return DrSolrResult()
+                    raise Exception('Жокументы не найдены')
+            except Exception as e:
+                print('Solr: ' + str(e))
+                return DrSolrResult(error=str(e))
 
         if docs_type == "alternative":
             try:
-                docs = Solr._send_request_to_solr(user_request, docs_type=docs_type)
+                docs = self._send_request_to_solr(user_request, docs_type=docs_type)
 
                 if docs['response']['numFound']:
                     mdx_query = self._parse_solr_response(docs, docs_type=docs_type)
                     return DrSolrResult(True, mdx_query=mdx_query)
-                raise Exception
-            except:
-                return DrSolrResult()
+                else:
+                    raise Exception('Жокументы не найдены')
+            except Exception as e:
+                print('Solr: ' + str(e))
+                return DrSolrResult(error=str(e))
 
     @staticmethod
     def _preprocessing_request(user_request):
@@ -85,18 +89,31 @@ class Solr:
 
             dim_list = list(filter(lambda elem: type(elem) is not str, dim_list))
 
-            mdx_template = 'SELECT {{[MEASURES].[{}]}} ON COLUMNS FROM [{}.DB] WHERE ({})'
+            try:
+                cube_dimensions = get_cube_dimensions(cube_list[0])
+            except IndexError:
+                raise Exception('Ошибка в сборе MDX-запроса - не найден куб')
 
-            dim_tmp, dim_str = "[{}].[{}]", ""
-            for doc in dim_list:
-                dim_str += dim_tmp.format(doc['dimension'][0], doc['fvalue'][0]) + ','
+            try:
+                # только те измерения, которые есть в кубе
+                correct_dim_list = list(filter(lambda elem: elem['dimension'][0] in cube_dimensions, dim_list))
 
-            return mdx_template.format('VALUE', cube_list[0], dim_str[:-1])
+                mdx_template = 'SELECT {{[MEASURES].[{}]}} ON COLUMNS FROM [{}.DB] WHERE ({})'
+
+                dim_tmp, dim_str = "[{}].[{}]", ""
+                for doc in correct_dim_list:
+                    dim_str += dim_tmp.format(doc['dimension'][0], doc['fvalue'][0]) + ','
+
+                mdx_filled_template = mdx_template.format('VALUE', cube_list[0], dim_str[:-1])
+                return mdx_filled_template
+            except IndexError:
+                raise Exception('Ошибка в сборе MDX-запроса - другая ошибка')
 
 
 class DrSolrResult:
-    def __init__(self, status=False, id_query=0, mdx_query='', verbal_query=''):
+    def __init__(self, status=False, id_query=0, mdx_query='', verbal_query='', error=''):
         self.status = status
         self.id_query = id_query
         self.mdx_query = mdx_query
         self.verbal_query = verbal_query
+        self.error = error

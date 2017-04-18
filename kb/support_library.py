@@ -1,4 +1,4 @@
-from kb.db_creation import Dimension_Value, Value, Cube, Cube_Measure, Measure
+from kb.db_creation import Dimension_Value, Value, Cube, Cube_Measure, Measure, Dimension, Cube_Dimension
 import requests
 import json
 
@@ -159,3 +159,12 @@ def get_full_value_for_measure(cube_value, cube_name):
             for measure in Measure.select().where(Measure.id == cube_measure.measure_id,
                                                   Measure.cube_value == cube_value):
                 return measure.full_value
+
+
+def get_cube_dimensions(cube_name):
+    dimensions = []
+    for cube in Cube.select().where(Cube.name == cube_name):
+        for cube_dimension in Cube_Dimension.select().where(Cube_Dimension.cube_id == cube.id):
+            for dimension in Dimension.select().where(Dimension.id == cube_dimension.dimension_id):
+                dimensions.append(dimension.label)
+    return dimensions
