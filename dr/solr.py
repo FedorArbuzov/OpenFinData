@@ -1,4 +1,4 @@
-from kb.support_library import get_cube_dimensions
+from kb.support_library import get_cube_dimensions, check_dimension_value_in_cube
 import re
 import json
 import requests
@@ -95,13 +95,18 @@ class Solr:
                 raise Exception('Ошибка в сборе MDX-запроса - не найден куб')
 
             try:
-                # только те измерения, которые есть в кубе
-                correct_dim_list = list(filter(lambda elem: elem['dimension'][0] in cube_dimensions, dim_list))
+                # удаление из выдачи измерений, которых нет в кубе
+                dim_list = list(filter(lambda elem: elem['dimension'][0] in cube_dimensions, dim_list))
+
+                # удаление из выдачи значений измерений, которых для куба не возможны
+                dim_list = list(filter(lambda elem:
+                                               check_dimension_value_in_cube(cube_list[0], elem['fvalue'][0]),
+                                       dim_list))
 
                 mdx_template = 'SELECT {{[MEASURES].[{}]}} ON COLUMNS FROM [{}.DB] WHERE ({})'
 
                 dim_tmp, dim_str = "[{}].[{}]", ""
-                for doc in correct_dim_list:
+                for doc in dim_list:
                     dim_str += dim_tmp.format(doc['dimension'][0], doc['fvalue'][0]) + ','
 
                 mdx_filled_template = mdx_template.format('VALUE', cube_list[0], dim_str[:-1])

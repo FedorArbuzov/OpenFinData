@@ -52,7 +52,7 @@ class LogsRetriever:
                         logs.append('\t'.join(line))
                         module_name = log_module
 
-                    if len(logs) == 2:
+                    if len(logs) == 3:
                         break
             except IndexError:
                 continue

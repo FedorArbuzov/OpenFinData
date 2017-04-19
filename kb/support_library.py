@@ -168,3 +168,15 @@ def get_cube_dimensions(cube_name):
             for dimension in Dimension.select().where(Dimension.id == cube_dimension.dimension_id):
                 dimensions.append(dimension.label)
     return dimensions
+
+
+def check_dimension_value_in_cube(cube_name, value):
+    for value in Value.select().where(Value.cube_value == value):
+        for dimension_value in Dimension_Value.select().where(Dimension_Value.value_id == value.id):
+            for cube_dimension in Cube_Dimension.select().where(
+                            Cube_Dimension.dimension_id == dimension_value.dimension_id):
+                for cube in Cube.select().where(Cube.id == cube_dimension.cube_id):
+                    if cube.name == cube_name:
+                        return True
+                    else:
+                        return False

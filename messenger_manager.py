@@ -30,7 +30,6 @@ class MessengerManager:
 
     @staticmethod
     def make_request_directly_to_m2(text, source, user_id):
-        # TODO: добавить id пользователя
         """API метод, используемый на данный момент только в inline-режиме
 
         Принимает на вход запрос (text), источник запроса (source), идентификатор пользователя (user_id).

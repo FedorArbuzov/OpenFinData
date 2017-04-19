@@ -37,6 +37,7 @@ class Dimension_Value(BaseModel):
 class Cube(BaseModel):
     name = CharField()
     description = CharField()
+    lem_description = CharField()
 
 
 class Cube_Dimension(BaseModel):
