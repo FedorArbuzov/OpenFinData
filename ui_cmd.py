@@ -2,6 +2,7 @@ from messenger_manager import MessengerManager
 from constants import CMD_START_MSG
 import socket
 
+
 def parse_feedback(fb):
     fb_exp = fb['formal']
     fb_norm = fb['verbal']
@@ -16,10 +17,7 @@ def parse_feedback(fb):
 
 print(CMD_START_MSG)
 
-continue_case = ('Y', 'y')
-flag = True
-
-while flag:
+while True:
     text = input('Введите запрос: ')
     text = text.strip()
     if text:
@@ -38,11 +36,3 @@ while flag:
             print(result.message)
             print(parse_feedback(result.feedback))
             print('Ответ: ' + result.response)
-
-    y_n = input('Продолжить Y/N? ')
-    if y_n in continue_case:
-        flag = True
-    else:
-        flag = False
-else:
-    print('Введите Y/N!')

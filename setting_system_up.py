@@ -1,4 +1,3 @@
-from kb.docs_generating_alternative import generate_docs
 from kb.db_filling import KnowledgeBaseSupport
 from collections import Counter
 from config import PATH_TO_DB_DIMA

@@ -32,46 +32,16 @@ INSERT INTO `value` VALUES (30,'Сентябрь','сентябрь','04-9',NULL
 INSERT INTO `value` VALUES (31,'Октябрь','октябрь','04-10',NULL);
 INSERT INTO `value` VALUES (32,'Ноябрь','ноябрь','04-11',NULL);
 INSERT INTO `value` VALUES (33,'Декабрь','декабрь','04-12',NULL);
-INSERT INTO `value` VALUES (34,'2007
-','2007
-','2007
-',NULL);
-INSERT INTO `value` VALUES (35,'2008
-','2008
-','2008
-',NULL);
-INSERT INTO `value` VALUES (36,'2009
-','2009
-','2009
-',NULL);
-INSERT INTO `value` VALUES (37,'2010
-','2010
-','2010
-',NULL);
-INSERT INTO `value` VALUES (38,'2011
-','2011
-','2011
-',NULL);
-INSERT INTO `value` VALUES (39,'2012
-','2012
-','2012
-',NULL);
-INSERT INTO `value` VALUES (40,'2013
-','2013
-','2013
-',NULL);
-INSERT INTO `value` VALUES (41,'2014
-','2014
-','2014
-',NULL);
-INSERT INTO `value` VALUES (42,'2015
-','2015
-','2015
-',NULL);
-INSERT INTO `value` VALUES (43,'2016
-','2016
-','2016
-',NULL);
+INSERT INTO `value` VALUES (34,'2007','2007','2007',NULL);
+INSERT INTO `value` VALUES (35,'2008','2008','2008',NULL);
+INSERT INTO `value` VALUES (36,'2009','2009','2009',NULL);
+INSERT INTO `value` VALUES (37,'2010','2010','2010',NULL);
+INSERT INTO `value` VALUES (38,'2011','2011','2011',NULL);
+INSERT INTO `value` VALUES (39,'2012','2012','2012',NULL);
+INSERT INTO `value` VALUES (40,'2013','2013','2013',NULL);
+INSERT INTO `value` VALUES (41,'2014','2014','2014',NULL);
+INSERT INTO `value` VALUES (42,'2015','2015','2015',NULL);
+INSERT INTO `value` VALUES (43,'2016','2016','2016',NULL);
 INSERT INTO `value` VALUES (44,'Место','место','03-1',NULL);
 INSERT INTO `value` VALUES (45,'Управление активами','управление актив','03-10',NULL);
 INSERT INTO `value` VALUES (46,'Общая оценка','общий оценка','03-2',NULL);

@@ -62,7 +62,7 @@ class DataRetrieving:
                     feedback_verbal = feedback['verbal']
                     verbal = '0. {}'.format(
                         feedback_verbal['measure']) + ' ' +\
-                             ', '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
+                             ' '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
                     solr_result.verbal_query = verbal
 
                 logging.info(logging_str.format(__name__, user_id, solr_result.verbal_query, solr_result.mdx_query,

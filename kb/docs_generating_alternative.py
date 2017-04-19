@@ -23,14 +23,15 @@ def create_values():
                         'select dimension_id from dimension_value where value_id = %s' % value.id):
             for dimension in Dimension.raw('select label from dimension where id = %s' % dimension_value.dimension_id):
                 values.append(
-                    {'verbal': value.lem_index_value, 'dimension': dimension.label, 'fvalue': value.cube_value})
+                    {'verbal': value.lem_index_value.strip(), 'dimension': dimension.label.strip(),
+                     'fvalue': value.cube_value.strip()})
     return values
 
 
 def create_cubes():
     cubes = []
     for cube in Cube.select():
-        cubes.append({'cube': cube.name, 'tags': cube.description})
+        cubes.append({'cube': cube.name.strip(), 'tags': cube.description.strip()})
     return cubes
 
 
@@ -56,7 +57,7 @@ def index_created_documents(core):
         c.perform()
 
 
-def clear_index(core):
+def clear_index(core='kb_3c'):
     dlt_str = 'http://localhost:8983/solr/{}/update?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true'
     requests.get(dlt_str.format(core))
 
@@ -70,6 +71,8 @@ def generate_docs(core='kb_3c'):
 
 generate_docs()
 
+
+# clear_index()
 
 # TODO: сделать структуру документа через класс
 class DocumentStructure:

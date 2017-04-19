@@ -1,5 +1,5 @@
 from kb.db_creation import *
-from text_preprocessing import normalization
+from text_preprocessing import TextPreprocessing
 from os import remove, getcwd, path
 
 sep1 = ';'
@@ -45,6 +45,8 @@ class KnowledgeBaseSupport:
             data_set = None
             dimension_flag = ''
 
+            tp = TextPreprocessing('Filling db')
+
             for line in file:
                 if line.startswith('Cube'):
                     if not data_set:
@@ -67,7 +69,7 @@ class KnowledgeBaseSupport:
                         verbal_value = verbal_value.split('-')[1]
 
                     data_set.measures.append({'full_value': verbal_value,
-                                              'lem_index_value': normalization(verbal_value, type='lem'),
+                                              'lem_index_value': tp.normalization(verbal_value),
                                               'cube_value': cube_value})
 
                 else:
@@ -87,7 +89,7 @@ class KnowledgeBaseSupport:
                             verbal_value = verbal_value.split('-')[1]
 
                         data_set.dimensions[line[0]].append({'full_value': verbal_value,
-                                                             'lem_index_value': normalization(verbal_value, type='lem'),
+                                                             'lem_index_value': tp.normalization(verbal_value),
                                                              'cube_value': cube_value})
                     except IndexError:
                         data_set.dimensions[line[0]].append({'full_value': line[1], 'lem_index_value': line[1],

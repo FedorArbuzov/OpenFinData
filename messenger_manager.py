@@ -87,7 +87,7 @@ class MessengerManager:
                 m1_result.response = m2_result.response
 
         except Exception as e:
-            logging.info('Ошибка: {}'.format(e))
+            logging.info('Модуль: {}\tID-пользователя: {}\tОшибка: {}'.format(__name__, user_id, e))
             print('MessengerManager:' +str(e))
             m1_result.error = constants.ERROR_SERVER_DOES_NOT_RESPONSE
 
