@@ -29,44 +29,66 @@ class LogsRetriever:
             line = line.split('\t')
 
             try:
-                log_user_id = LogsRetriever._get_user_id_from_log_part(line[2])
-                log_data = LogsRetriever._get_dt_from_line(line[0])
-                if log_user_id == str(user_id) and log_data >= log_start_analyze_datetime:
-                    logs.append('\t'.join(line))
+                if line[1] not in ('DEBUG', 'ERROR'):
+                    log_data = LogsRetriever._get_dt_from_line(line[0])
+                    query_id = LogsRetriever._get_value_from_log_part(line[2])
+                    if log_data >= log_start_analyze_datetime:
+                        logs.append('\t'.join(line))
             except IndexError:
-                continue
+                pass
+
+        queries_id = []
+        for log in logs:
+            log = log.split('\t')
+            try:
+                if str(user_id) == LogsRetriever._get_value_from_log_part(log[4]):
+                    queries_id.append(LogsRetriever._get_value_from_log_part(log[2]))
+            except IndexError:
+                pass
+
+        for log in list(logs):
+            try:
+                if LogsRetriever._get_value_from_log_part(log.split('\t')[2]) not in queries_id:
+                    logs.remove(log)
+            except IndexError:
+                pass
 
         return '\n'.join(list(reversed(logs)))
 
     def _get_request_logs(self, user_id):
         logs = []
-        module_name = ''
+        query_id = None
 
         for line in reversed(list(open(self.path_to_log_file, encoding='utf-8'))):
             line = line.split('\t')
 
             try:
-                if LogsRetriever._get_user_id_from_log_part(line[2]) == str(user_id):
-                    log_module = LogsRetriever._get_module_from_log_part(line[1])
-                    if module_name != log_module:
-                        logs.append('\t'.join(line))
-                        module_name = log_module
-
-                    if len(logs) == 3:
+                if line[1] not in ('DEBUG', 'ERROR'):
+                    logs.append('\t'.join(line))
+                    if str(user_id) == LogsRetriever._get_value_from_log_part(line[4]):
+                        query_id = LogsRetriever._get_value_from_log_part(line[2])
                         break
             except IndexError:
-                continue
+                pass
+
+        for log in list(logs):
+            try:
+                if LogsRetriever._get_value_from_log_part(log.split('\t')[2]) != query_id:
+                    logs.remove(log)
+            except IndexError:
+                pass
 
         return '\n'.join(list(reversed(logs)))
+
+    # TODO: сделать красивое форматирование логов
+    @staticmethod
+    def formate_log(log):
+        return log
 
     @staticmethod
     def _get_dt_from_line(data_log_part):
         return datetime.datetime.strptime(data_log_part, '%Y-%m-%d  %H:%M')
 
     @staticmethod
-    def _get_user_id_from_log_part(user_log_part):
+    def _get_value_from_log_part(user_log_part):
         return user_log_part.split(':')[1].strip()
-
-    @staticmethod
-    def _get_module_from_log_part(module_log_part):
-        return module_log_part.split(':')[1].strip()

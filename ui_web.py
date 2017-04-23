@@ -1,6 +1,7 @@
 from messenger_manager import MessengerManager
 from bottle import Bottle, request, run
 import codecs
+import uuid
 
 app = Bottle()
 
@@ -18,7 +19,8 @@ def get_basic(request_text=None):
         if greets:
             return greets
 
-        result = MessengerManager.make_request(request_text, 'WEB', 'user_session_id')
+        # TODO: подправить передаваемые параметры в метод
+        result = MessengerManager.make_request(request_text, 'WEB', 'user_session_id', 'use_session_name', 'request_id')
         return result.toJSON()
 
 

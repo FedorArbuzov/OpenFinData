@@ -45,6 +45,15 @@ HELP_KEYBOARD = dumps({
     ]
 })
 
+RESPONSE_QUALITY = dumps({
+    'inline_keyboard': [
+        [
+            {'text': '👍', 'callback_data': 'correct_response'},
+            {'text': '😒', 'callback_data': 'incorrect_response'}
+        ],
+    ]
+})
+
 ERROR_CANNOT_UNDERSTAND_VOICE = 'Не удалось распознать текст сообщения😥 Попробуйте еще раз!'
 ERROR_NULL_DATA_FOR_SUCH_REQUEST = 'К сожалению, этих данных в системе нет🤕'
 ERROR_SERVER_DOES_NOT_RESPONSE = 'К сожалению, сейчас сервер не доступен😩 Попробуйте снова чуть позже!'

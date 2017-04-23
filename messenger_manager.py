@@ -6,30 +6,31 @@ from data_retrieving import DataRetrieving
 import re
 import json
 import random as rnd
+import uuid
 
-logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level=20,
-              format='%(asctime)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
+logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level='DEBUG',
+                    format='%(asctime)s\t%(levelname)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
 
-logging_str = "Модуль: {}\tID-пользователя: {}\tПлатформа: {}\tЗапрос: {}\tФормат: {}"
+logging_str = "ID-запроса: {}\tМодуль: {}\tID-пользователя: {}\tИмя пользователя: {}\tПлатформа: {}\tЗапрос: {}\tФормат: {}"
 
 
 class MessengerManager:
     """Класс MessengerManager имеет API из 5 методов. Подробнее в документации к ним"""
 
     @staticmethod
-    def make_request(text, source, user_id):
+    def make_request(text, source, user_id, user_name, request_id):
         """Самый универсальный API метод для текстовых запросов.
 
         Принимает на вход запрос (text), источник запроса (source), идентификатор пользователя (user_id).
 
         Возвращает объект класса M1Result."""
 
-        logging.info(logging_str.format(__name__, user_id, source, text, 'text'))
+        logging.info(logging_str.format(request_id, __name__, user_id, user_name, source, text, 'text'))
 
-        return MessengerManager._querying(text, user_id)
+        return MessengerManager._querying(text, request_id)
 
     @staticmethod
-    def make_request_directly_to_m2(text, source, user_id):
+    def make_request_directly_to_m2(text, source, user_id, user_name, request_id):
         """API метод, используемый на данный момент только в inline-режиме
 
         Принимает на вход запрос (text), источник запроса (source), идентификатор пользователя (user_id).
@@ -40,12 +41,12 @@ class MessengerManager:
 
         Возвращает объект класса M2Result."""
 
-        logging.info(logging_str.format(__name__, user_id, source, text, 'text'))
+        logging.info(logging_str.format(request_id, __name__, user_id, user_name, source, text, 'text'))
 
-        return DataRetrieving.get_data(text)
+        return DataRetrieving.get_data(text, request_id, docs_type='alternative')
 
     @staticmethod
-    def make_voice_request(record_bytes, source, user_id):
+    def make_voice_request(record_bytes, source, user_id, user_name, request_id):
         """Универсальный API метод для обработки голосовых запросов
 
         Принимает на вход набор байтов записи (record_bytes), источник запроса (source),
@@ -55,11 +56,11 @@ class MessengerManager:
 
         try:
             text = speech_to_text(bytes=record_bytes)
-            logging.info(logging_str.format(__name__, user_id, source, text, 'voice'))
+            logging.info(logging_str.format(request_id, __name__, user_id, user_name, source, text, 'voice'))
         except SpeechException:
             return constants.ERROR_CANNOT_UNDERSTAND_VOICE
         else:
-            return MessengerManager._querying(text, user_id)
+            return MessengerManager._querying(text, request_id)
 
     @staticmethod
     def greetings(text):
@@ -73,10 +74,14 @@ class MessengerManager:
             return greets
 
     @staticmethod
-    def _querying(user_request_string, user_id):
+    def log_data(_logging_str):
+        logging.info(_logging_str)
+
+    @staticmethod
+    def _querying(user_request_string, request_id):
         m1_result = M1Result()
         try:
-            m2_result = DataRetrieving.get_data(user_request_string, user_id, docs_type="alternative")
+            m2_result = DataRetrieving.get_data(user_request_string, request_id, docs_type="alternative")
             if m2_result.status is False:
                 m1_result.error = m2_result.message
             else:
@@ -86,8 +91,8 @@ class MessengerManager:
                 m1_result.response = m2_result.response
 
         except Exception as e:
-            logging.info('Модуль: {}\tID-пользователя: {}\tОшибка: {}'.format(__name__, user_id, e))
-            print('MessengerManager:' +str(e))
+            logging.warning('ID-запроса: {}\tМодуль: {}\tОшибка: {}'.format(request_id, __name__, e))
+            print('MessengerManager: ' + str(e))
             m1_result.error = constants.ERROR_SERVER_DOES_NOT_RESPONSE
 
         return m1_result

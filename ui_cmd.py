@@ -1,6 +1,7 @@
 from messenger_manager import MessengerManager
 from constants import CMD_START_MSG
 import socket
+import uuid
 
 
 def parse_feedback(fb):
@@ -28,8 +29,7 @@ while True:
 
         result = None
 
-        # user_id - имя компьютера
-        result = MessengerManager.make_request(text, 'CMD', socket.gethostname())
+        result = MessengerManager.make_request(text, 'CMD', socket.gethostname(), socket.gethostname(), uuid.uuid4())
         if not result.status:
             print(result.error)
         else:

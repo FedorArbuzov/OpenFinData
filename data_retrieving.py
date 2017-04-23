@@ -11,7 +11,7 @@ from dr.cntk import CNTK
 # Module, which is responsible for getting required from user data
 class DataRetrieving:
     @staticmethod
-    def get_data(user_request, user_id, method='solr', docs_type='base'):
+    def get_data(user_request, request_id, method='solr', docs_type='base'):
         """Единственный API метод для 2го модуля.
 
         Принимает на вход запрос пользователя.
@@ -32,10 +32,11 @@ class DataRetrieving:
                 user_request = user_request.lower()
             else:
                 solr = Solr('kb_3c')
-                tp = TextPreprocessing(user_id)
+                tp = TextPreprocessing(request_id)
                 user_request = tp.normalization(user_request.lower())
             solr_result = solr.get_data(user_request, docs_type=docs_type)
             if solr_result.status:
+                # api_response, cube = '{"cells":[[{"value":"11111"}], "smth"]}', 'Куб'
                 api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
                 api_response = api_response.text
 
@@ -57,7 +58,7 @@ class DataRetrieving:
                     # Формирование фидбэка
                     result.message = feedback
 
-                logging_str = 'Модуль: {}\tID-пользователя: {}\tОтвет Solr: {}\tMDX-запрос: {}\tЧисло: {}'
+                logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}\tMDX-запрос: {}\tЧисло: {}'
                 if not solr_result.verbal_query:
                     feedback_verbal = feedback['verbal']
                     verbal = '0. {}'.format(
@@ -65,12 +66,12 @@ class DataRetrieving:
                              ' '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
                     solr_result.verbal_query = verbal
 
-                logging.info(logging_str.format(__name__, user_id, solr_result.verbal_query, solr_result.mdx_query,
+                logging.info(logging_str.format(request_id, __name__, solr_result.verbal_query, solr_result.mdx_query,
                                                 result.response))
             else:
                 result.message = ERROR_NO_DOCS_FOUND
-                logging_str = 'Модуль: {}\tID-пользователя: {}\tОтвет Solr: {}'
-                logging.info(logging_str.format(__name__, user_id, solr_result.error))
+                logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}'
+                logging.warning(logging_str.format(request_id, __name__, solr_result.error))
 
         return result
 
@@ -123,7 +124,7 @@ class DataRetrieving:
 
 
 class M2Result:
-    def __init__(self, status=False, message='', response='', cntk_response=''):
+    def __init__(self, status=False, message='', response=''):
         self.status = status  # Variable, which shows first module if result of request is successful or not
         self.message = message  # Variable for containing error- and feedback-messages
         self.response = response  # Variable for storing JSON-response from server

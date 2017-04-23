@@ -9,13 +9,14 @@ from nltk.corpus import stopwords
 
 
 class TextPreprocessing:
-    def __init__(self, user_id, norming_style='lem'):
-        self.user_id = user_id
+    def __init__(self, request_id, norming_style='lem'):
+        self.request_id = request_id
         self.norming_style = norming_style
         self.language = 'russian'
 
     def normalization(self, text):
         # TODO: стемминг или лематизация?
+        # TODO: обработка направильного спеллинга
         stemmer = SnowballStemmer(self.language)  # Стеммер
         morph = pymorphy2.MorphAnalyzer()  # Лемматизатор
 
@@ -38,8 +39,9 @@ class TextPreprocessing:
         tokens = TextPreprocessing._delete_repeating_with_saving_order(tokens)
 
         normalized_request = ' '.join(tokens)
-        logging_str = "Модуль: {}\tID-пользователя: {}\tЗапрос после нормализации: {}"
-        logging.info(logging_str.format(__name__, self.user_id, normalized_request))
+
+        logging_str = "ID-запроса: {}\tМодуль: {}\tЗапрос после нормализации: {}"
+        logging.info(logging_str.format(self.request_id, __name__, normalized_request))
 
         return normalized_request
 
@@ -78,5 +80,6 @@ class TextPreprocessing:
 
             json_str = '{' + json_str[:-1] + '}'
             return json.loads(json_str)
-        except IndexError:
+        except IndexError as e:
+            print('TextPreprocessing: ' + str(e))
             return None

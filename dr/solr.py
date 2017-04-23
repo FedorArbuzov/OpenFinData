@@ -18,7 +18,7 @@ class Solr:
                     id_query, mdx_query, verbal_query = Solr._parse_solr_response(docs, docs_type=docs_type)
                     return DrSolrResult(True, id_query, mdx_query, verbal_query)
                 else:
-                    raise Exception('Жокументы не найдены')
+                    raise Exception('Документы не найдены')
             except Exception as e:
                 print('Solr: ' + str(e))
                 return DrSolrResult(error=str(e))
@@ -31,7 +31,7 @@ class Solr:
                     mdx_query = self._parse_solr_response(docs, docs_type=docs_type)
                     return DrSolrResult(True, mdx_query=mdx_query)
                 else:
-                    raise Exception('Жокументы не найдены')
+                    raise Exception('Документы не найдены')
             except Exception as e:
                 print('Solr: ' + str(e))
                 return DrSolrResult(error=str(e))
