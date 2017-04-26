@@ -1,4 +1,4 @@
-from kb.support_library import get_cube_dimensions, check_dimension_value_in_cube
+from kb.kb_support_library import get_cube_dimensions, check_dimension_value_in_cube
 import re
 import json
 import requests

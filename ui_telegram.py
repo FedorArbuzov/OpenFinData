@@ -2,10 +2,12 @@ import telebot
 import requests
 from telebot import types
 from logs_retriever import LogsRetriever
+from db.user_support_library import check_user_existence, create_user, create_feedback, get_feedbacks
 
 import constants
 import config
 import uuid
+import datetime
 
 from messenger_manager import MessengerManager
 
@@ -64,6 +66,32 @@ def get_all_logs(message):
 @bot.message_handler(commands=['search'])
 def repeat_all_messages(message):
     bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
+
+
+@bot.message_handler(commands=['idea'])
+def leave_feedback(message):
+    if not check_user_existence(message.chat.id):
+        create_user(message.chat.id,
+                    message.chat.username,
+                    ' '.join([message.chat.first_name, message.chat.last_name]))
+    feedback = message.text[5:].strip()
+
+    if feedback:
+        create_feedback(message.chat.id,
+                        datetime.datetime.fromtimestamp(message.date),
+                        feedback)
+        bot.send_message(message.chat.id, constants.MSG_WE_GOT_YOUR_FEEDBACK)
+    else:
+        bot.send_message(message.chat.id,
+                         constants.MSG_LEAVE_YOUR_FEEDBACK,
+                         parse_mode='HTML')
+
+
+@bot.message_handler(commands=['getfeedback'])
+def get_user_feedbacks(message):
+    fbs = get_feedbacks()
+    if fbs:
+        bot.send_message(message.chat.id, get_feedbacks())
 
 
 # Text handler

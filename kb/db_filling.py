@@ -1,4 +1,4 @@
-from kb.db_creation import *
+from kb.kb_db_creation import *
 from text_preprocessing import TextPreprocessing
 from os import remove, getcwd, path
 

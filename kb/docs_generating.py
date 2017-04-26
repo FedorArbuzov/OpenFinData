@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-from kb.db_creation import *
+from kb.kb_db_creation import *
 from itertools import combinations, chain, product
-from kb.support_library import logging, query_data, filter_combinations, report, docs_needed
+from kb.kb_support_library import logging, query_data, filter_combinations, report, docs_needed
 from os import getcwd, listdir, mkdir
 from os.path import isfile, join
 import json

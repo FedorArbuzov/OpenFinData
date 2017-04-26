@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from kb.db_creation import *
+from kb.kb_db_creation import *
 from os import getcwd, remove
 import json
 import pycurl

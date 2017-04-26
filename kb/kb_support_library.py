@@ -1,4 +1,4 @@
-from kb.db_creation import Dimension_Value, Value, Cube, Cube_Measure, Measure, Dimension, Cube_Dimension
+from kb.kb_db_creation import Dimension_Value, Value, Cube, Cube_Measure, Measure, Dimension, Cube_Dimension
 import requests
 import json
 

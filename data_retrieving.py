@@ -1,6 +1,6 @@
 import requests
 from constants import ERROR_IN_MDX_REQUEST, ERROR_NO_DOCS_FOUND, ERROR_NULL_DATA_FOR_SUCH_REQUEST
-from kb.support_library import get_full_values_for_dimensions, get_full_value_for_measure
+from kb.kb_support_library import get_full_values_for_dimensions, get_full_value_for_measure
 from text_preprocessing import TextPreprocessing
 import json
 import logging
