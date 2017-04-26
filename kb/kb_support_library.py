@@ -1,4 +1,5 @@
 from kb.kb_db_creation import Dimension_Value, Value, Cube, Cube_Measure, Measure, Dimension, Cube_Dimension
+from text_preprocessing import TextPreprocessing
 import requests
 import json
 
@@ -180,3 +181,21 @@ def check_dimension_value_in_cube(cube_name, value):
                         return True
                     else:
                         return False
+
+def create_automative_cube_description(cube_name):
+    cube_description = None
+    values = []
+    for cube in Cube.select().where(Cube.name == cube_name):
+        cube_description = cube.description
+        for dimension in Cube_Dimension.select().where(Cube_Dimension.cube_id == cube.id):
+            for dim_value in Dimension_Value.select().where(Dimension_Value.dimension_id == dimension.dimension_id):
+                for value in Value.select().where(Value.id == dim_value.value_id):
+                    values.append(value.lem_index_value)
+
+    values = ' '.join(values).split()
+    top_tags = TextPreprocessing.frequency_destribution(values)
+    return '{} {}'.format(cube_description, top_tags)
+
+# for cube in ['CLMR02', 'CLQR01', 'CRDO01']:
+#     description = create_automative_cube_description(cube)
+#     Cube.update(lem_description=description).where(Cube.name == cube).execute()

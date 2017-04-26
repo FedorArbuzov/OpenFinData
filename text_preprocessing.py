@@ -6,6 +6,7 @@ import json
 from string import punctuation as pct
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
+from nltk import FreqDist
 
 
 class TextPreprocessing:
@@ -15,15 +16,15 @@ class TextPreprocessing:
         self.language = 'russian'
 
     def normalization(self, text):
-        # TODO: стемминг или лематизация?
         # TODO: обработка направильного спеллинга
         stemmer = SnowballStemmer(self.language)  # Стеммер
         morph = pymorphy2.MorphAnalyzer()  # Лемматизатор
 
         tokens = nltk.word_tokenize(text)
 
+        # TODO: продолжать работу над стоп-словами
         stop_words = stopwords.words(self.language)
-        # TODO: расширить список
+        stop_words.remove('не')
         stop_words += "также иной".split()
 
         # Убираем знаки пунктуации и стоп слова
@@ -83,3 +84,12 @@ class TextPreprocessing:
         except IndexError as e:
             print('TextPreprocessing: ' + str(e))
             return None
+
+    @staticmethod
+    def frequency_destribution(word_list, num=5):
+        fq = FreqDist(word_list)
+        ten_most_popular_words = fq.most_common(num)
+        print(ten_most_popular_words)
+        popular_words = [i[0] for i in ten_most_popular_words]
+        final_str = ' '.join(popular_words)
+        return final_str

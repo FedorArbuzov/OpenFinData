@@ -68,13 +68,13 @@ def repeat_all_messages(message):
     bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
 
 
-@bot.message_handler(commands=['idea'])
+@bot.message_handler(commands=['fb'])
 def leave_feedback(message):
     if not check_user_existence(message.chat.id):
         create_user(message.chat.id,
                     message.chat.username,
                     ' '.join([message.chat.first_name, message.chat.last_name]))
-    feedback = message.text[5:].strip()
+    feedback = message.text[4:].strip()
 
     if feedback:
         create_feedback(message.chat.id,
