@@ -13,7 +13,10 @@ def parse_feedback(fb):
     norm = norm.format('0. {}\n'.format(
         fb_norm['measure']) + '\n'.join([str(idx + 1) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
     line = "==" * 10
-    return '{0}\n{1}\n{0}\n{2}\n{0}'.format(line, exp, norm)
+    cntk_response = 'CNTK разбивка\n{}'
+    r = ['{}. {}: {}'.format(idx, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
+    cntk_response = cntk_response.format(', '.join(r))
+    return '{0}\n{1}\n{0}\n{2}\n{0}\n{3}\n{0}'.format(line, exp, norm, cntk_response)
 
 
 print(CMD_START_MSG)

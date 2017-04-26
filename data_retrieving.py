@@ -18,7 +18,7 @@ class DataRetrieving:
         Возвращает объект класса M2Result."""
 
         # TODO: подправить под другое дефолтное значение
-        cntk_result = None
+        cntk_result = [{'tag': 'Нет тега', 'word': 'Нет слова'}]
         try:
             cntk_result = CNTK.get_data(user_request)
         except:
@@ -40,7 +40,7 @@ class DataRetrieving:
                 api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
                 api_response = api_response.text
 
-                feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube)
+                feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube, cntk_result)
 
                 # Обработка случая, когда MDX-запрос некорректен
                 if '"success":false' in api_response:
@@ -62,7 +62,7 @@ class DataRetrieving:
                 if not solr_result.verbal_query:
                     feedback_verbal = feedback['verbal']
                     verbal = '0. {}'.format(
-                        feedback_verbal['measure']) + ' ' +\
+                        feedback_verbal['measure']) + ' ' + \
                              ' '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
                     solr_result.verbal_query = verbal
 
@@ -94,7 +94,7 @@ class DataRetrieving:
         return api_response, cube
 
     @staticmethod
-    def _form_feedback(mdx_query, cube):
+    def _form_feedback(mdx_query, cube, cntk_result):
         """Формироварие обратной связи
 
         Принимает на вход MDX-запрос и куб
@@ -118,7 +118,8 @@ class DataRetrieving:
 
         # фидбек в удобном виде для конвертации в JSON-объект
         feedback = {'formal': {'cube': cube, 'measure': measure_value, 'dims': dims_vals},
-                    'verbal': {'measure': full_verbal_measure_value, 'dims': full_verbal_dimensions_value}}
+                    'verbal': {'measure': full_verbal_measure_value, 'dims': full_verbal_dimensions_value},
+                    'cntk': cntk_result}
 
         return feedback
 

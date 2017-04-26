@@ -191,7 +191,11 @@ def parse_feedback(fb):
                      ', '.join([i['dim'] + ': ' + i['val'] for i in fb_exp['dims']]))
     norm = norm.format('0. {}\n'.format(
         fb_norm['measure']) + '\n'.join([str(idx + 1) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
-    return '{}\n\n{}'.format(exp, norm)
+
+    cntk_response = '<b>CNTK разбивка</b>\n{}'
+    r = ['{}. {}: {}'.format(idx, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
+    cntk_response = cntk_response.format(', '.join(r))
+    return '{}\n\n{}\n\n{}'.format(exp, norm, cntk_response)
 
 
 # polling cycle
