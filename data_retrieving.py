@@ -19,10 +19,11 @@ class DataRetrieving:
 
         # TODO: подправить под другое дефолтное значение
         cntk_result = [{'tag': 'Нет тега', 'word': 'Нет слова'}]
-        try:
-            cntk_result = CNTK.get_data(user_request)
-        except:
-            pass
+        #TODO:доделать фидбек снтк
+       # try:
+        #    cntk_result = CNTK.get_data(user_request)
+        #except:
+         #   pass
 
         result = M2Result()
         # предварительная обработка входной строки
