@@ -37,8 +37,9 @@ class DataRetrieving:
                         result.response = api_response
                     # Обработка случая, когда данных нет
                     elif not json.loads(api_response)["cells"][0][0]["value"]:
-                        result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST
-                        result.response = None
+                       result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST
+                       result.response = solr_result.verbal_query
+                       result.status = True
                 # В остальных случаях
                     else:
                         result.status = True
@@ -54,7 +55,9 @@ class DataRetrieving:
                     result.message = ERROR_NO_DOCS_FOUND
 
             else:
+
                 result.response='no data for such request'
+                result.status = True
         return result
 
     @staticmethod

@@ -208,6 +208,8 @@ query_wl = [line.rstrip('\n') for line in open(data['query']['file'], encoding='
 slots_wl = [line.rstrip('\n') for line in open(data['slots']['file'])]
 query_dict = {query_wl[i]:i for i in range(len(query_wl))}
 slots_dict = {slots_wl[i]:i for i in range(len(slots_wl))}
+d={'D':'дефицит','O':'незначащее','S':'расходы','Y':'год','L':'Локация','R':'доходы','Nontax':'неналоговые доходы/расходы','Tax':'налоговые','Current':'текущие','Planned':'запланированные','S-culture':'на культуру','S-national_security':'нацбезопасность','Fact':'фактические','S-education':'на образование','S-housing_utilities':'жкх','S-environment':'окружающая среда','S-health':'здравоохранение','S-social_policy':'социальные','S-pe_and_sports':'спорт','S-national_economy':'национальная экономика','S-national_defence':'национальная оборона'}
+
 
 print(query_dict)
 
@@ -269,6 +271,7 @@ if __name__ == '__main__':
 def text_to_tags(request_msg):
     try:
         seq=request_msg
+        seq=seq.lower()
         mass=seq.split(' ');
         print(seq.split(' '))
     #kw=[]
@@ -292,9 +295,13 @@ def text_to_tags(request_msg):
         print(best[0])
         print(list(zip(seq.split(),[slots_wl[s] for s in best[0]])))
         kek=""
+        kekmean=""
         for s in best[0]:
             print(slots_wl[s])
+            print(d[slots_wl[s]])
+            kekmean=kekmean+slots_wl[s]+'\t'+d[slots_wl[s]]+'\n'
             kek=kek+slots_wl[s]+' '
+        kek=kek+'\n'+kekmean
         return kek
     except KeyError:
         return null

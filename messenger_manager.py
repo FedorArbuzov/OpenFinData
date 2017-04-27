@@ -81,6 +81,7 @@ class MessengerManager:
                 m1_result.message = constants.MSG_WE_WILL_FORM_DATA_AND_SEND_YOU
                 m1_result.feedback = m2_result.message
                 m1_result.response = m2_result.response
+                m1_result.CNTK_response = m2_result.cntk_response
 
         except Exception as e:
             logging.info('{}'.format(e))
@@ -106,12 +107,13 @@ class MessengerManager:
 
 
 class M1Result:
-    def __init__(self, status=False, error=None, message=None, feedback=None, response=None, ):
+    def __init__(self, status=False, error=None, message=None, feedback=None, response=None, CNTK_response= None):
         self.status = status
         self.error = error
         self.message = message  # Variable, which storage all messages from _querying
         self.feedback = feedback
         self.response = response
+        self.CNTK_response = CNTK_response
 
     def toJSON(self):
         return json.dumps(self, default=lambda obj: obj.__dict__, sort_keys=True, indent=4)

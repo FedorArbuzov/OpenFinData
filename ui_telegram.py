@@ -39,8 +39,10 @@ def repeat_all_messages(message):
             bot.send_message(message.chat.id, result.error)
         else:
             bot.send_message(message.chat.id, result.message)
-            bot.send_message(message.chat.id, parse_feedback(result.feedback))
-            bot.send_message(message.chat.id, 'Ответ: ' + result.response)
+            result_string = 'Solr: '+result.response+' , CNKT parsed: '+result.CNTK_response
+            bot.send_message(message.chat.id,result_string)
+           # bot.send_message(message.chat.id, parse_feedback(result.feedback))
+            #bot.send_message(message.chat.id, 'Ответ: ' + result.response)
     else:
         bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
 

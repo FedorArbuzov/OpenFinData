@@ -21,7 +21,7 @@ def get_basic(request_text=None):
         result = DataRetrieving.get_data(request_text)
         result_string = 'CNTK: ',result.cntk_response,', Solr Result: ',result.response
 
-        return result_string
+        return result.toJSON()
 
 
 run(app, host='localhost', port=8019, debug=True)

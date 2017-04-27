@@ -12,3 +12,4 @@ FFMPEG_PATH_SERVER = r'C:\Users\imon\Documents\Git\OpenFinData\ffmpeg\bin\ffmpeg
 FFMPEG_PATH_DIMA = r'C:\Users\User\PycharmProjects\OpenFinData\ffmpeg\ffmpeg.exe'
 FFMPEG_PATH_MASHA = r'C:\Users\The Cat Trex\PycharmProjects\OpenFinData\ffmpeg\bin\ffmpeg.exe'
 
+CNTK_SERVER_PATH=r'C:/Users/imon/Documents/Git/Datatron 2.0/OpenFinData/cntk'
