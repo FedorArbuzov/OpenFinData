@@ -6,7 +6,7 @@ Created on Sat Apr  8 23:51:02 2017
 """
 
 from botn import text_to_tags
-from bottle import Bottle, request, run
+from bottle import Bottle,  run
 import codecs
 from urllib3 import util
 

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-from kb.db_creation import *
+from kb.kb_db_creation import *
 from itertools import combinations, chain, product
-from kb.support_library import logging, query_data, filter_combinations, report, docs_needed
+from kb.kb_support_library import logging, query_data, filter_combinations, report, docs_needed
 from os import getcwd, listdir, mkdir
 from os.path import isfile, join
 import json
@@ -37,7 +37,6 @@ def read_documents_from_tmp_file():
         with open(path + '\\' + tmp_file, 'r') as file:
             json_data = json.loads(file.readline())
             for line in json_data:
-                # TODO: разобраться с id
                 docs.append({df[0]: line[df[0]], df[1]: line[df[1]], df[2]: line[df[2]]})
         yield docs
 

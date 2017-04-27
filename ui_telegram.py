@@ -1,14 +1,22 @@
 import telebot
 import requests
 from telebot import types
+from logs_retriever import LogsRetriever
+from db.user_support_library import check_user_existence, create_user, create_feedback, get_feedbacks
 
 import constants
 import config
+import uuid
+import datetime
 
 from messenger_manager import MessengerManager
 
 API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
+
+logsRetriever = LogsRetriever('logs.log')
+
+user_name_str = '{} {}'
 
 
 # /start command handler; send start-message to the user
@@ -28,41 +36,72 @@ def send_welcome(message):
         disable_web_page_preview=True)
 
 
+@bot.message_handler(commands=['getlog'])
+def get_all_logs(message):
+    # bot.send_message(message.chat.id, logsRetriever.get_log(kind='all'))
+    log_file = open('logs.log', 'rb')
+    bot.send_document(message.chat.id, data=log_file)
+
+
+@bot.message_handler(commands=['getsessionlog'])
+def get_all_logs(message):
+    time_span = None
+    try:
+        time_span = int(message.text.split()[1])
+    except IndexError:
+        pass
+    if time_span:
+        bot.send_message(message.chat.id,
+                         logsRetriever.get_log(kind='session', user_id=message.chat.id, time_delta=time_span))
+    else:
+        bot.send_message(message.chat.id, logsRetriever.get_log(kind='session', user_id=message.chat.id))
+
+
+@bot.message_handler(commands=['getrequestlog'])
+def get_all_logs(message):
+    bot.send_message(message.chat.id, logsRetriever.get_log(kind='request', user_id=message.chat.id))
+
+
 # /search message handler
 @bot.message_handler(commands=['search'])
 def repeat_all_messages(message):
-    command_length = len('search')
-    message_text = message.text[command_length + 2:]
-    if message_text:
-        result = MessengerManager.make_request(message_text, 'TG')
-        if not result.status:
-            bot.send_message(message.chat.id, result.error)
-        else:
-            bot.send_message(message.chat.id, result.message)
-            result_string = 'Solr: '+result.response+' , CNKT parsed: '+result.CNTK_response
-            bot.send_message(message.chat.id,result_string)
-           # bot.send_message(message.chat.id, parse_feedback(result.feedback))
-            #bot.send_message(message.chat.id, 'Ответ: ' + result.response)
+    bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
+
+
+@bot.message_handler(commands=['fb'])
+def leave_feedback(message):
+    if not check_user_existence(message.chat.id):
+        create_user(message.chat.id,
+                    message.chat.username,
+                    ' '.join([message.chat.first_name, message.chat.last_name]))
+    feedback = message.text[4:].strip()
+
+    if feedback:
+        create_feedback(message.chat.id,
+                        datetime.datetime.fromtimestamp(message.date),
+                        feedback)
+        bot.send_message(message.chat.id, constants.MSG_WE_GOT_YOUR_FEEDBACK)
     else:
-        bot.send_message(message.chat.id, constants.MSG_NO_BUTTON_SUPPORT, parse_mode='HTML')
+        bot.send_message(message.chat.id,
+                         constants.MSG_LEAVE_YOUR_FEEDBACK,
+                         parse_mode='HTML')
+
+
+@bot.message_handler(commands=['getfeedback'])
+def get_user_feedbacks(message):
+    fbs = get_feedbacks()
+    if fbs:
+        bot.send_message(message.chat.id, get_feedbacks())
 
 
 # Text handler
 @bot.message_handler(content_types=['text'])
 def salute(message):
-    message_text = message.text.strip()
-
-    greets = MessengerManager.greetings(message.text)
+    greets = MessengerManager.greetings(message.text.strip())
     if greets:
         bot.send_message(message.chat.id, greets)
     else:
-        result = MessengerManager.make_request(message_text, 'TG')
-        if not result.status:
-            bot.send_message(message.chat.id, result.error)
-        else:
-            bot.send_message(message.chat.id, result.message)
-            bot.send_message(message.chat.id, parse_feedback(result.feedback))
-            bot.send_message(message.chat.id, 'Ответ: ' + result.response)
+        process_response(message)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -72,6 +111,12 @@ def callback_inline(call):
         bot.send_document(chat_id=call.message.chat.id, data=file1)
     elif call.data == 'intro_video':
         bot.send_message(call.message.chat.id, 'https://youtu.be/swok2pcFtNI')
+    elif call.data == 'correct_response':
+        request_id = call.message.text.split()[-1]
+        MessengerManager.log_data('ID-запроса: {}\tМодуль: {}\tКорректность: {}'.format(request_id, __name__, '+'))
+    elif call.data == 'incorrect_response':
+        request_id = call.message.text.split()[-1]
+        MessengerManager.log_data('ID-запроса: {}\tМодуль: {}\tКорректность: {}'.format(request_id, __name__, '-'))
 
 
 # inline mode handler
@@ -79,7 +124,9 @@ def callback_inline(call):
 def query_text(query):
     input_message_content = query.query
 
-    m2_result = MessengerManager.make_request_directly_to_m2(input_message_content, 'TG-INLINE')
+    user_name = user_name_str.format(query.from_user.first_name, query.from_user.last_name)
+    m2_result = MessengerManager.make_request_directly_to_m2(input_message_content, 'TG-INLINE',
+                                                             query.from_user.id, user_name, uuid.uuid4())
 
     result_array = []
     if m2_result.status is False:  # in case the string is not correct we ask user to keep typing
@@ -111,16 +158,28 @@ def query_text(query):
 def voice_processing(message):
     file_info = bot.get_file(message.voice.file_id)
     file = requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(API_TOKEN, file_info.file_path))
-    result = MessengerManager.make_voice_request(file.content, "TG")
+    process_response(message, format='voice', file_content=file.content)
 
-    if type(result) is str:
-        bot.send_message(message.chat.id, result.messages[0])
+
+def process_response(message, format='text', file_content=None):
+    request_id = uuid.uuid4()
+    user_name = user_name_str.format(message.chat.first_name, message.chat.last_name)
+
+    if format == 'text':
+        result = MessengerManager.make_request(message.text, 'TG', message.chat.id, user_name, request_id)
     else:
-        if len(result.messages) == 1:
-            bot.send_message(message.chat.id, result.messages[0])
-        else:
-            for m in result.messages:
-                bot.send_message(message.chat.id, m)
+        result = MessengerManager.make_voice_request(file_content, "TG", message.chat.id, user_name, request_id)
+
+    if not result.status:
+        bot.send_message(message.chat.id, result.error)
+    else:
+        response_str = parse_feedback(result.feedback) + '\n\n<b>Ответ: {}</b>\nID-запроса: {}'
+
+        bot.send_message(message.chat.id, result.message)
+        bot.send_message(message.chat.id,
+                         response_str.format(result.response, request_id),
+                         parse_mode='HTML',
+                         reply_markup=constants.RESPONSE_QUALITY)
 
 
 def parse_feedback(fb):
@@ -132,7 +191,11 @@ def parse_feedback(fb):
                      ', '.join([i['dim'] + ': ' + i['val'] for i in fb_exp['dims']]))
     norm = norm.format('0. {}\n'.format(
         fb_norm['measure']) + '\n'.join([str(idx + 1) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
-    return '{}\n\n{}'.format(exp, norm)
+
+    cntk_response = '<b>CNTK разбивка</b>\n{}'
+    r = ['{}. {}: {}'.format(idx, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
+    cntk_response = cntk_response.format(', '.join(r))
+    return '{}\n\n{}\n\n{}'.format(exp, norm, cntk_response)
 
 
 # polling cycle

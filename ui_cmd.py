@@ -1,7 +1,7 @@
 from messenger_manager import MessengerManager
 from constants import CMD_START_MSG
-import json
-import requests
+import socket
+import uuid
 
 
 def parse_feedback(fb):
@@ -13,21 +13,15 @@ def parse_feedback(fb):
     norm = norm.format('0. {}\n'.format(
         fb_norm['measure']) + '\n'.join([str(idx + 1) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
     line = "==" * 10
-    return '{0}\n{1}\n{0}\n{2}\n{0}'.format(line, exp, norm)
+    cntk_response = 'CNTK разбивка\n{}'
+    r = ['{}. {}: {}'.format(idx, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
+    cntk_response = cntk_response.format(', '.join(r))
+    return '{0}\n{1}\n{0}\n{2}\n{0}\n{3}\n{0}'.format(line, exp, norm, cntk_response)
 
 
 print(CMD_START_MSG)
 
-continue_case = ('Y', 'y')
-http_api = False
-flag = True
-
-http_usage = input('Работать по HTTP API Y[y]/N[n]: ')
-
-if http_usage in ('y', 'Y'):
-    http_api = True
-
-while flag:
+while True:
     text = input('Введите запрос: ')
     text = text.strip()
     if text:
@@ -37,27 +31,11 @@ while flag:
             continue
 
         result = None
-        if http_api:
-            result = requests.get('http://localhost:8019/get/%s' % text)
-            result = json.loads(result.text)
-            if result['error']:
-                print(result['error'])
-            else:
-                print(parse_feedback(result['feedback']))
-                print('Ответ: ' + result['response'])
-        else:
-            result = MessengerManager.make_request(text.lower(), 'CMD')
-            if not result.status:
-                print(result.error)
-            else:
-                print(result.message)
-                print(parse_feedback(result.feedback))
-                print('Ответ: ' + result.response)
 
-        y_n = input('Продолжить Y/N? ')
-        if y_n in continue_case:
-            flag = True
+        result = MessengerManager.make_request(text, 'CMD', socket.gethostname(), socket.gethostname(), uuid.uuid4())
+        if not result.status:
+            print(result.error)
         else:
-            flag = False
-    else:
-        print('Введите не пустую строку!')
+            print(result.message)
+            print(parse_feedback(result.feedback))
+            print('Ответ: ' + result.response)

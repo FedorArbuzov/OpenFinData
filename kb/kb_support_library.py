@@ -1,4 +1,5 @@
-from kb.db_creation import Dimension_Value, Value, Cube, Cube_Value
+from kb.kb_db_creation import Dimension_Value, Value, Cube, Cube_Measure, Measure, Dimension, Cube_Dimension
+from text_preprocessing import TextPreprocessing
 import requests
 import json
 
@@ -143,18 +144,58 @@ def logging(file_name, text):
         file.write(text)
 
 
-def get_full_nvalues_for_dimensions(fvalues):
+def get_full_values_for_dimensions(cube_values):
     """Получение полных вербальных значений измерений по формальным значениями"""
-    full_nvalues = []
-    for fvalue in fvalues:
-        for value in Value.select().where(Value.fvalue == fvalue):
-            full_nvalues.append(value.full_nvalue)
-    return full_nvalues
+    full_values = []
+    for cube_value in cube_values:
+        for value in Value.select().where(Value.cube_value == cube_value):
+            full_values.append(value.full_value)
+    return full_values
 
 
-def get_full_nvalue_for_measure(fvalue, cube_name):
+def get_full_value_for_measure(cube_value, cube_name):
     """Получение полного вербального значения меры по формальному значению и кубу"""
     for cube in Cube.select().where(Cube.name == cube_name):
-        for cube_value in Cube_Value.select().where(Cube_Value.cube == cube.id):
-            for value in Value.select().where(Value.id == cube_value.value_id, Value.fvalue == fvalue):
-                return value.full_nvalue
+        for cube_measure in Cube_Measure.select().where(Cube_Measure.cube == cube.id):
+            for measure in Measure.select().where(Measure.id == cube_measure.measure_id,
+                                                  Measure.cube_value == cube_value):
+                return measure.full_value
+
+
+def get_cube_dimensions(cube_name):
+    dimensions = []
+    for cube in Cube.select().where(Cube.name == cube_name):
+        for cube_dimension in Cube_Dimension.select().where(Cube_Dimension.cube_id == cube.id):
+            for dimension in Dimension.select().where(Dimension.id == cube_dimension.dimension_id):
+                dimensions.append(dimension.label)
+    return dimensions
+
+
+def check_dimension_value_in_cube(cube_name, value):
+    for value in Value.select().where(Value.cube_value == value):
+        for dimension_value in Dimension_Value.select().where(Dimension_Value.value_id == value.id):
+            for cube_dimension in Cube_Dimension.select().where(
+                            Cube_Dimension.dimension_id == dimension_value.dimension_id):
+                for cube in Cube.select().where(Cube.id == cube_dimension.cube_id):
+                    if cube.name == cube_name:
+                        return True
+                    else:
+                        return False
+
+def create_automative_cube_description(cube_name):
+    cube_description = None
+    values = []
+    for cube in Cube.select().where(Cube.name == cube_name):
+        cube_description = cube.description
+        for dimension in Cube_Dimension.select().where(Cube_Dimension.cube_id == cube.id):
+            for dim_value in Dimension_Value.select().where(Dimension_Value.dimension_id == dimension.dimension_id):
+                for value in Value.select().where(Value.id == dim_value.value_id):
+                    values.append(value.lem_index_value)
+
+    values = ' '.join(values).split()
+    top_tags = TextPreprocessing.frequency_destribution(values)
+    return '{} {}'.format(cube_description, top_tags)
+
+# for cube in ['CLMR02', 'CLQR01', 'CRDO01']:
+#     description = create_automative_cube_description(cube)
+#     Cube.update(lem_description=description).where(Cube.name == cube).execute()
