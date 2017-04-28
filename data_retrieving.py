@@ -55,6 +55,7 @@ class DataRetrieving:
                 else:
                     result.status = True
                     result.response = json.loads(api_response)["cells"][0][0]["value"]
+                    result.response = float(result.response)
 
                     # Формирование фидбэка
                     result.message = feedback
