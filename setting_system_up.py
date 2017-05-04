@@ -6,8 +6,8 @@ from config import PATHS
 # 1. Создание и заполнение БД
 kb_path = PATHS.get('PATH_TO_KNOWLEDGEBASE')
 db_file = kb_path.split('\\')[Counter(kb_path)['\\']]
-kbs = KnowledgeBaseSupport('CLMR02.csv', db_file)
-# kbs = KnowledgeBaseSupport('knowledge_base.db.sql', db_file)
+# kbs = KnowledgeBaseSupport('CLMR02.csv', db_file)
+kbs = KnowledgeBaseSupport('knowledge_base.db.sql', db_file)
 kbs.set_up_db(overwrite=True)
 
 # 2. Генерация и индексация документов

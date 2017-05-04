@@ -30,18 +30,18 @@ class DataRetrieving:
         if method == 'solr':
             if docs_type == 'base':
                 solr = Solr('knowledgebase')
-                user_request = user_request.lower()
+                normalized_user_request = user_request.lower()
             else:
                 solr = Solr('kb_3c')
                 tp = TextPreprocessing(request_id)
-                user_request = tp.normalization(user_request.lower())
-            solr_result = solr.get_data(user_request, docs_type=docs_type)
+                normalized_user_request = tp.normalization(user_request.lower())
+            solr_result = solr.get_data(normalized_user_request, docs_type=docs_type)
             if solr_result.status:
                 # api_response, cube = '{"cells":[[{"value":"11111"}], "smth"]}', 'Куб'
                 api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
                 api_response = api_response.text
 
-                feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube, cntk_result)
+                feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube, cntk_result, user_request)
 
                 # Обработка случая, когда MDX-запрос некорректен
                 if '"success":false' in api_response:
@@ -95,7 +95,7 @@ class DataRetrieving:
         return api_response, cube
 
     @staticmethod
-    def _form_feedback(mdx_query, cube, cntk_result):
+    def _form_feedback(mdx_query, cube, cntk_result, user_request):
         """Формироварие обратной связи
 
         Принимает на вход MDX-запрос и куб
@@ -120,7 +120,7 @@ class DataRetrieving:
         # фидбек в удобном виде для конвертации в JSON-объект
         feedback = {'formal': {'cube': cube, 'measure': measure_value, 'dims': dims_vals},
                     'verbal': {'measure': full_verbal_measure_value, 'dims': full_verbal_dimensions_value},
-                    'cntk': cntk_result}
+                    'cntk': cntk_result, 'user_request': user_request}
 
         return feedback
 

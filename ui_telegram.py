@@ -176,7 +176,11 @@ def process_response(message, format='text', file_content=None):
     if not result.status:
         bot.send_message(message.chat.id, result.error)
     else:
-        response_str = parse_feedback(result.feedback) + '\n\n<b>Ответ: {}</b>\nID-запроса: {}'
+        if format == 'text':
+            response_str = parse_feedback(result.feedback) + '\n\n<b>Ответ: {}</b>\nID-запроса: {}'
+        else:
+            response_str = parse_feedback(result.feedback, user_request_notification=True)
+            response_str += '\n\n<b>Ответ: {}</b>\nID-запроса: {}'
 
         bot.send_message(message.chat.id, result.message)
         bot.send_message(message.chat.id,
@@ -186,20 +190,26 @@ def process_response(message, format='text', file_content=None):
         bot.send_voice(message.chat.id, text_to_speech(result.response))
 
 
-def parse_feedback(fb):
+def parse_feedback(fb, user_request_notification=False):
     fb_exp = fb['formal']
     fb_norm = fb['verbal']
     exp = '<b>Экспертная обратная связь</b>\nКуб: {}\nМера: {}\nИзмерения: {}'
     norm = '<b>Дататрон выделил следующие параметры (обычная обратная связь)</b>:\n{}'
     exp = exp.format(fb_exp['cube'], fb_exp['measure'],
                      ', '.join([i['dim'] + ': ' + i['val'] for i in fb_exp['dims']]))
-    norm = norm.format('0. {}\n'.format(
-        fb_norm['measure']) + '\n'.join([str(idx + 1) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
+    norm = norm.format('1. {}\n'.format(
+        fb_norm['measure']) + '\n'.join([str(idx + 2) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
 
     cntk_response = '<b>CNTK разбивка</b>\n{}'
-    r = ['{}. {}: {}'.format(idx, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
+    r = ['{}. {}: {}'.format(idx+1, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
     cntk_response = cntk_response.format(', '.join(r))
-    return '{}\n\n{}\n\n{}'.format(exp, norm, cntk_response)
+
+    user_request = ''
+    if user_request_notification:
+        user_request = '<b>Ваш запрос</b>\nДататрон решил, что Вы его спросили следующее: "{}"\n\n'
+        user_request = user_request.format(fb['user_request'])
+
+    return '{}{}\n\n{}\n\n{}'.format(user_request, exp, norm, cntk_response)
 
 
 # polling cycle

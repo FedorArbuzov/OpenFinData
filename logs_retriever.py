@@ -80,9 +80,9 @@ class LogsRetriever:
 
         return '\n'.join(list(reversed(logs)))
 
-    # TODO: сделать красивое форматирование логов
+    # TODO: доделать метод получения логов
     @staticmethod
-    def formate_log(log):
+    def _get_info_logs(log):
         return log
 
     @staticmethod
