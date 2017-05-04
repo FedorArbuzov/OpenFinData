@@ -1,12 +1,12 @@
-from config import PATH_TO_USER_DB_SERVER, PATH_TO_USER_DB_DIMA
+from config import PATHS
 from peewee import *
 
-database = SqliteDatabase(PATH_TO_USER_DB_SERVER)
+database = SqliteDatabase(PATHS.get('PATH_TO_USER_DB'))
 
 
 class BaseModel(Model):
     class Meta:
-        database = SqliteDatabase(PATH_TO_USER_DB_SERVER)
+        database = SqliteDatabase(PATHS.get('PATH_TO_USER_DB'))
 
 
 class User(BaseModel):

@@ -89,7 +89,7 @@ class TextPreprocessing:
     def frequency_destribution(word_list, num=5):
         fq = FreqDist(word_list)
         ten_most_popular_words = fq.most_common(num)
-        print(ten_most_popular_words)
+        print('{}: {}'.format(__name__, ten_most_popular_words))
         popular_words = [i[0] for i in ten_most_popular_words]
         final_str = ' '.join(popular_words)
         return final_str

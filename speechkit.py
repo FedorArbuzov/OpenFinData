@@ -1,45 +1,68 @@
 import xml.etree.ElementTree as XmlElementTree
 import subprocess
 import httplib2
-import tempfile
-import os
+import requests
 import uuid
-import config
+import random
+from config import PATHS, YANDEX_API_KEY
+from ffmpy import FFmpeg
 
 YANDEX_ASR_HOST = 'asr.yandex.net'
 YANDEX_ASR_PATH = '/asr_xml'
 CHUNK_SIZE = 1024 ** 2
-PATH_TO_FFMPEG = config.FFMPEG_PATH_DIMA
+PATH_TO_FFMPEG = PATHS.get('PATH_TO_FFMPEG')
+TTS_URL = 'https://tts.voicetech.yandex.net/generate'
+
+
+def convert_to_ogg(in_filename: str = None, in_content: bytes = None):
+    ff = FFmpeg(
+        executable=PATH_TO_FFMPEG,
+        inputs={'pipe:0': None},
+        outputs={'pipe:1': ['-f', 'ogg', '-acodec', 'libopus']}
+    )
+    stdout = None
+
+    if in_filename:
+        stdout, stderr = ff.run(input_data=open(in_filename, 'br').read(), stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    elif in_content:
+        stdout, stderr = ff.run(input_data=in_content, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    return stdout
+
+
+def convert_to_mp3(in_filename: str = None, in_content: bytes = None):
+    ff = FFmpeg(
+        executable=PATH_TO_FFMPEG,
+        inputs={'pipe:0': None},
+        outputs={'pipe:1': ['-f', 'mp3', '-acodec', 'libmp3lame']}
+    )
+    stdout = None
+
+    if in_filename:
+        stdout, stderr = ff.run(input_data=open(in_filename, 'br').read(), stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    elif in_content:
+        stdout, stderr = ff.run(input_data=in_content, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    return stdout
 
 
 def convert_to_pcm16b16000r(in_filename=None, in_bytes=None):
-    with tempfile.TemporaryFile() as temp_out_file:
-        temp_in_file = None
-        if in_bytes:
-            temp_in_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_in_file.write(in_bytes)
-            in_filename = temp_in_file.name
-            temp_in_file.close()
-        if not in_filename:
-            raise Exception('Neither input file name nor input bytes is specified.')
+    ff = FFmpeg(
+        executable=PATH_TO_FFMPEG,
+        inputs={'pipe:0': None},
+        outputs={'pipe:1': ['-f', 's16le', '-acodec', 'pcm_s16le', '-ar', '16000']}
+    )
+    stdout = None
 
-        command = [
-            PATH_TO_FFMPEG,  # or /path/to/ffmpeg
-            '-i', in_filename,
-            '-f', 's16le',
-            '-acodec', 'pcm_s16le',
-            '-ar', '16000',
-            '-'
-        ]
+    if in_filename:
+        stdout, stderr = ff.run(input_data=open(in_filename, 'br').read(), stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    elif in_bytes:
+        stdout, stderr = ff.run(input_data=in_bytes, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        proc = subprocess.Popen(command, stdout=temp_out_file, stderr=subprocess.DEVNULL)
-        proc.wait()
-
-        if temp_in_file:
-            os.remove(in_filename)
-
-        temp_out_file.seek(0)
-        return temp_out_file.read()
+    return stdout
 
 
 def read_chunks(chunk_size, bytes):
@@ -53,8 +76,35 @@ def read_chunks(chunk_size, bytes):
             break
 
 
-def speech_to_text(filename=None, bytes=None, request_id=uuid.uuid4().hex, topic='notes', lang='ru-RU',
-                   key=config.YANDEX_API_KEY):
+def text_to_speech(text, lang='ru-RU', filename=None, file_like=None, convert=True, as_audio=False):
+    # speaker = random.choice(['jane', 'oksan', 'alyss', 'omazh', 'zahar', 'ermil'])  # Голоса озвучки текста
+    speaker = 'zahar'
+    emotion = random.choice(['neutral', 'good'])
+
+    url = TTS_URL + '?text={}&format={}&lang={}&speaker={}&key={}&emotion={}&speed={}'.format(
+        text, 'mp3', lang, speaker, YANDEX_API_KEY, emotion, '1.0')
+
+    print('{}: {}-{}-{}'.format(__name__, text, speaker, emotion))
+
+    r = requests.get(url)
+    if r.status_code == 200:
+        response_content = r.content
+    else:
+        raise Exception('{}: {}'.format(__name__, r.text))
+
+    if not as_audio and convert:
+        response_content = convert_to_ogg(in_content=response_content)
+
+    if filename:
+        with open(filename, 'bw') as file:
+            file.write(response_content)
+    elif file_like:
+        file_like.write(response_content)
+
+    return response_content
+
+
+def speech_to_text(filename=None, bytes=None, request_id=uuid.uuid4().hex, topic='notes', lang='ru-RU'):
     if filename:
         with open(filename, 'br') as file:
             bytes = file.read()
@@ -65,7 +115,7 @@ def speech_to_text(filename=None, bytes=None, request_id=uuid.uuid4().hex, topic
 
     url = YANDEX_ASR_PATH + '?uuid=%s&key=%s&topic=%s&lang=%s' % (
         request_id,
-        key,
+        YANDEX_API_KEY,
         topic,
         lang
     )

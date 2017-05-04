@@ -38,4 +38,4 @@ while True:
         else:
             print(result.message)
             print(parse_feedback(result.feedback))
-            print('Ответ: ' + result.response)
+            print('Ответ: {}'.format(result.response))
