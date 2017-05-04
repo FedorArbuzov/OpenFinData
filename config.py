@@ -9,11 +9,11 @@ SERVER_PATHS = {
     'PATH_TO_KNOWLEDGEBASE': r'C:\Users\imon\Documents\Git\Datatron 2.0\OpenFinData\kb\knowledge_base.db',
     'PATH_TO_USER_DB': r'C:\Users\imon\Documents\Git\Datatron 2.0\OpenFinData\db\users.db',
     'PATH_TO_SOLR_POST_JAR_FILE': r'"C:\local\solr-6.4.2\example\exampledocs\post.jar"',
-    'PATH_TO_FFMPEG': r'C:\Users\imon\Documents\Git\OpenFinData\ffmpeg\bin\ffmpeg.exe'
+    'PATH_TO_FFMPEG': r'C:\Users\imon\Documents\Git\Datatron 2.0\OpenFinData\ffmpeg\ffmpeg.exe'
 }
 
 # Заменить на SERVER_PATHS для деплоя на серваке
-PATHS = DIMA_PATHS
+PATHS = SERVER_PATHS
 
 TELEGRAM_API_TOKEN1 = '231161869:AAFpafehgQl9V-5f6-1KvwjPkzhbgdqDflU'  # OpenFinData
 TELEGRAM_API_TOKEN2 = '250645074:AAF4vfI4wY177VWQYNzPBAt-JYFVyAWyn1I'
