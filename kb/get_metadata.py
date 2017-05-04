@@ -57,7 +57,7 @@ class dimension_element:
 
 
 cube = Cube_Metadata()
-cube.formal_name = "INDO03"
+cube.formal_name = "FSYR01"
 cube.name = "DB"
 
 data={ 'schemaName': cube.formal_name,
