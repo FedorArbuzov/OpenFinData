@@ -6,7 +6,7 @@ from config import PATHS
 # 1. Создание и заполнение БД
 kb_path = PATHS.get('PATH_TO_KNOWLEDGEBASE')
 db_file = kb_path.split('\\')[Counter(kb_path)['\\']]
-# kbs = KnowledgeBaseSupport('CLMR02.csv', db_file)
+#kbs = KnowledgeBaseSupport('CLMR02.csv', db_file)
 kbs = KnowledgeBaseSupport('knowledge_base.db.sql', db_file)
 kbs.set_up_db(overwrite=True)
 
@@ -19,4 +19,4 @@ dga.generate_docs()  # Генерация документов
 # Если видете ошибку: pycurl.error: (6, 'Could not resolve: localhost (Domain name not found)')
 # Или просто метод выполняется очень долго то закоментируйте строчку dga.index_created_documents()
 # и раскомментируйте 2 строчки ниже
-dga.index_created_documents_via_cmd(PATHS.get('PATH_TO_SOLR_POST_JAR_FILE'))  # Индексация документов
+#dga.index_created_documents_via_cmd(PATHS.get('PATH_TO_SOLR_POST_JAR_FILE'))  # Индексация документов

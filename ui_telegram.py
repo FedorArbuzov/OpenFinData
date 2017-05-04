@@ -12,7 +12,7 @@ import datetime
 
 from messenger_manager import MessengerManager
 
-API_TOKEN = config.TELEGRAM_API_TOKEN4
+API_TOKEN = config.TELEGRAM_API_TOKEN1
 bot = telebot.TeleBot(API_TOKEN)
 
 logsRetriever = LogsRetriever('logs.log')
