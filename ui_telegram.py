@@ -3,6 +3,7 @@ import requests
 from telebot import types
 from logs_retriever import LogsRetriever
 from db.user_support_library import check_user_existence, create_user, create_feedback, get_feedbacks
+from speechkit import text_to_speech
 
 import constants
 import config
@@ -11,7 +12,7 @@ import datetime
 
 from messenger_manager import MessengerManager
 
-API_TOKEN = config.TELEGRAM_API_TOKEN1
+API_TOKEN = config.TELEGRAM_API_TOKEN4
 bot = telebot.TeleBot(API_TOKEN)
 
 logsRetriever = LogsRetriever('logs.log')
@@ -91,7 +92,9 @@ def leave_feedback(message):
 def get_user_feedbacks(message):
     fbs = get_feedbacks()
     if fbs:
-        bot.send_message(message.chat.id, get_feedbacks())
+        bot.send_message(message.chat.id, fbs)
+    else:
+        bot.send_message(message.chat.id, 'Отзывов нет')
 
 
 # Text handler
@@ -180,6 +183,7 @@ def process_response(message, format='text', file_content=None):
                          response_str.format(result.response, request_id),
                          parse_mode='HTML',
                          reply_markup=constants.RESPONSE_QUALITY)
+        bot.send_voice(message.chat.id, text_to_speech(result.response))
 
 
 def parse_feedback(fb):

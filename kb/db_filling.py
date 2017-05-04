@@ -1,4 +1,5 @@
 from kb.kb_db_creation import *
+from kb.kb_support_library import create_automative_cube_description
 from text_preprocessing import TextPreprocessing
 from os import remove, getcwd, path
 
@@ -23,7 +24,12 @@ class KnowledgeBaseSupport:
                 database.execute_sql(i)
         else:
             data_set_list = self._read_data()
+
+            if type(data_set_list) is not list:
+                data_set_list = [data_set_list]
+
             KnowledgeBaseSupport._transfer_data_to_db(data_set_list)
+            KnowledgeBaseSupport._create_cube_lem_description(data_set_list)
 
     def _create_db(self, overwrite=False):
         db_file_path = r'{}\{}\{}'.format(getcwd(), 'kb', self.db_file)
@@ -56,7 +62,9 @@ class KnowledgeBaseSupport:
                         data_set = DataSet()
 
                     line = line.split(sep1)
-                    data_set.cube = {'name': line[2].strip(), 'description': line[1].strip()}
+                    data_set.cube = {'name': line[2].strip(),
+                                     'description': line[1].strip(),
+                                     'lem_description': '-'}
                 elif line.startswith('Measures'):
                     line = line.split(sep1)
 
@@ -100,10 +108,6 @@ class KnowledgeBaseSupport:
 
     @staticmethod
     def _transfer_data_to_db(data_set):
-        # Если добавляется один куб
-        if type(data_set) is not list:
-            data_set = [data_set]
-
         for item in data_set:
             # Занесение куба
             cube = Cube.create(**item.cube)
@@ -121,12 +125,17 @@ class KnowledgeBaseSupport:
                     v = Value.create(**dimension_value)
                     Dimension_Value.create(value=v, dimension=d)
 
+    @staticmethod
+    def _create_cube_lem_description(data_set):
+        cubes = [item.cube['name'] for item in data_set]
+        for cube in Cube.select().where(Cube.name in cubes):
+            if cube.lem_description == '-':
+                description = create_automative_cube_description(cube.name)
+                Cube.update(lem_description=description).where(Cube.name == cube.name).execute()
+
 
 class DataSet:
     def __init__(self):
         self.cube = None
         self.dimensions = {}
         self.measures = []
-
-
-# peewee - помнить про insert_many, dicts(), tuples()

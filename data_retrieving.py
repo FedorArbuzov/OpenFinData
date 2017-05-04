@@ -54,8 +54,7 @@ class DataRetrieving:
                 # В остальных случаях
                 else:
                     result.status = True
-                    result.response = json.loads(api_response)["cells"][0][0]["value"]
-                    result.response = float(result.response)
+                    result.response = float(json.loads(api_response)["cells"][0][0]["value"])
 
                     # Формирование фидбэка
                     result.message = feedback
@@ -91,7 +90,7 @@ class DataRetrieving:
 
         # Подготовка POST-данных и запрос к серверу
         d = {'dataMartCode': cube, 'mdxQuery': mdx_query}
-        api_response = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', d)
+        api_response = requests.post('http://conf.prod.fm.epbs.ru/mdxexpert/CellsetByMdx', d)
 
         return api_response, cube
 

@@ -182,6 +182,7 @@ def check_dimension_value_in_cube(cube_name, value):
                     else:
                         return False
 
+
 def create_automative_cube_description(cube_name):
     cube_description = None
     values = []
@@ -195,7 +196,3 @@ def create_automative_cube_description(cube_name):
     values = ' '.join(values).split()
     top_tags = TextPreprocessing.frequency_destribution(values)
     return '{} {}'.format(cube_description, top_tags)
-
-# for cube in ['CLMR02', 'CLQR01', 'CRDO01']:
-#     description = create_automative_cube_description(cube)
-#     Cube.update(lem_description=description).where(Cube.name == cube).execute()

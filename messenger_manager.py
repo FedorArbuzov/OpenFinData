@@ -6,7 +6,6 @@ from data_retrieving import DataRetrieving
 import re
 import json
 import random as rnd
-import uuid
 
 logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level='DEBUG',
                     format='%(asctime)s\t%(levelname)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
