@@ -182,10 +182,13 @@ while len(ChildArray)>0:
     children_json = json.loads(children.text)
     i=0
     while i<len(children_json):
-        if children_json[i]["childCount"]>0:
-            ChildArray.append(children_json[i])
-        else:
-            NoChildren.append(children_json[i])
+        comma = children_json[i]["levelName"].find(',')
+        level_name = children_json[i]["levelName"][3:comma]
+        if int(level_name)<=5:
+            if children_json[i]["childCount"]>0:
+                ChildArray.append(children_json[i])
+            else:
+                NoChildren.append(children_json[i])
         i=i+1
     NoChildren.append(mother_element)
     ChildArray.pop(0)
