@@ -90,7 +90,7 @@ class DataRetrieving:
 
         # Подготовка POST-данных и запрос к серверу
         d = {'dataMartCode': cube, 'mdxQuery': mdx_query}
-        api_response = requests.post('http://conf.test.fm.epbs.ru/mdxexpert/CellsetByMdx', d)
+        api_response = requests.post('http://conf.prod.fm.epbs.ru/mdxexpert/CellsetByMdx', d)
 
         return api_response, cube
 
