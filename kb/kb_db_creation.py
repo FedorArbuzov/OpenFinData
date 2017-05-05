@@ -1,12 +1,12 @@
-from config import PATHS
+from config import SETTINGS
 from peewee import *
 
-database = SqliteDatabase(PATHS.get('PATH_TO_KNOWLEDGEBASE'))
+database = SqliteDatabase(SETTINGS.get('PATH_TO_KNOWLEDGEBASE'))
 
 
 class BaseModel(Model):
     class Meta:
-        database = SqliteDatabase(PATHS.get('PATH_TO_KNOWLEDGEBASE'))
+        database = SqliteDatabase(SETTINGS.get('PATH_TO_KNOWLEDGEBASE'))
 
 
 class Value(BaseModel):

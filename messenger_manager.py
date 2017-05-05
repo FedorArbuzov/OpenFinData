@@ -24,6 +24,7 @@ class MessengerManager:
 
         Возвращает объект класса M1Result."""
 
+        text = ' '.join(text.split())  # Удаление переносов, табуляций и пр.
         logging.info(logging_str.format(request_id, __name__, user_id, user_name, source, text, 'text'))
 
         return MessengerManager._querying(text, request_id)
@@ -40,6 +41,7 @@ class MessengerManager:
 
         Возвращает объект класса M2Result."""
 
+        text = ' '.join(text.split())  # Удаление переносов, табуляций и пр.
         logging.info(logging_str.format(request_id, __name__, user_id, user_name, source, text, 'text'))
 
         return DataRetrieving.get_data(text, request_id, docs_type='alternative')

@@ -206,17 +206,16 @@ def get_data(cube_list):
 
     return cube_data
 
+
 def data_to_json(cube_data):
     return json.dumps([item.toJSON() for item in cube_data])
 
 
-
 # all_cubes_list = ['INYR03', 'CLDO01', 'INDO01', 'EXYR03', 'EXDO01', 'CLDO01', 'FSYR01', 'CLDO02']
-all_cubes_list = ['INYR03', 'CLDO01']
+all_cubes_list = ['INYR03']
 
 data = get_data(all_cubes_list)
-json_data = data_to_json(data)
-# json_cube = cube.toJSON()
-# f = open('textos.txt', 'w')
-# f.write(json_cube)
-# f.close()
+json_data = data[0].toJSON()
+with open('textos.txt', 'w') as file:
+    file.write(json_data)
+a = 10

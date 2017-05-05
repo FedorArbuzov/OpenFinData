@@ -1,7 +1,6 @@
 from messenger_manager import MessengerManager
 from bottle import Bottle, request, run
 import codecs
-import uuid
 
 app = Bottle()
 
@@ -20,17 +19,30 @@ def get_basic(request_text=None):
             return greets
 
         # TODO: подправить передаваемые параметры в метод
-        result = MessengerManager.make_request(request_text, 'WEB', 'user_session_id', 'use_session_name', 'request_id')
+        result = MessengerManager.make_request(request_text, 'WEB', 'user_session_id', 'user_session_name',
+                                               'request_id')
         return result.toJSON()
 
 
 @app.post('/post')
 def post_basic():
-    req = request.forms.get('request')
-    # Исправлена кодировка для POST-запросов
-    req = codecs.decode(bytes(req, 'iso-8859-1'), 'utf-8')
-    if req:
-        return MessengerManager.make_request(req, 'WEB').toJSON()
+    # Получение полей
+    request_text = request.forms.get('Request')
+    source = request.forms.get('Source')
+    user_id = request.forms.get('UserId')
+    user_name = request.forms.get('UserName')
+    request_id = request.forms.get('RequestId')
+
+    # Исправление кодировки
+    request_text = codecs.decode(bytes(request_text, 'iso-8859-1'), 'utf-8')
+    source = codecs.decode(bytes(source, 'iso-8859-1'), 'utf-8')
+    user_id = codecs.decode(bytes(user_id, 'iso-8859-1'), 'utf-8')
+    user_name = codecs.decode(bytes(user_name, 'iso-8859-1'), 'utf-8')
+    request_id = codecs.decode(bytes(request_id, 'iso-8859-1'), 'utf-8')
+
+    # если все поля заполнены
+    if request_text and source and user_id and user_name and request_id:
+        return MessengerManager.make_request(request_text, source, user_id, user_name, request_id).toJSON()
 
 
 @app.error(404)
