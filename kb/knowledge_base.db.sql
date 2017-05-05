@@ -95,5 +95,5 @@ INSERT INTO `cube_measure` VALUES (2,1);
 INSERT INTO `cube_dimension` VALUES (1,1);
 INSERT INTO `cube_dimension` VALUES (2,1);
 INSERT INTO `cube_dimension` VALUES (3,1);
-INSERT INTO `cube` VALUES (1,'CLMR02','Госдолг','долг госдолг облигация заём задолженность федеральный доход обязательства гарантия ценный бумага');
+INSERT INTO `cube` VALUES (1,'CLMR02','Госдолг','долг госдолг облигация заём задолженность федеральный обязательства гарантия ценный бумага внутренний внешний');
 COMMIT;

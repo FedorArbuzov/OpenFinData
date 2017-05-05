@@ -10,11 +10,11 @@ def parse_feedback(fb):
     exp = 'Экспертная обратная связь:\nКуб: {}\nМера: {}\nИзмерения: {}'
     norm = 'Дататрон выделил следующие параметры (обычная обратная связь):\n{}'
     exp = exp.format(fb_exp['cube'], fb_exp['measure'], ', '.join([i['dim'] + ': ' + i['val'] for i in fb_exp['dims']]))
-    norm = norm.format('0. {}\n'.format(
-        fb_norm['measure']) + '\n'.join([str(idx + 1) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
+    norm = norm.format('1. {}\n'.format(
+        fb_norm['measure']) + '\n'.join([str(idx + 2) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
     line = "==" * 10
     cntk_response = 'CNTK разбивка\n{}'
-    r = ['{}. {}: {}'.format(idx, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
+    r = ['{}. {}: {}'.format(idx + 1, i['tagmeaning'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
     cntk_response = cntk_response.format(', '.join(r))
     return '{0}\n{1}\n{0}\n{2}\n{0}\n{3}\n{0}'.format(line, exp, norm, cntk_response)
 

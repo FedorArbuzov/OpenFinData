@@ -18,7 +18,7 @@ class DataRetrieving:
         Возвращает объект класса M2Result."""
 
         # TODO: подправить под другое дефолтное значение
-        cntk_result = [{'tag': 'Нет тега', 'word': 'Нет слова'}]
+        cntk_result = [{'tagmeaning': 'Нет тега', 'word': 'Нет слова'}]
         #TODO:доделать фидбек снтк
        # try:
         #    cntk_result = CNTK.get_data(user_request)

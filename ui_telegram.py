@@ -12,7 +12,7 @@ import datetime
 
 from messenger_manager import MessengerManager
 
-API_TOKEN = config.TELEGRAM_API_TOKEN1
+API_TOKEN = config.SETTINGS.get('TELEGRAM_API_TOKEN')
 bot = telebot.TeleBot(API_TOKEN)
 
 logsRetriever = LogsRetriever('logs.log')
@@ -86,6 +86,17 @@ def leave_feedback(message):
         bot.send_message(message.chat.id,
                          constants.MSG_LEAVE_YOUR_FEEDBACK,
                          parse_mode='HTML')
+
+
+@bot.message_handler(commands=['testvoice'])
+def test_text_to_speech(message):
+    text = [
+        'Бюджетный прогноз Российской Федерации на долгосрочный период разрабатывается на 18-летний период каждые 6 лет.',
+        'Базовой целью долгосрочного бюджетного планирования является обеспечение предсказуемости развития бюджетов бюджетной системы Российской Федерации.',
+        'На реализацию «пилотного» портфеля приоритетных проектов и программ предусмотрено: в 2017 году – 180,72 млрд. рублей, в 2018 году - 85,04 млрд. рублей, в 2019 году – 54,91 млрд. рублей.',
+        'В соответствии с Федеральным законом о Федеральном бюджете на 2017 год и плановый период 2018 и 2019 годов в 2017 году общий объем доходов федерального бюджета составит 16 241 млрд. рублей.']
+    for t in text:
+        bot.send_voice(message.chat.id, text_to_speech(t))
 
 
 @bot.message_handler(commands=['getfeedback'])
@@ -201,7 +212,7 @@ def parse_feedback(fb, user_request_notification=False):
         fb_norm['measure']) + '\n'.join([str(idx + 2) + '. ' + i for idx, i in enumerate(fb_norm['dims'])]))
 
     cntk_response = '<b>CNTK разбивка</b>\n{}'
-    r = ['{}. {}: {}'.format(idx+1, i['tag'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
+    r = ['{}. {}: {}'.format(idx + 1, i['tagmeaning'].lower(), i['word'].lower()) for idx, i in enumerate(fb['cntk'])]
     cntk_response = cntk_response.format(', '.join(r))
 
     user_request = ''
