@@ -2,6 +2,7 @@ from kb.kb_db_creation import *
 from kb.kb_support_library import create_automative_cube_description
 from text_preprocessing import TextPreprocessing
 from os import remove, getcwd, path
+import json
 
 sep1 = ';'
 
@@ -43,66 +44,41 @@ class KnowledgeBaseSupport:
             if not path.isfile(db_file_path):
                 create_tables()
 
-    def _read_data(self):
+    @staticmethod
+    def read_data():
         data_set_list = []
 
-        data_source_file_path = '{}\\{}\\{}'.format(getcwd(), 'data', self.data_source_file)
-        with open(data_source_file_path, encoding='utf-8') as file:
-            data_set = None
-            dimension_flag = ''
+        # cube_metadata_file = '{}\\{}\\{}'.format(getcwd(), 'kb', 'cubes_metadata.txt')
+        cube_metadata_file = '{}\\{}'.format(getcwd(), 'cubes_metadata.txt')
 
-            tp = TextPreprocessing('Filling db')
+        with open(cube_metadata_file, 'r', encoding='utf-8') as file:
+            data = file.read()
+        cube_metadata = json.loads(data)
 
-            for line in file:
-                if line.startswith('Cube'):
-                    if not data_set:
-                        data_set = DataSet()
-                    else:
-                        data_set_list.append(data_set)
-                        data_set = DataSet()
+        tp = TextPreprocessing('Filling db')
 
-                    line = line.split(sep1)
-                    data_set.cube = {'name': line[2].strip(),
-                                     'description': line[1].strip(),
-                                     'lem_description': '-'}
-                elif line.startswith('Measures'):
-                    line = line.split(sep1)
+        for item in cube_metadata:
+            cube_data_set = DataSet()
+            cube_data_set.cube = {'name': item['formal_name'],
+                                  'description': '-',
+                                  'lem_description': '-'}
 
-                    value = line[1].split(" - ")
+            for dimension in item['dimensions']:
+                cube_data_set.dimensions[dimension['name']] = None
 
-                    cube_value = value[0].strip()
-                    verbal_value = value[1].strip()
+            for measure in item['measures']:
+                cube_data_set.measures.append({'full_value': measure['caption'],
+                                               'lem_index_value': tp.normalization(measure['caption']),
+                                               'cube_value': measure['name']})
+            for element in item['cube_elements']:
+                dim_name = element['hierarchyName']
+                if not cube_data_set.dimensions[dim_name]:
+                    cube_data_set.dimensions[dim_name] = []
 
-                    if '-' in verbal_value:
-                        verbal_value = verbal_value.split('-')[1]
-
-                    data_set.measures.append({'full_value': verbal_value,
-                                              'lem_index_value': tp.normalization(verbal_value),
-                                              'cube_value': cube_value})
-
-                else:
-                    line = line.split(sep1)
-                    line[0] = line[0].strip()
-
-                    if dimension_flag != line[0]:
-                        data_set.dimensions[line[0]] = []
-                        dimension_flag = line[0]
-
-                    value = line[1].split(" - ")
-                    try:
-                        cube_value = value[0].strip()
-                        verbal_value = value[1].strip()
-
-                        if '-' in verbal_value:
-                            verbal_value = verbal_value.split('-')[1]
-
-                        data_set.dimensions[line[0]].append({'full_value': verbal_value,
-                                                             'lem_index_value': tp.normalization(verbal_value),
-                                                             'cube_value': cube_value})
-                    except IndexError:
-                        data_set.dimensions[line[0]].append({'full_value': line[1], 'lem_index_value': line[1],
-                                                             'cube_value': line[1]})
-            data_set_list.append(data_set)
+                cube_data_set.dimensions[dim_name].append({'full_value': element['caption'],
+                                                           'lem_index_value': tp.normalization(element['caption']),
+                                                           'cube_value': element['name']})
+            data_set_list.append(cube_data_set)
 
         return data_set_list
 
@@ -139,3 +115,18 @@ class DataSet:
         self.cube = None
         self.dimensions = {}
         self.measures = []
+
+
+def fill_new_cubes():
+    import time
+    start_time = time.time()
+    data = KnowledgeBaseSupport.read_data()
+    print("Прреобразование данных выполнялось за {} секунд".format(time.time() - start_time))
+    start_time = time.time()
+    KnowledgeBaseSupport._transfer_data_to_db(data)
+    print("Занесение данных в БД выполнялось за {} секунд".format(time.time() - start_time))
+    start_time = time.time()
+    KnowledgeBaseSupport._create_cube_lem_description(data)
+    print("Создание автоматического описания выполнялось за {} секунд".format(time.time() - start_time))
+
+# fill_new_cubes()

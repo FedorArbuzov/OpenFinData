@@ -13,7 +13,6 @@ class Value(BaseModel):
     full_value = CharField()
     lem_index_value = CharField()
     cube_value = CharField()
-    mdx_extra = CharField(null=True)
 
 
 class Measure(BaseModel):

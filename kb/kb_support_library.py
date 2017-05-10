@@ -195,4 +195,8 @@ def create_automative_cube_description(cube_name):
 
     values = ' '.join(values).split()
     top_tags = TextPreprocessing.frequency_destribution(values)
+
+    if cube_description == '-':
+        return top_tags
+
     return '{} {}'.format(cube_description, top_tags)

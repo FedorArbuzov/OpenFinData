@@ -55,12 +55,15 @@ class DocsGenerationAlternative:
     def _create_values():
         values = []
         for value in Value.select():
-            for dimension_value in Dimension_Value.raw(
-                            'select dimension_id from dimension_value where value_id = %s' % value.id):
-                for dimension in Dimension.raw(
-                                'select label from dimension where id = %s' % dimension_value.dimension_id):
-                    values.append(
-                        {'verbal': value.lem_index_value, 'dimension': dimension.label, 'fvalue': value.cube_value})
+            for dimension_value in Dimension_Value.select().where(Dimension_Value.value_id == value.id):
+                for dimension in Dimension.select().where(Dimension.id == dimension_value.dimension_id):
+                    for dim_cub in Cube_Dimension.select().where(Cube_Dimension.dimension_id == dimension.id):
+                        for cube in Cube.select().where(Cube.id == dim_cub.cube_id):
+                            values.append({
+                                'cube': cube.name,
+                                'verbal': value.lem_index_value,
+                                'dimension': dimension.label,
+                                'fvalue': value.cube_value})
         return values
 
     @staticmethod
@@ -70,8 +73,7 @@ class DocsGenerationAlternative:
             cubes.append({'cube': cube.name, 'tags': cube.lem_description})
         return cubes
 
-
-# TODO: сделать структуру документа через класс
-class DocumentStructure:
-    def __init__(self):
-        structure = None
+    # TODO: сделать структуру документа через класс
+    class DocumentStructure:
+        def __init__(self):
+            structure = None

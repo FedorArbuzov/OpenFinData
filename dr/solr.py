@@ -73,6 +73,7 @@ class Solr:
             mdx_query = solr_docs['response']['docs'][0]['mdx_query'][0]
             verbal_query = solr_docs['response']['docs'][0]['verbal_query']
             return id_query, mdx_query, verbal_query
+        # TODO: усовершенствовать алгоритм сборки
         if docs_type == "alternative":
             dim_list = []
             cube_list = []

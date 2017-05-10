@@ -25,7 +25,7 @@ class TextPreprocessing:
         # TODO: продолжать работу над стоп-словами
         stop_words = stopwords.words(self.language)
         stop_words.remove('не')
-        stop_words += "также иной".split()
+        stop_words += "также иной г.".split()
 
         # Убираем знаки пунктуации и стоп слова
         tokens = [t for t in tokens if (t not in stop_words) and (t not in list(pct) + ["«", "»"])]
