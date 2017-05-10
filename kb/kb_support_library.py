@@ -184,19 +184,14 @@ def check_dimension_value_in_cube(cube_name, value):
 
 
 def create_automative_cube_description(cube_name):
-    cube_description = None
     values = []
     for cube in Cube.select().where(Cube.name == cube_name):
-        cube_description = cube.description
         for dimension in Cube_Dimension.select().where(Cube_Dimension.cube_id == cube.id):
             for dim_value in Dimension_Value.select().where(Dimension_Value.dimension_id == dimension.dimension_id):
                 for value in Value.select().where(Value.id == dim_value.value_id):
                     values.append(value.lem_index_value)
 
     values = ' '.join(values).split()
-    top_tags = TextPreprocessing.frequency_destribution(values)
+    return TextPreprocessing.frequency_destribution(values)
 
-    if cube_description == '-':
-        return top_tags
-
-    return '{} {}'.format(cube_description, top_tags)
+der

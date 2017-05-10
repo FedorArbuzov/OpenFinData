@@ -7,7 +7,7 @@ import re
 import json
 import random as rnd
 
-logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level='DEBUG',
+logging.basicConfig(handlers=[logging.FileHandler('logs.log', 'a', 'utf-8')], level='INFO',
                     format='%(asctime)s\t%(levelname)s\t%(message)s', datefmt='%Y-%m-%d %H:%M')
 
 logging_str = "ID-запроса: {}\tМодуль: {}\tID-пользователя: {}\tИмя пользователя: {}\tПлатформа: {}\tЗапрос: {}\tФормат: {}"
@@ -44,7 +44,7 @@ class MessengerManager:
         text = ' '.join(text.split())  # Удаление переносов, табуляций и пр.
         logging.info(logging_str.format(request_id, __name__, user_id, user_name, source, text, 'text'))
 
-        return DataRetrieving.get_data(text, request_id, docs_type='alternative')
+        return DataRetrieving.get_data(text, request_id)
 
     @staticmethod
     def make_voice_request(record_bytes, source, user_id, user_name, request_id):
@@ -82,7 +82,7 @@ class MessengerManager:
     def _querying(user_request_string, request_id):
         m1_result = M1Result()
         try:
-            m2_result = DataRetrieving.get_data(user_request_string, request_id, docs_type="alternative")
+            m2_result = DataRetrieving.get_data(user_request_string, request_id)
             if m2_result.status is False:
                 m1_result.error = m2_result.message
             else:

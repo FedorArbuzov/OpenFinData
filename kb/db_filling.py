@@ -60,7 +60,6 @@ class KnowledgeBaseSupport:
         for item in cube_metadata:
             cube_data_set = DataSet()
             cube_data_set.cube = {'name': item['formal_name'],
-                                  'description': '-',
                                   'lem_description': '-'}
 
             for dimension in item['dimensions']:
@@ -75,9 +74,12 @@ class KnowledgeBaseSupport:
                 if not cube_data_set.dimensions[dim_name]:
                     cube_data_set.dimensions[dim_name] = []
 
-                cube_data_set.dimensions[dim_name].append({'full_value': element['caption'],
-                                                           'lem_index_value': tp.normalization(element['caption']),
-                                                           'cube_value': element['name']})
+                # игнорирование "не указанных", "не определенных" параметров
+                normalized_elem = tp.normalization(element['caption'])
+                if not [item for item in ('неуказанный', 'не определить') if item in normalized_elem]:
+                    cube_data_set.dimensions[dim_name].append({'full_value': element['caption'],
+                                                               'lem_index_value': normalized_elem,
+                                                               'cube_value': element['name']})
             data_set_list.append(cube_data_set)
 
         return data_set_list
@@ -128,5 +130,6 @@ def fill_new_cubes():
     start_time = time.time()
     KnowledgeBaseSupport._create_cube_lem_description(data)
     print("Создание автоматического описания выполнялось за {} секунд".format(time.time() - start_time))
+
 
 # fill_new_cubes()

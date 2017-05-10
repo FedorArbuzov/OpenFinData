@@ -15,7 +15,10 @@ class DocsGenerationAlternative:
         self.core = core
 
     def generate_docs(self):
-        data = DocsGenerationAlternative._create_values() + DocsGenerationAlternative._create_cubes()
+        data = DocsGenerationAlternative._create_values() + \
+               DocsGenerationAlternative._create_cubes() +\
+               DocsGenerationAlternative._create_measures()
+
         self._write_to_file(data)
 
     def clear_index(self):
@@ -60,9 +63,10 @@ class DocsGenerationAlternative:
                     for dim_cub in Cube_Dimension.select().where(Cube_Dimension.dimension_id == dimension.id):
                         for cube in Cube.select().where(Cube.id == dim_cub.cube_id):
                             values.append({
+                                'type': 'dimension',
                                 'cube': cube.name,
+                                'name': dimension.label,
                                 'verbal': value.lem_index_value,
-                                'dimension': dimension.label,
                                 'fvalue': value.cube_value})
         return values
 
@@ -70,8 +74,26 @@ class DocsGenerationAlternative:
     def _create_cubes():
         cubes = []
         for cube in Cube.select():
-            cubes.append({'cube': cube.name, 'tags': cube.lem_description})
+            cubes.append({
+                'type': 'cube',
+                'cube': cube.name,
+                'description': cube.lem_description})
         return cubes
+
+    @staticmethod
+    def _create_measures():
+        measures = []
+        for measure in Measure.select():
+            if measure.cube_value != 'VALUE':
+                for cube_measure in Cube_Measure.select().where(Cube_Measure.measure_id == measure.id):
+                    for cube in Cube.select().where(Cube.id == cube_measure.cube_id):
+                        measures.append({
+                            'type': 'measure',
+                            'cube': cube.name,
+                            'verbal': measure.lem_index_value,
+                            'formal': measure.cube_value
+                        })
+        return measures
 
     # TODO: сделать структуру документа через класс
     class DocumentStructure:
