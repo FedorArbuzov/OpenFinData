@@ -6,6 +6,7 @@ import json
 import logging
 from dr.solr import Solr
 from dr.cntk import CNTK
+import uuid
 
 
 # Module, which is responsible for getting required from user data
@@ -18,10 +19,10 @@ class DataRetrieving:
         Возвращает объект класса M2Result."""
 
         cntk_result = [{'tagmeaning': 'Нет тега', 'word': 'Нет слова'}]
-        # try:
-        #    cntk_result = CNTK.get_data(user_request)
-        # except:
-        #   pass
+        try:
+           cntk_result = CNTK.get_data(user_request)
+        except:
+          pass
 
         result = M2Result()
         solr = Solr('kb_3c')
@@ -62,6 +63,11 @@ class DataRetrieving:
             logging.warning(logging_str.format(request_id, __name__, solr_result.error))
 
         return result
+
+    @staticmethod
+    def get_minfin_data(user_request):
+        tp = TextPreprocessing(uuid.uuid4())
+        return Solr.get_minfin_docs(tp.normalization(user_request))
 
     @staticmethod
     def _send_request_to_server(mdx_query):

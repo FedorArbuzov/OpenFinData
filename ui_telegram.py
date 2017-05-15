@@ -1,6 +1,7 @@
 from telebot import types
 from logs_retriever import LogsRetriever
 from db.user_support_library import check_user_existence, create_user, create_feedback, get_feedbacks
+from kb.kb_support_library import get_classification_for_dimension
 from speechkit import text_to_speech
 from messenger_manager import MessengerManager
 
@@ -122,6 +123,39 @@ def get_user_feedbacks(message):
         bot.send_message(message.chat.id, fbs)
     else:
         bot.send_message(message.chat.id, 'Отзывов нет')
+
+
+@bot.message_handler(commands=['m'])
+def get_minfin_questions(message):
+    msg = message.text[2:].strip()
+    if msg:
+        try:
+            short, long = MessengerManager.make_minfin_request(msg)
+            bot.send_message(message.chat.id, long)
+            bot.send_voice(message.chat.id, text_to_speech(short))
+        except TypeError:
+            bot.send_message(message.chat.id, constants.ERROR_NO_DOCS_FOUND)
+    else:
+        bot.send_message(message.chat.id, 'Запрос пустой')
+
+
+@bot.message_handler(commands=['class'])
+def get_classification(message):
+    msg = message.text[len('class')+1:].split()
+    print(msg)
+    if msg:
+        if len(msg) != 2:
+            msg_str = 'Использовано {} параметр(ов). Введите куб, а затем измерение через пробел'
+            bot.send_message(message.chat.id, msg_str.format(len(msg)))
+        else:
+            values = get_classification_for_dimension(msg[0].upper(), msg[1])
+            if values:
+                params = '\n'.join(['{}. {}'.format(idx + 1, val) for idx, val in enumerate(values[:15])])
+                bot.send_message(message.chat.id, params)
+            else:
+                bot.send_message(message.chat.id, 'Классификацию получить не удалось')
+    else:
+        bot.send_message(message.chat.id, 'Введите после команды куб и измерение через пробел')
 
 
 # Text handler

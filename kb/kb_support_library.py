@@ -194,4 +194,14 @@ def create_automative_cube_description(cube_name):
     values = ' '.join(values).split()
     return TextPreprocessing.frequency_destribution(values)
 
-der
+
+def get_classification_for_dimension(cube_name, dimension_name):
+    values = []
+    for cube in Cube.select().where(Cube.name == cube_name):
+        for cube_dimension in Cube_Dimension.select().where(Cube_Dimension.cube_id == cube.id):
+            for dim in Dimension.select().where(
+                                    Dimension.id == cube_dimension.dimension_id and Dimension.label == dimension_name):
+                for dim_value in Dimension_Value.select().where(Dimension_Value.dimension_id == dim.id):
+                    for value in Value.select().where(Value.id == dim_value.value_id):
+                        values.append(value.full_value)
+    return values

@@ -85,6 +85,18 @@ class Solr:
         mdx_filled_template = mdx_template.format(measure, reference_cube, ','.join(dim_str))
         return mdx_filled_template
 
+    @staticmethod
+    def get_minfin_docs(user_request):
+        request = 'http://localhost:8983/solr/{}/select/?q={}&wt=json'.format('minfin', user_request)
+        json_response = requests.get(request).text
+        docs = json.loads(json_response)
+
+        if docs['response']['numFound']:
+            fa = docs['response']['docs'][0]['full_answer'][0]
+            sa = docs['response']['docs'][0]['short_answer'][0]
+            return sa, fa
+        else:
+            return None
 
 class DrSolrResult:
     def __init__(self, status=False, id_query=0, mdx_query='', error=''):

@@ -47,6 +47,11 @@ class MessengerManager:
         return DataRetrieving.get_data(text, request_id)
 
     @staticmethod
+    def make_minfin_request(text):
+        text = ' '.join(text.split())  # Удаление переносов, табуляций и пр.
+        return DataRetrieving.get_minfin_data(text)
+
+    @staticmethod
     def make_voice_request(record_bytes, source, user_id, user_name, request_id):
         """Универсальный API метод для обработки голосовых запросов
 
