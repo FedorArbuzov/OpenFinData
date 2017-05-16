@@ -6,75 +6,68 @@ import json
 import logging
 from dr.solr import Solr
 from dr.cntk import CNTK
+import uuid
 
 
 # Module, which is responsible for getting required from user data
 class DataRetrieving:
     @staticmethod
-    def get_data(user_request, request_id, method='solr', docs_type='base'):
+    def get_data(user_request, request_id):
         """Единственный API метод для 2го модуля.
 
         Принимает на вход запрос пользователя.
         Возвращает объект класса M2Result."""
 
-        # TODO: подправить под другое дефолтное значение
         cntk_result = [{'tagmeaning': 'Нет тега', 'word': 'Нет слова'}]
-        #TODO:доделать фидбек снтк
-       # try:
-        #    cntk_result = CNTK.get_data(user_request)
-        #except:
-         #   pass
+        try:
+           cntk_result = CNTK.get_data(user_request)
+        except:
+          pass
 
         result = M2Result()
-        # предварительная обработка входной строки
-        if method == 'solr':
-            if docs_type == 'base':
-                solr = Solr('knowledgebase')
-                normalized_user_request = user_request.lower()
+        solr = Solr('kb_3c')
+
+        tp = TextPreprocessing(request_id)
+        normalized_user_request = tp.normalization(user_request.lower())
+
+        solr_result = solr.get_data(normalized_user_request)
+        if solr_result.status:
+            # api_response, cube = '{"cells":[[{"value":"11111"}], "smth"]}', 'Куб'
+            api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
+            api_response = api_response.text
+            feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube, cntk_result, user_request)
+            # Обработка случая, когда MDX-запрос некорректен
+            if '"success":false' in api_response:
+                result.message = ERROR_IN_MDX_REQUEST
+                result.response = api_response
+            # Обработка случая, когда данных нет
+            elif not json.loads(api_response)["cells"][0][0]["value"]:
+                result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST
+                result.response = None
+            # В остальных случаях
             else:
-                solr = Solr('kb_3c')
-                tp = TextPreprocessing(request_id)
-                normalized_user_request = tp.normalization(user_request.lower())
-            solr_result = solr.get_data(normalized_user_request, docs_type=docs_type)
-            if solr_result.status:
-                # api_response, cube = '{"cells":[[{"value":"11111"}], "smth"]}', 'Куб'
-                api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
-                api_response = api_response.text
+                result.status = True
+                result.response = float(json.loads(api_response)["cells"][0][0]["value"])
+                # Формирование фидбэка
+                result.message = feedback
+            logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}\tMDX-запрос: {}\tЧисло: {}'
 
-                feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube, cntk_result, user_request)
+            feedback_verbal = feedback['verbal']
+            verbal = '0. {}'.format(feedback_verbal['measure']) + ' '
+            verbal += ' '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
 
-                # Обработка случая, когда MDX-запрос некорректен
-                if '"success":false' in api_response:
-                    result.message = ERROR_IN_MDX_REQUEST
-                    result.response = api_response
-                # Обработка случая, когда данных нет
-                elif not json.loads(api_response)["cells"][0][0]["value"]:
-                    result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST
-                    result.response = None
-                # В остальных случаях
-                else:
-                    result.status = True
-                    result.response = float(json.loads(api_response)["cells"][0][0]["value"])
-
-                    # Формирование фидбэка
-                    result.message = feedback
-
-                logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}\tMDX-запрос: {}\tЧисло: {}'
-                if not solr_result.verbal_query:
-                    feedback_verbal = feedback['verbal']
-                    verbal = '0. {}'.format(
-                        feedback_verbal['measure']) + ' ' + \
-                             ' '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
-                    solr_result.verbal_query = verbal
-
-                logging.info(logging_str.format(request_id, __name__, solr_result.verbal_query, solr_result.mdx_query,
-                                                result.response))
-            else:
-                result.message = ERROR_NO_DOCS_FOUND
-                logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}'
-                logging.warning(logging_str.format(request_id, __name__, solr_result.error))
+            logging.info(logging_str.format(request_id, __name__, verbal, solr_result.mdx_query, result.response))
+        else:
+            result.message = ERROR_NO_DOCS_FOUND
+            logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}'
+            logging.warning(logging_str.format(request_id, __name__, solr_result.error))
 
         return result
+
+    @staticmethod
+    def get_minfin_data(user_request):
+        tp = TextPreprocessing(uuid.uuid4())
+        return Solr.get_minfin_docs(tp.normalization(user_request))
 
     @staticmethod
     def _send_request_to_server(mdx_query):

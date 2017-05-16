@@ -10,6 +10,8 @@ class LogsRetriever:
             return self._get_all_logs()
         elif kind == 'session':
             return self._get_session_logs(user_id, time_delta)
+        elif kind == 'info':
+            return self._get_all_info_logs()
         else:
             return self._get_request_logs(user_id)
 
@@ -31,7 +33,6 @@ class LogsRetriever:
             try:
                 if line[1] not in ('DEBUG', 'ERROR'):
                     log_data = LogsRetriever._get_dt_from_line(line[0])
-                    query_id = LogsRetriever._get_value_from_log_part(line[2])
                     if log_data >= log_start_analyze_datetime:
                         logs.append('\t'.join(line))
             except IndexError:
@@ -80,10 +81,19 @@ class LogsRetriever:
 
         return '\n'.join(list(reversed(logs)))
 
-    # TODO: доделать метод получения логов
-    @staticmethod
-    def _get_info_logs(log):
-        return log
+    def _get_all_info_logs(self):
+        logs = []
+
+        for line in list(open(self.path_to_log_file, encoding='utf-8')):
+            line = line.split('\t')
+
+            try:
+                if line[1] not in ('DEBUG', 'ERROR') and len(line) > 3:
+                    logs.append('\t'.join(line))
+            except IndexError:
+                pass
+
+        return '\n'.join(logs)
 
     @staticmethod
     def _get_dt_from_line(data_log_part):
