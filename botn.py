@@ -294,15 +294,26 @@ def text_to_tags(request_msg):
         best = np.argmax(pred,axis=2)
         print(best[0])
         print(list(zip(seq.split(),[slots_wl[s] for s in best[0]])))
+
+        i = 0
+        datam = []
+
         kek=""
         kekmean=""
         for s in best[0]:
             print(slots_wl[s])
             print(d[slots_wl[s]])
+
+            data = {'tag': slots_wl[s], 'tagmeaning': d[slots_wl[s]], 'word': mass[i]}
+            datam.append(data)
+            i = i + 1
+
             kekmean=kekmean+slots_wl[s]+'\t'+d[slots_wl[s]]+'\n'
             kek=kek+slots_wl[s]+' '
+        print(data)
+        print(datam)
         kek=kek+'\n'+kekmean
-        return kek
+        return datam
     except KeyError:
         return null
 

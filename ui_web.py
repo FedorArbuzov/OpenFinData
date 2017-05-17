@@ -50,4 +50,4 @@ def error404(error):
     return '<center><h1>Nothing here sorry: %s</h1></center>' % error
 
 
-run(app, host='localhost', port=8019, debug=True)
+run(app, host='0.0.0.0', port=8019, debug=True)

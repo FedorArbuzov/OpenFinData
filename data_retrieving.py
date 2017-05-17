@@ -20,10 +20,10 @@ class DataRetrieving:
         Возвращает объект класса M2Result."""
 
         cntk_result = [{'tagmeaning': 'Нет тега', 'word': 'Нет слова'}]
-        try:
-            cntk_result = CNTK.get_data(user_request)
-        except:
-            pass
+        # try:
+        #    cntk_result = CNTK.get_data(user_request)
+        # except:
+        #   pass
 
         result = M2Result()
         solr = Solr(SETTINGS.SOLR_MAIN_CORE)
