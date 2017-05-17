@@ -87,7 +87,7 @@ class Solr:
 
     @staticmethod
     def get_minfin_docs(user_request):
-        request = 'http://localhost:8983/solr/{}/select/?q={}&wt=json'.format('minfin', user_request)
+        request = 'http://localhost:8983/solr/{}/select/?q={}&wt=json'.format('new_minfin', user_request)
         json_response = requests.get(request).text
         docs = json.loads(json_response)
 
