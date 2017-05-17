@@ -16,7 +16,7 @@ class DimaSettings:
     PATH_TO_FFMPEG = r'C:\Users\User\PycharmProjects\OpenFinData\ffmpeg\ffmpeg.exe'
     TELEGRAM_API_TOKEN = '371109250:AAE_0U6v5MKNcNSCZBmzIXVFIM8FPNCPqPc'  # Dimatest_Bot
     SOLR_MAIN_CORE = 'kb_3c'
-    SOLR_MINFIN_CORE = 'minfin'
+    SOLR_MINFIN_CORE = 'new_minfin'
 
 
 ss, ds = ServerSettings, DimaSettings
