@@ -63,14 +63,14 @@ class KnowledgeBaseSupport:
                                   'lem_description': '-'}
 
             for dimension in item['dimensions']:
-                cube_data_set.dimensions[dimension['name']] = None
+                cube_data_set.dimensions[dimension['name'].upper()] = None
 
             for measure in item['measures']:
                 cube_data_set.measures.append({'full_value': measure['caption'],
                                                'lem_index_value': tp.normalization(measure['caption']),
                                                'cube_value': measure['name']})
             for element in item['cube_elements']:
-                dim_name = element['hierarchyName']
+                dim_name = element['hierarchyName'].upper()
                 if not cube_data_set.dimensions[dim_name]:
                     cube_data_set.dimensions[dim_name] = []
 

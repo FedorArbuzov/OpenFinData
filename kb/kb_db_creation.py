@@ -1,12 +1,12 @@
 from config import SETTINGS
 from peewee import *
 
-database = SqliteDatabase(SETTINGS.get('PATH_TO_KNOWLEDGEBASE'))
+database = SqliteDatabase(SETTINGS.PATH_TO_KNOWLEDGEBASE)
 
 
 class BaseModel(Model):
     class Meta:
-        database = SqliteDatabase(SETTINGS.get('PATH_TO_KNOWLEDGEBASE'))
+        database = SqliteDatabase(SETTINGS.PATH_TO_KNOWLEDGEBASE)
 
 
 class Value(BaseModel):
@@ -19,6 +19,7 @@ class Measure(BaseModel):
     full_value = CharField()
     lem_index_value = CharField()
     cube_value = CharField()
+    format = CharField()
 
 
 class Dimension(BaseModel):
@@ -36,6 +37,7 @@ class Dimension_Value(BaseModel):
 class Cube(BaseModel):
     name = CharField()
     lem_description = CharField()
+    default_measure = ForeignKeyField(Measure, null=True)
 
 
 class Cube_Dimension(BaseModel):

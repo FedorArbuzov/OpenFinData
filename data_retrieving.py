@@ -1,12 +1,13 @@
 import requests
 from constants import ERROR_IN_MDX_REQUEST, ERROR_NO_DOCS_FOUND, ERROR_NULL_DATA_FOR_SUCH_REQUEST
-from kb.kb_support_library import get_full_values_for_dimensions, get_full_value_for_measure
+from kb.kb_support_library import get_full_values_for_dimensions, get_full_value_for_measure, get_representation_format
 from text_preprocessing import TextPreprocessing
 import json
 import logging
 from dr.solr import Solr
 from dr.cntk import CNTK
 import uuid
+from config import SETTINGS
 
 
 # Module, which is responsible for getting required from user data
@@ -20,12 +21,12 @@ class DataRetrieving:
 
         cntk_result = [{'tagmeaning': 'Нет тега', 'word': 'Нет слова'}]
         try:
-           cntk_result = CNTK.get_data(user_request)
+            cntk_result = CNTK.get_data(user_request)
         except:
-          pass
+            pass
 
         result = M2Result()
-        solr = Solr('kb_3c')
+        solr = Solr(SETTINGS.SOLR_MAIN_CORE)
 
         tp = TextPreprocessing(request_id)
         normalized_user_request = tp.normalization(user_request.lower())
@@ -37,7 +38,10 @@ class DataRetrieving:
             api_response = api_response.text
             feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube, cntk_result, user_request)
             # Обработка случая, когда MDX-запрос некорректен
-            if '"success":false' in api_response:
+            if 'Доступ закрыт!' in api_response:
+                result.message = "Доступ закрыт"
+                result.response = api_response
+            elif '"success":false' in api_response:
                 result.message = ERROR_IN_MDX_REQUEST
                 result.response = api_response
             # Обработка случая, когда данных нет
@@ -47,7 +51,18 @@ class DataRetrieving:
             # В остальных случаях
             else:
                 result.status = True
-                result.response = float(json.loads(api_response)["cells"][0][0]["value"])
+
+                # TODO: доработать форматирование
+                value = float(json.loads(api_response)["cells"][0][0]["value"])
+
+                value_format = get_representation_format(solr_result.mdx_query)
+                if not value_format:
+                    formatted_value = DataRetrieving._format_numerical(value)
+                    result.response = formatted_value
+                elif value_format == 1:
+                    formatted_value = '{}%'.format(value)
+                    result.response = formatted_value
+
                 # Формирование фидбэка
                 result.message = feedback
             logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}\tMDX-запрос: {}\tЧисло: {}'
@@ -56,7 +71,7 @@ class DataRetrieving:
             verbal = '0. {}'.format(feedback_verbal['measure']) + ' '
             verbal += ' '.join([str(idx + 1) + '. ' + i for idx, i in enumerate(feedback_verbal['dims'])])
 
-            logging.info(logging_str.format(request_id, __name__, verbal, solr_result.mdx_query, result.response))
+            logging.info(logging_str.format(request_id, __name__, verbal, solr_result.mdx_query, value))
         else:
             result.message = ERROR_NO_DOCS_FOUND
             logging_str = 'ID-запроса: {}\tМодуль: {}\tОтвет Solr: {}'
@@ -116,6 +131,24 @@ class DataRetrieving:
                     'cntk': cntk_result, 'user_request': user_request}
 
         return feedback
+
+    @staticmethod
+    def _format_numerical(number):
+        str_num = str(number)
+
+        # Если число через точку
+        if '.' in str_num:
+            str_num = str_num.split('.')[0]
+        num_len = len(str_num)
+
+        if num_len < 6:
+            return str_num
+        elif 6 < num_len <= 9:
+            return '{},{} {}'.format(str_num[:-6], str_num[-6], 'млн')
+        elif 9 < num_len <= 12:
+            return '{},{} {}'.format(str_num[:-9], str_num[-9], 'млрд')
+        else:
+            return '{},{} {}'.format(str_num[:-12], str_num[-12], 'трлн')
 
 
 class M2Result:

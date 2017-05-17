@@ -150,7 +150,7 @@ def get_full_values_for_dimensions(cube_values):
     for cube_value in cube_values:
         for value in Value.select().where(Value.cube_value == cube_value):
             full_values.append(value.full_value)
-    return full_values
+    return list(set(full_values))
 
 
 def get_full_value_for_measure(cube_value, cube_name):
@@ -205,3 +205,14 @@ def get_classification_for_dimension(cube_name, dimension_name):
                     for value in Value.select().where(Value.id == dim_value.value_id):
                         values.append(value.full_value)
     return values
+
+
+def get_representation_format(mdx_query):
+    left_part, right_part = mdx_query.split('(')
+    measure_value = left_part.split('}')[0].split('.')[1][1:-1]
+    return int(Measure.get(Measure.cube_value == measure_value).format)
+
+
+def get_default_dimension(cube_name):
+    default_measure_id = Cube.get(Cube.name == cube_name).default_measure
+    return Measure.get(Measure.id == default_measure_id).cube_value

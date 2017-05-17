@@ -1,7 +1,8 @@
-from kb.kb_support_library import get_cube_dimensions, check_dimension_value_in_cube
+from kb.kb_support_library import get_cube_dimensions, check_dimension_value_in_cube, get_default_dimension
 import re
 import json
 import requests
+from config import SETTINGS
 
 
 class Solr:
@@ -52,8 +53,11 @@ class Solr:
         # TODO: работа над скрытыми параметрами: территория -> уровень бюджета
         # TODO: улучшать алгоритм сборки
 
+        territory = None
+        year = None
         dim_list = []
         measure_list = []
+
         solr_docs = solr_docs['response']['docs']
         for doc in solr_docs:
             if doc['type'][0] == 'dimension':
@@ -62,7 +66,11 @@ class Solr:
                 else:
                     dim_list.append(doc['name'][0])
                     dim_list.append(doc)
-            if doc['type'][0] == 'measure':
+            elif doc['type'][0] == 'year_dimension':
+                year = doc['fvalue'][0]
+            elif doc['type'][0] == 'territory_dimension':
+                territory = doc
+            elif doc['type'][0] == 'measure':
                 measure_list.append(doc)
 
         # Очистка от ненужных элементов
@@ -76,7 +84,17 @@ class Solr:
         for doc in dim_list:
             dim_str.append(dim_tmp.format(doc['name'][0], doc['fvalue'][0]))
 
-        measure = 'VALUE'
+        # TODO: подправить на капс
+        reference_cube_dimensions = get_cube_dimensions(reference_cube)
+        if 'Years' in reference_cube_dimensions and year:
+            dim_str.append(dim_tmp.format('YEARS', year))
+
+        # TODO: подправить на капс
+        if 'Territories' in reference_cube_dimensions and territory:
+            dim_str.append(dim_tmp.format('TERRITORIES', territory[reference_cube][0]))
+            dim_str.append(dim_tmp.format('BGLEVELS', '09-3'))
+
+        measure = get_default_dimension(reference_cube)
         if measure_list:
             measure_list = [item for item in measure_list if item['cube'][0] == reference_cube]
             if measure_list:
@@ -87,9 +105,9 @@ class Solr:
 
     @staticmethod
     def get_minfin_docs(user_request):
-        request = 'http://localhost:8983/solr/{}/select/?q={}&wt=json'.format('minfin', user_request)
-        json_response = requests.get(request).text
-        docs = json.loads(json_response)
+        req_str = 'http://localhost:8983/solr/{}/select/?q={}&wt=json'
+        solr_response = requests.get(req_str.format(SETTINGS.SOLR_MINFIN_CORE, user_request))
+        docs = json.loads(solr_response.text)
 
         if docs['response']['numFound']:
             fa = docs['response']['docs'][0]['full_answer'][0]
@@ -97,6 +115,7 @@ class Solr:
             return sa, fa
         else:
             return None
+
 
 class DrSolrResult:
     def __init__(self, status=False, id_query=0, mdx_query='', error=''):

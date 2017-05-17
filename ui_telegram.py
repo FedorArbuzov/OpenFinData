@@ -15,7 +15,7 @@ import random
 import string
 import os
 
-API_TOKEN = config.SETTINGS.get('TELEGRAM_API_TOKEN')
+API_TOKEN = config.SETTINGS.TELEGRAM_API_TOKEN
 bot = telebot.TeleBot(API_TOKEN)
 
 logsRetriever = LogsRetriever('logs.log')

@@ -10,7 +10,7 @@ from ffmpy import FFmpeg
 YANDEX_ASR_HOST = 'asr.yandex.net'
 YANDEX_ASR_PATH = '/asr_xml'
 CHUNK_SIZE = 1024 ** 2
-PATH_TO_FFMPEG = SETTINGS.get('PATH_TO_FFMPEG')
+PATH_TO_FFMPEG = SETTINGS.PATH_TO_FFMPEG
 TTS_URL = 'https://tts.voicetech.yandex.net/generate'
 
 

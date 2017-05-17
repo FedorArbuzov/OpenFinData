@@ -1,12 +1,12 @@
 from config import SETTINGS
 from peewee import *
 
-database = SqliteDatabase(SETTINGS.get('PATH_TO_USER_DB'))
+database = SqliteDatabase(SETTINGS.PATH_TO_USER_DB)
 
 
 class BaseModel(Model):
     class Meta:
-        database = SqliteDatabase(SETTINGS.get('PATH_TO_USER_DB'))
+        database = SqliteDatabase(SETTINGS.PATH_TO_USER_DB)
 
 
 class User(BaseModel):
