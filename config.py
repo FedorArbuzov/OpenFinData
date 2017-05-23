@@ -3,8 +3,8 @@ class ServerSettings:
     PATH_TO_USER_DB = r'C:\Users\imon\Documents\Git\Datatron 2.0\OpenFinData\db\users.db'
     PATH_TO_SOLR_POST_JAR_FILE = r'"C:\local\solr-6.4.2\example\exampledocs\post.jar"'
     PATH_TO_FFMPEG = r'C:\Users\imon\Documents\Git\Datatron 2.0\OpenFinData\ffmpeg\ffmpeg.exe'
-    TELEGRAM_API_TOKEN = '231161869:AAFpafehgQl9V-5f6-1KvwjPkzhbgdqDflU',  # OpenFinDat
-    TELEGRAM_API_TOKEN_FINAL = '242536845:AAELC6ay-SVnaw0nIZHCZpsqw_KN8yiaD1U',  # Datatro
+    TELEGRAM_API_TOKEN = '231161869:AAFpafehgQl9V-5f6-1KvwjPkzhbgdqDflU'  # OpenFinDat
+    TELEGRAM_API_TOKEN_FINAL = '242536845:AAELC6ay-SVnaw0nIZHCZpsqw_KN8yiaD1U'  # Datatro
     SOLR_MAIN_CORE = 'kb_3c'
     SOLR_MINFIN_CORE = 'minfin'
 

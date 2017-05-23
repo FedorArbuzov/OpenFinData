@@ -274,5 +274,37 @@ def parse_feedback(fb, user_request_notification=False):
 
 
 # polling cycle
+#if __name__ == '__main__':
+#    bot.polling(none_stop=True)
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    admin_id = (65305591, 164241807, 139653713)
+
+    for _id in admin_id:
+        bot.send_message(_id, "ADMIN_INFO: Бот запушен")
+
+    e = None
+    count = 0
+
+    while True:
+        try:
+            # No more than 5 attempts for one exception
+            if count < 900:
+                count += 1
+                bot.polling(none_stop=True)
+            else:
+                err_message = "ADMIN_INFO: Бот упал.\n\nERROR: '{}'.".format(e)
+                for _id in admin_id:
+                    bot.send_message(_id, err_message)
+                break
+        except Exception as e1:
+            os.popen("ipconfig /flushdns")
+            print('There was requests.exceptions.ConnectionError')
+            print(type(e1),type(e))
+            print(count)
+            #if type(e) == type(e1) and e.args is e1.args:
+            if type(e) is type(e1):
+                datetime.time.sleep(10)
+            else:
+                e = e1
+                count = 0
+            print(count)
