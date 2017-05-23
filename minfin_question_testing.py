@@ -32,7 +32,7 @@ def write_data(data):
         file.write(json.dumps(data))
 
 
-def index_data(core='new_minfin', path_to_post_jar_file=SETTINGS.get('PATH_TO_SOLR_POST_JAR_FILE')):
+def index_data_via_cmd(core='new_minfin', path_to_post_jar_file=SETTINGS.get('PATH_TO_SOLR_POST_JAR_FILE')):
     dlt_str = 'http://localhost:8983/solr/{}/update?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true'
     requests.get(dlt_str.format(core))
 
@@ -63,5 +63,5 @@ def index_data_via_curl(core='new_minfin'):
 # d = read_data()
 # d = normalize_data(d)
 # write_data(d)
-#index_data()
-index_data_via_curl()
+# index_data()
+# index_data_via_curl()

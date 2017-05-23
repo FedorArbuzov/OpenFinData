@@ -2,6 +2,7 @@ from kb.kb_support_library import get_cube_dimensions, check_dimension_value_in_
 import re
 import json
 import requests
+import datetime
 from config import SETTINGS
 
 
@@ -84,10 +85,15 @@ class Solr:
         for doc in dim_list:
             dim_str.append(dim_tmp.format(doc['name'][0], doc['fvalue'][0]))
 
-        # TODO: подправить на капс
         reference_cube_dimensions = get_cube_dimensions(reference_cube)
-        if 'Years' in reference_cube_dimensions and year:
-            dim_str.append(dim_tmp.format('YEARS', year))
+
+        # TODO: подправить на капс
+        if 'Years' in reference_cube_dimensions:
+            if year:
+                dim_str.append(dim_tmp.format('YEARS', year))
+            else:
+                dim_str.append(dim_tmp.format('YEARS', datetime.datetime.now().year))
+
 
         # TODO: подправить на капс
         if 'Territories' in reference_cube_dimensions and territory:
