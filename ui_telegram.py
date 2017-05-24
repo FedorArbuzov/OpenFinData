@@ -4,6 +4,7 @@ from db.user_support_library import check_user_existence, create_user, create_fe
 from kb.kb_support_library import get_classification_for_dimension
 from speechkit import text_to_speech
 from messenger_manager import MessengerManager
+from config import SETTINGS
 
 import telebot
 import requests
@@ -141,7 +142,7 @@ def get_minfin_questions(message):
 
 @bot.message_handler(commands=['class'])
 def get_classification(message):
-    msg = message.text[len('class')+1:].split()
+    msg = message.text[len('class') + 1:].split()
     print(msg)
     if msg:
         if len(msg) != 2:
@@ -274,10 +275,8 @@ def parse_feedback(fb, user_request_notification=False):
 
 
 # polling cycle
-#if __name__ == '__main__':
-#    bot.polling(none_stop=True)
 if __name__ == '__main__':
-    admin_id = (65305591, 164241807, 139653713)
+    admin_id = SETTINGS.ADMIN_TELEGRAM_ID
 
     for _id in admin_id:
         bot.send_message(_id, "ADMIN_INFO: Бот запушен")
@@ -299,9 +298,8 @@ if __name__ == '__main__':
         except Exception as e1:
             os.popen("ipconfig /flushdns")
             print('There was requests.exceptions.ConnectionError')
-            print(type(e1),type(e))
+            print(type(e1), type(e))
             print(count)
-            #if type(e) == type(e1) and e.args is e1.args:
             if type(e) is type(e1):
                 datetime.time.sleep(10)
             else:

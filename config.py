@@ -7,6 +7,7 @@ class ServerSettings:
     TELEGRAM_API_TOKEN_FINAL = '242536845:AAELC6ay-SVnaw0nIZHCZpsqw_KN8yiaD1U'  # Datatro
     SOLR_MAIN_CORE = 'kb_3c'
     SOLR_MINFIN_CORE = 'new_minfin'
+    ADMIN_TELEGRAM_ID = (65305591, 164241807, 139653713)
 
 
 class DimaSettings:
@@ -17,6 +18,7 @@ class DimaSettings:
     TELEGRAM_API_TOKEN = '371109250:AAE_0U6v5MKNcNSCZBmzIXVFIM8FPNCPqPc'  # Dimatest_Bot
     SOLR_MAIN_CORE = 'kb_3c'
     SOLR_MINFIN_CORE = 'minfin'
+    ADMIN_TELEGRAM_ID = (65305591, )
 
 
 ss, ds = ServerSettings, DimaSettings
