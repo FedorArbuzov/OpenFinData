@@ -38,8 +38,8 @@ class Solr:
         Принимает на вход обработанный запрос пользователя и множественны/единичный ожидаемый ответ
         Возвращает документ (так как rows=1) в виде JSON-объекта"""
 
-        request = 'http://localhost:8983/solr/{}/select/?q={}&wt=json'.format(self.core, filtered_user_request)
-        json_response = requests.get(request).text
+        request = 'http://localhost:8983/solr/{}/select/?q={}&rows={}&wt=json'
+        json_response = requests.get(request.format(self.core, filtered_user_request, 15)).text
         docs = json.loads(json_response)
         return docs
 

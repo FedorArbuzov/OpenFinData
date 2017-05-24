@@ -55,7 +55,7 @@ def calculate_score(documents):
 
 
 def top_words(score, top=5):
-    # Топ наиболее характеризующих каждый документ слов
+    # Топ слов наиболее характеризующих документ
     docs_key_words = []
     for document_id in score:
         for word in score[document_id][:top]:

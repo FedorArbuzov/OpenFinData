@@ -37,6 +37,9 @@ class DataRetrieving:
             api_response, cube = DataRetrieving._send_request_to_server(solr_result.mdx_query)
             api_response = api_response.text
             feedback = DataRetrieving._form_feedback(solr_result.mdx_query, cube, cntk_result, user_request)
+
+            value = None
+
             # Обработка случая, когда MDX-запрос некорректен
             if 'Доступ закрыт!' in api_response:
                 result.message = "Доступ закрыт"
