@@ -15,6 +15,7 @@ import datetime
 import random
 import string
 import os
+import time
 
 API_TOKEN = config.SETTINGS.TELEGRAM_API_TOKEN
 bot = telebot.TeleBot(API_TOKEN)
@@ -178,10 +179,7 @@ def voice_processing(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
-    if call.data == 'full_documentation':
-        file1 = open('files\\Datatron User Guide.pdf', 'rb')
-        bot.send_document(chat_id=call.message.chat.id, data=file1)
-    elif call.data == 'intro_video':
+    if call.data == 'intro_video':
         bot.send_message(call.message.chat.id, 'https://youtu.be/swok2pcFtNI')
     elif call.data == 'correct_response':
         request_id = call.message.text.split()[-1]
@@ -227,6 +225,7 @@ def query_text(query):
 
 
 def process_response(message, format='text', file_content=None):
+    start_time = time.time()
     request_id = uuid.uuid4()
     user_name = user_name_str.format(message.chat.first_name, message.chat.last_name)
 
@@ -249,7 +248,15 @@ def process_response(message, format='text', file_content=None):
                          response_str.format(result.response, request_id),
                          parse_mode='HTML',
                          reply_markup=constants.RESPONSE_QUALITY)
+        before_tts = time.time() - start_time
         bot.send_voice(message.chat.id, text_to_speech(result.response))
+        after_tts = time.time() - start_time
+
+        bot.send_message(message.chat.id,
+                         'Без конверсии в речь: {} секунд\nВключая конверсию: {} секунд'.format(before_tts, after_tts))
+
+        with open('speed_text.txt', 'a', encoding='utf-8') as file:
+            file.write('{}\t{}\t{}\n'.format(message.text, before_tts, after_tts))
 
 
 def parse_feedback(fb, user_request_notification=False):

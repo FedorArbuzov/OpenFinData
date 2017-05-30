@@ -44,9 +44,11 @@ class DataRetrieving:
             if 'Доступ закрыт!' in api_response:
                 result.message = "Доступ закрыт"
                 result.response = api_response
+                value = api_response
             elif '"success":false' in api_response:
                 result.message = ERROR_IN_MDX_REQUEST
                 result.response = api_response
+                value = api_response
             # Обработка случая, когда данных нет
             elif not json.loads(api_response)["cells"][0][0]["value"]:
                 result.message = ERROR_NULL_DATA_FOR_SUCH_REQUEST

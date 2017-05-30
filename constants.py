@@ -33,11 +33,8 @@ HELP_KEYBOARD = dumps({
     'inline_keyboard': [
         [
             {'text': 'Inline-режим', 'callback_data': '',
-             'switch_inline_query': 'расходы Ростовской области на социальную политику в прошлом году'},
+             'switch_inline_query': 'Долг странам, не вошедшим в парижский договор в 2016 году'},
             {'text': 'Оценить', 'url': 'https://telegram.me/storebot?start=datatron_bot'}
-        ],
-        [
-            {'text': 'Руководство пользователя', 'callback_data': 'full_documentation'},
         ],
         [
             {'text': 'Ознакомительный ролик', 'callback_data': 'intro_video'}
