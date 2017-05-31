@@ -44,7 +44,6 @@ def index_data_via_cmd(core='new_minfin', path_to_post_jar_file=SETTINGS.get('PA
 
 
 def index_data_via_curl(core='new_minfin'):
-    # TODO: разобраться с pycurl.error: (6, 'Could not resolve: localhost (Domain name not found)')
     dlt_str = 'http://localhost:8983/solr/{}/update?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true'
     requests.get(dlt_str.format(core))
 

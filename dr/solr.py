@@ -39,7 +39,7 @@ class Solr:
         Возвращает документ (так как rows=1) в виде JSON-объекта"""
 
         request = 'http://localhost:8983/solr/{}/select/?q={}&rows={}&wt=json'
-        json_response = requests.get(request.format(self.core, filtered_user_request, 15)).text
+        json_response = requests.get(request.format(self.core, filtered_user_request, 20)).text
         docs = json.loads(json_response)
         return docs
 
@@ -54,6 +54,7 @@ class Solr:
         # TODO: работа над скрытыми параметрами: территория -> уровень бюджета
         # TODO: улучшать алгоритм сборки
 
+        cube_by_search = []
         territory = None
         year = None
         dim_list = []
@@ -71,21 +72,25 @@ class Solr:
                 year = doc['fvalue'][0]
             elif doc['type'][0] == 'territory_dimension':
                 territory = doc
+            elif doc['type'][0] == 'cube':
+                cube_by_search.append(doc['cube'][0])
             elif doc['type'][0] == 'measure':
                 measure_list.append(doc)
 
         # Очистка от ненужных элементов
         dim_list = list(filter(lambda elem: type(elem) is not str, dim_list))
 
+        # TODO: доработать определение куба
+        cube_by_score = dim_list[0]['cube'][0]
+
         # Максимальная группа измерений от куба лучшего элемента
-        reference_cube = dim_list[0]['cube'][0]
-        dim_list = [doc for doc in dim_list if doc['cube'][0] == reference_cube]
+        dim_list = [doc for doc in dim_list if doc['cube'][0] == cube_by_score]
 
         dim_tmp, dim_str = "[{}].[{}]", []
         for doc in dim_list:
             dim_str.append(dim_tmp.format(doc['name'][0], doc['fvalue'][0]))
 
-        reference_cube_dimensions = get_cube_dimensions(reference_cube)
+        reference_cube_dimensions = get_cube_dimensions(cube_by_score)
 
         # TODO: подправить на капс
         if 'Years' in reference_cube_dimensions:
@@ -94,19 +99,18 @@ class Solr:
             else:
                 dim_str.append(dim_tmp.format('YEARS', datetime.datetime.now().year))
 
-
         # TODO: подправить на капс
         if 'Territories' in reference_cube_dimensions and territory:
-            dim_str.append(dim_tmp.format('TERRITORIES', territory[reference_cube][0]))
+            dim_str.append(dim_tmp.format('TERRITORIES', territory[cube_by_score][0]))
             dim_str.append(dim_tmp.format('BGLEVELS', '09-3'))
 
-        measure = get_default_dimension(reference_cube)
+        measure = get_default_dimension(cube_by_score)
         if measure_list:
-            measure_list = [item for item in measure_list if item['cube'][0] == reference_cube]
+            measure_list = [item for item in measure_list if item['cube'][0] == cube_by_score]
             if measure_list:
                 measure = measure_list[0]['formal'][0]
 
-        mdx_filled_template = mdx_template.format(measure, reference_cube, ','.join(dim_str))
+        mdx_filled_template = mdx_template.format(measure, cube_by_score, ','.join(dim_str))
         return mdx_filled_template
 
     @staticmethod
@@ -121,6 +125,29 @@ class Solr:
             return sa, fa
         else:
             return None
+
+            # @staticmethod
+            # def _cube_defenition():
+            #     if cube_by_search:
+            #         if cube_by_score not in cube_by_search:
+            #             cube_by_search.append(cube_by_score)
+            #
+            #         cube_stats = []
+            #
+            #         for idx, cube in enumerate(cube_by_search):
+            #             cube_stats.append([get_cube_dimensions(cube), cube, 0])
+            #
+            #             if year:
+            #                 if 'Years' in cube_stats[idx][0]:
+            #                     cube_stats[idx][2] += 1
+            #
+            #             if territory:
+            #                 if 'Territories' in cube_stats[idx][0]:
+            #                     cube_stats[idx][2] += 1
+            #
+            #             best_cube_stats = max(cube_stats, key=lambda item: item[2])
+            #             cube_by_score = best_cube_stats[1]
+            #             reference_cube_dimensions = best_cube_stats[0]
 
 
 class DrSolrResult:

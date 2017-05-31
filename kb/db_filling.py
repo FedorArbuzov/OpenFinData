@@ -131,5 +131,4 @@ def fill_new_cubes():
     KnowledgeBaseSupport._create_cube_lem_description(data)
     print("Создание автоматического описания выполнялось за {} секунд".format(time.time() - start_time))
 
-
 # fill_new_cubes()

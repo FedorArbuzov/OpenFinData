@@ -123,7 +123,7 @@ class M1Result:
     def __init__(self, status=False, error=None, message=None, feedback=None, response=None):
         self.status = status
         self.error = error
-        self.message = message  # Variable, which storage all messages from _querying
+        self.message = message
         self.feedback = feedback
         self.response = response
 
