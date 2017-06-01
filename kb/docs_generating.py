@@ -71,7 +71,9 @@ class DocsGenerationAlternative:
 
     @staticmethod
     def _create_values():
-        year_values = [i for i in range(2007, datetime.datetime.now().year + 1)]
+        current_year = datetime.datetime.now().year
+        year_values = [i for i in range(2007, current_year + 1)]
+        year_values.extend([i for i in range(7, current_year-1999)])
         for i in range(len(year_values)):
             year_values.insert(0, {'type': 'year_dimension', 'fvalue': year_values.pop()})
 

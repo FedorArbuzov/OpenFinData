@@ -69,7 +69,12 @@ class Solr:
                     dim_list.append(doc['name'][0])
                     dim_list.append(doc)
             elif doc['type'][0] == 'year_dimension':
-                year = doc['fvalue'][0]
+                year = int(doc['fvalue'][0])
+                # managing two number years
+                if year < 2007:
+                    if year < 10:
+                        year = '0' + str(year)
+                    year = datetime.datetime.strptime(str(year), '%y').year
             elif doc['type'][0] == 'territory_dimension':
                 territory = doc
             elif doc['type'][0] == 'cube':
